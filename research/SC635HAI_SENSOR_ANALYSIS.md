@@ -1,0 +1,412 @@
+# SmartSens SC635HAI Sensor Driver Analysis
+
+Complete analysis of the SC635HAI image sensor as used in the SECUEYE X5 camera.
+This document captures everything needed to write a standalone sensor driver
+for the Hi3516CV610 platform without depending on the stock `superb` firmware.
+
+## Sensor Specifications
+
+| Parameter | Value | Source |
+|-----------|-------|--------|
+| Manufacturer | SmartSens Technology (Shanghai) | Official flyer |
+| Part Number | SC635HAI | Firmware strings |
+| Resolution | 6MP (3208 x 1808 native) | Flyer + I2C register readback |
+| Output Resolution | 3200 x 1800 (cropped) | I2C registers 0x3208-0x320B |
+| Pixel Size | 2.0 um x 2.0 um | Flyer |
+| Optical Format | 1/2.45" | Flyer |
+| Technology | SmartClarity-3 (BSI) | Flyer |
+| Shutter | Rolling | Flyer |
+| Output Interface | 10-bit 1/2/4 Lane MIPI, 10-bit 1/2/4 Lane LVDS | Flyer |
+| Output Format | RAW RGB (Bayer) | Flyer |
+| Bit Depth | 10-bit | Flyer + function names (`_10bit_init`) |
+| Bayer Pattern | BGGR (assumed, standard SmartSens) | Convention |
+| Max Frame Rate | 30/60 fps (at DVDD 1.2V) | Flyer |
+| Configured Frame Rate | 30fps | Function names (`_6m30_`) |
+| Camera MIPI Config | 2 Lane, 1080 Mbps, 27MHz input | superb log string |
+| HDR Modes | 2-exposure Staggered HDR + InSensor HDR | Flyer |
+| Configured HDR | VC WDR 2-to-1 | Function names (`vc_wdr_2t1`) |
+| Sensitivity | 4133 mV/lux·s | Flyer |
+| Dynamic Range | Normal: 83 dB, HDR: >100 dB | Flyer |
+| SNR | 39 dB | Flyer |
+| CRA | 12 degrees | Flyer |
+| Operating Temp | -30C to +85C | Flyer |
+| Best IQ Temp | -20C to +60C | Flyer |
+| Power Supply | Analog 2.8V, Digital 1.2V, I/O 1.8V | Flyer |
+| Package | 41-pin CSP, 7.044 x 4.704 mm | Flyer |
+| Chip ID | 0xCE7C | I2C registers 0x3107-0x3108 |
+| I2C Address | 0x30 (7-bit) / 0x60 (8-bit) | I2C bus scan |
+| I2C Bus | Bus 0 (`/dev/i2c-0`) | I2C scan |
+| Register Width | 16-bit addresses, 8-bit data | Standard SmartSens |
+
+### Datasheet
+
+Only a **2-page product flyer** is publicly available (no register map):
+```
+https://smartsens.oss-cn-beijing.aliyuncs.com/web/img/1758190067924265729.pdf
+```
+
+The full datasheet with register map is under NDA from SmartSens. However,
+the SmartSens register architecture is consistent across their product line
+(SC200AI, SC500AI, SC431HAI, etc.), so register addresses and bit fields can
+be inferred from other sensors in the family. The live I2C register dump below
+provides the actual configured values, which is more useful than a register
+map for building a "snapshot" driver.
+
+### Key Notes from Flyer
+
+- **60fps capable** at DVDD 1.2V -- our camera runs at 30fps (likely sensor at
+  30fps, or 60fps with 2x WDR merge)
+- **Best IQ at -20C to +60C** -- the camera body runs warm; if internal temp
+  exceeds 60C, image quality degrades (may explain grainy dark images)
+- **InSensor HDR** -- a single-frame HDR mode separate from the 2-exposure
+  staggered HDR. Our camera uses 2-exposure staggered (`vc_wdr_2t1`)
+- **SmartAOV (Always-On Video)** -- low-power always-on mode. The app had an
+  "AOV mode" option -- this is the sensor feature it controls
+- **MIPI configuration** -- supports 1/2/4 lanes. Our camera uses 2 lanes
+  at 1080 Mbps with 27 MHz MCLK input (from superb boot log:
+  `SC635HAI_raw_MIPI_27Minput_2Lane_10bit_1080Mbps_3200x1800_30fps`)
+
+## I2C Communication
+
+Confirmed via live I2C scan on running camera:
+
+```
+Bus 0: Device at 0x30 (SC635HAI primary sensor)
+Bus 1: Empty
+Bus 2: Empty (partially scanned)
+```
+
+Tool usage:
+```bash
+# Read single register (8-bit write addr = 0x60, 16-bit reg addr, 8-bit data):
+i2c_read 0 0x60 <reg_start> <reg_end> 2 1
+
+# HiSilicon i2c_read args: bus dev_addr reg_start reg_end addr_width data_width
+```
+
+## Register Map (Live Capture)
+
+The following registers were read from the running camera while `superb` was
+actively streaming. This represents the complete **linear 3200x1800 30fps 10-bit**
+mode configuration.
+
+### Key Register Definitions
+
+#### Chip ID (Read-Only)
+| Register | Value | Description |
+|----------|-------|-------------|
+| 0x3107 | 0xCE | Chip ID high byte |
+| 0x3108 | 0x7C | Chip ID low byte |
+
+**SC635HAI Chip ID = 0xCE7C**
+
+#### Frame Geometry
+| Register | Value | Description |
+|----------|-------|-------------|
+| 0x3200-0x3201 | 0x0000 | Row start = 0 |
+| 0x3202-0x3203 | 0x0000 | Column start = 0 |
+| 0x3204-0x3205 | 0x0C87 | Row end = 3207 (3208 rows total) |
+| 0x3206-0x3207 | 0x070F | Column end = 1807 (1808 cols total) |
+| 0x3208-0x3209 | 0x0C80 | Output width = 3200 |
+| 0x320A-0x320B | 0x0708 | Output height = 1800 |
+| 0x320C-0x320D | 0x0780 | HTS (H total size) = 1920 |
+| 0x320E-0x320F | 0x0AFC | VTS (V total size) = 2812 |
+
+**Frame rate calculation:** Pixel clock / (HTS * VTS) = fps
+VTS = 2812 lines, HTS = 1920 pixels. If pixel clock = ~162 MHz: 162M / (1920 * 2812) = ~30 fps.
+
+#### Mirror / Flip
+| Register | Value | Description |
+|----------|-------|-------------|
+| 0x3221 | 0x00 | Mirror/flip control (0=normal, bit0=mirror, bit1=flip) |
+
+Standard SmartSens mirror/flip register. To flip:
+- 0x00 = Normal
+- 0x01 = Mirror (horizontal)
+- 0x02 = Flip (vertical)
+- 0x03 = Mirror + Flip (180 degrees)
+
+#### Exposure and Gain (AE Registers)
+| Register | Value | Description |
+|----------|-------|-------------|
+| 0x3E01 | 0xAF | Exposure time [15:8] |
+| 0x3E02 | 0x40 | Exposure time [7:4] (upper nibble) |
+| 0x3E03 | 0x0B | AE control (mode bits) |
+| 0x3E06 | 0x01 | Digital gain [?] |
+| 0x3E07 | 0x92 | Digital gain [?] |
+| 0x3E08 | 0x8F | Analog gain coarse + fine high |
+| 0x3E09 | 0x3F | Analog gain fine low |
+| 0x3E0A | 0x8F | Short exposure analog gain (WDR) |
+| 0x3E0B | 0x3F | Short exposure analog gain fine (WDR) |
+
+### Full Register Dump (Non-Zero Values)
+
+All registers with non-zero values from the live capture, organized by bank:
+
+#### Bank 0x30xx (System, PLL, Clock)
+```
+0x3004=0x60  0x3007=0x62  0x300a=0x20  0x3011=0x64
+0x3012=0x66  0x3018=0x3b  0x3019=0x0c  0x301a=0xf0
+0x301c=0xf0  0x301e=0xf0  0x301f=0x13  0x3020=0x02
+0x3021=0x67  0x3022=0x01  0x3023=0x04  0x3025=0x31
+0x3026=0x0d  0x3029=0x0d  0x302b=0x60  0x302d=0x20
+0x3031=0x0a  0x3032=0x30  0x3033=0x20  0x3034=0x06
+0x3037=0x60  0x303f=0x01  0x3040=0x01  0x3052=0x01
+0x3058=0x10  0x3059=0x32  0x3085=0x30  0x3086=0x99
+0x309b=0xf0  0x309d=0xf0  0x309e=0x30  0x30a1=0x01
+0x30b0=0x01  0x30b1=0x01  0x30b8=0x44
+```
+
+#### Bank 0x31xx (Sensor Core, Timing)
+```
+0x3101=0x12  0x3103=0x04  0x3104=0x01  0x3105=0x12
+0x3106=0x01  0x3107=0xce  0x3108=0x7c  0x3109=0x01
+```
+
+#### Bank 0x32xx (Frame, Window, Crop)
+```
+0x3204=0x0c  0x3205=0x87  0x3206=0x07  0x3207=0x0f
+0x3208=0x0c  0x3209=0x80  0x320a=0x07  0x320b=0x08
+0x320c=0x07  0x320d=0x80  0x320e=0x0a  0x320f=0xfc
+0x3211=0x03  0x3213=0x03  0x3214=0x11  0x3215=0x11
+0x3219=0x02  0x321a=0x11  0x321f=0x0b  0x3223=0xc0
+0x3224=0xc2  0x3225=0x20  0x3227=0x03  0x3228=0x01
+0x3233=0x04  0x3236=0x04  0x3238=0x04  0x323b=0x02
+0x3243=0x03  0x3248=0x04  0x3249=0x0f  0x3251=0x98
+0x3253=0x0c  0x3256=0x08  0x3258=0x14  0x3259=0x02
+0x325b=0x64  0x325d=0x02  0x325f=0x18  0x3271=0x10
+0x3273=0x13  0x3274=0x09  0x3277=0x02  0x3279=0x17
+0x327c=0x04  0x327e=0xff  0x327f=0x3f  0x3295=0x04
+0x3296=0x04  0x3297=0x01  0x329b=0x08  0x329c=0x04
+0x329f=0x01  0x32b2=0x03  0x32c0=0x0f  0x32c5=0x14
+0x32c6=0x38  0x32c8=0x40  0x32c9=0x20  0x32cd=0x84
+0x32d1=0x14  0x32d2=0x02  0x32d3=0x03  0x32d5=0xf0
+0x32d9=0x19  0x32da=0x19  0x32db=0x10  0x32df=0x10
+0x32e2=0x09  0x32e7=0x10  0x32ed=0x01  0x32ee=0x01
+0x32f7=0x10
+```
+
+#### Bank 0x33xx (Analog, Column)
+```
+0x3301=0x12  0x3302=0x10  0x3303=0x10  0x3304=0x50
+0x3306=0x70  0x3307=0x08  0x3308=0x18  0x3309=0xb0
+0x330a=0x01  0x330b=0x20  0x330c=0x10  0x330d=0x20
+0x330e=0x30  0x330f=0x08  0x3310=0x08  0x3312=0x80
+0x3313=0x88  0x3314=0x14  0x3316=0x10  0x3317=0x04
+0x3318=0x02  0x3319=0x04  0x331a=0x04  0x331b=0x01
+0x331c=0x04  0x331e=0x39  0x331f=0x99  0x3320=0x06
+0x3323=0x02  0x3324=0x01  0x3325=0x01  0x3326=0x0e
+0x3328=0x08  0x3329=0x10  0x332a=0x04  0x332b=0x05
+0x332d=0x01  0x332f=0x06  0x3332=0x34  0x3333=0x10
+0x3334=0x40  0x3338=0x10  0x3339=0x05  0x333a=0x02
+0x333b=0x01  0x333d=0x01  0x333e=0x06  0x333f=0x02
+0x3340=0x04  0x3341=0x03  0x3346=0x0f  0x3348=0x90
+0x3349=0x04  0x334a=0x02  0x334b=0x0c  0x334c=0x10
+0x334d=0x08  0x334f=0x01  0x3351=0x08  0x3352=0x04
+0x3353=0x04  0x3354=0x04  0x3356=0x12  0x3358=0x34
+0x3359=0x08  0x335d=0x40  0x335e=0x06  0x335f=0x0a
+0x3361=0x05  0x3362=0x72  0x3363=0x01  0x3364=0x5e
+0x3366=0x0e  0x3367=0x04  0x3368=0x02  0x3369=0x30
+0x336b=0x80  0x336c=0xce  0x336d=0x03  0x336e=0xe0
+0x336f=0x48  0x3370=0x69  0x3372=0x0c  0x3376=0x31
+0x337a=0x06  0x337b=0x0a  0x337c=0x02  0x337d=0x0e
+0x337e=0x80  0x337f=0x33  0x3381=0x01  0x3385=0x03
+0x338e=0xff  0x338f=0xa0  0x3393=0x18  0x3394=0x2c
+0x3395=0x3c  0x3396=0x0f  0x3399=0x12  0x339a=0x16
+0x339b=0x1e  0x339c=0x3e  0x339e=0x34  0x339f=0x06
+0x33a2=0x04  0x33a3=0x08  0x33a7=0x05  0x33ac=0x0c
+0x33ad=0x2c  0x33ae=0x30  0x33af=0x90  0x33b0=0x0f
+0x33b2=0x24  0x33b3=0x10  0x33b4=0xff  0x33b5=0x10
+0x33b6=0x06  0x33b7=0x05  0x33b9=0x08  0x33ba=0x04
+0x33bb=0x03  0x33bc=0x01  0x33f0=0x30  0x33f1=0x30
+0x33f2=0x3e  0x33f5=0x70  0x33f9=0x70  0x33fb=0x70
+0x33ff=0x0a
+```
+
+#### Bank 0x36xx (MIPI, PLL, Gain Table)
+```
+0x3616=0xbc  0x3630=0x46  0x3631=0xf0  0x3632=0x6d
+0x3633=0x4d  0x363a=0x80  0x363b=0x57  0x363c=0xd8
+0x363d=0x40  0x3641=0x40  0x3650=0x41  0x3651=0x9d
+0x3654=0x30  0x3656=0x53  0x3670=0x41  0x3671=0x31
+0x3672=0x31  0x3673=0x04  0x3674=0x08  0x3675=0x04
+0x3676=0x18  0x367e=0x69  0x367f=0x6d  0x3680=0x8d
+0x3681=0x04  0x3682=0x08  0x3683=0x04  0x3684=0x78
+0x3685=0x80  0x3686=0x80  0x3687=0x83  0x3688=0x82
+0x3689=0x85  0x368a=0x8b  0x368b=0x97  0x368c=0xbf
+0x368e=0x08  0x3690=0x18  0x3691=0x04  0x3693=0x04
+0x3694=0x08  0x3695=0x04  0x3696=0x18  0x3697=0x04
+0x3698=0x38  0x3699=0x04  0x369a=0x78  0x36c0=0x31
+0x36c2=0x8d  0x36ca=0xbf  0x36d0=0x0d  0x36e9=0x24
+0x36ea=0x14  0x36eb=0x45  0x36ec=0x4b  0x36ed=0x18
+```
+
+#### Bank 0x3Exx (Exposure, Gain, AE)
+```
+0x3e01=0xaf  0x3e02=0x40  0x3e03=0x0b  0x3e05=0x40
+0x3e06=0x01  0x3e07=0x92  0x3e08=0x8f  0x3e09=0x3f
+0x3e0a=0x8f  0x3e0b=0x3f  0x3e0e=0x02  0x3e11=0x80
+0x3e13=0x20  0x3e14=0xb1  0x3e16=0x01  0x3e17=0x54
+0x3e18=0x01  0x3e19=0x54  0x3e1a=0x80  0x3e1b=0x29
+0x3e1c=0x0f  0x3e1d=0x0f  0x3e1e=0xf4  0x3e1f=0x01
+0x3e24=0x20  0x3e26=0x20  0x3e27=0xc0  0x3e28=0xc0
+0x3e29=0x10  0x3e2b=0x20  0x3e2c=0x03  0x3e2d=0x24
+0x3e2e=0x01  0x3e36=0x03  0x3e37=0x40  0x3e3a=0x03
+0x3e3b=0x40  0x3e3c=0x0b  0x3e3d=0xe0  0x3e3f=0x20
+0x3e43=0x10  0x3e47=0x10  0x3e67=0x80  0x3e69=0x80
+0x3e6b=0x80  0x3e81=0x80  0x3e83=0x20  0x3e89=0x80
+0x3e8b=0x20  0x3e8c=0x3f  0x3e8d=0x3f  0x3e8e=0x0f
+0x3e8f=0x3f  0x3e91=0x20  0x3e93=0x20  0x3e99=0x20
+0x3e9b=0x20  0x3e9c=0x3f  0x3e9d=0xff  0x3e9e=0xff
+0x3ea2=0x10  0x3ea8=0x10  0x3eab=0x20  0x3eaf=0x20
+0x3eb7=0x80  0x3eb9=0x80  0x3ebb=0x80  0x3edb=0x80
+0x3edd=0x80  0x3edf=0x80  0x3ee7=0x80  0x3ee9=0x80
+0x3eeb=0x80  0x3ef8=0x02  0x3ef9=0x10
+```
+
+## Sensor Object Structure (from SDK Headers)
+
+The HiSilicon ISP SDK defines the sensor object as `ot_isp_sns_obj`:
+
+```c
+typedef struct {
+    /* +0x00 */ td_s32 (*pfn_register_callback)(ot_vi_pipe, ot_isp_3a_alg_lib*, ot_isp_3a_alg_lib*);
+    /* +0x04 */ td_s32 (*pfn_un_register_callback)(ot_vi_pipe, ot_isp_3a_alg_lib*, ot_isp_3a_alg_lib*);
+    /* +0x08 */ td_s32 (*pfn_set_bus_info)(ot_vi_pipe, ot_isp_sns_commbus);
+    /* +0x0C */ td_s32 (*pfn_set_bus_ex_info)(ot_vi_pipe, ot_isp_sns_bus_ex*);
+    /* +0x10 */ td_void (*pfn_standby)(ot_vi_pipe);
+    /* +0x14 */ td_void (*pfn_restart)(ot_vi_pipe);
+    /* +0x18 */ td_void (*pfn_mirror_flip)(ot_vi_pipe, ot_isp_sns_mirrorflip_type);
+    /* +0x1C */ td_void (*pfn_set_blc_clamp)(ot_vi_pipe, ot_isp_sns_blc_clamp);
+    /* +0x20 */ td_s32 (*pfn_write_reg)(ot_vi_pipe, td_u32 addr, td_u32 data);
+    /* +0x24 */ td_s32 (*pfn_read_reg)(ot_vi_pipe, td_u32 addr);
+    /* +0x28 */ td_s32 (*pfn_set_init)(ot_vi_pipe, ot_isp_init_attr*);
+} ot_isp_sns_obj;
+```
+
+**Confirmed by Ghidra**: The mirror/flip call at offset +0x18 matches exactly.
+
+## Functions in superb Binary (Ghidra)
+
+### Primary Sensor Functions
+| Address | Size | Name | Purpose |
+|---------|------|------|---------|
+| 0x00432e9c | 18 | `sc635hai_get_obj` | Returns &g_sns_sc635hai_obj |
+| 0x00432eb8 | 168 | (unnamed) | Object setup / init |
+| 0x00432f80 | 102 | `sc635hai_linear_6m30_10bit_init` | Linear mode register table |
+| 0x00433010 | 102 | `sc635hai_vc_wdr_2t1_6m30_10bit_init` | WDR mode register table |
+| 0x004330a4 | 30 | `sc635hai_get_standby_cfg` | Standby configuration |
+
+### Slave Sensor Functions
+| Address | Size | Name | Purpose |
+|---------|------|------|---------|
+| 0x004395c8 | 258 | `sc635hai_slave_set_slave_registers` | I2C config for slave mode |
+| 0x00439708 | 196 | (unnamed) | Slave object setup |
+| 0x004397f8 | 18 | `sc635hai_slave_get_obj` | Returns &g_sns_sc635hai_slave_obj |
+| 0x00439814 | 44 | `sc635hai_slave_set_i2c_addr` | Change I2C address |
+| 0x0043984c | 24 | `sc635hai_slave_set_single_mipi_mode` | Single MIPI lane mode |
+| 0x00439870 | 10 | `sc635hai_slave_get_single_mipi_mode` | Read MIPI mode |
+| 0x00439880 | 210 | (unnamed) | Slave init helper |
+| 0x0043997c | 240 | `sc635hai_slave_linear_6m30_10bit_init` | Slave linear init |
+| 0x00439abc | 136 | `sc635hai_slave_vc_wdr_2t1_6m30_10bit_init` | Slave WDR init |
+
+### Global Objects (RAM)
+| Address | Name |
+|---------|------|
+| 0x00782a40 | `g_sns_sc635hai_obj` |
+| 0x00772600 | `g_sns_sc635hai_slave_obj` |
+
+### Sensor Type ID
+- Primary: **0x55**
+- Slave: **0x56**
+
+## ISP Calibration Data (PQ Bins)
+
+Located at `/home/sensor/sc635hai/pqbin/` (resfs partition, bind-mounted):
+
+| File | Size | Scene |
+|------|------|-------|
+| day.bin | 144,774 bytes | Daylight ISP calibration |
+| night.bin | 144,774 bytes | Night (IR) ISP calibration |
+| light.bin | 144,774 bytes | White-light (color night) calibration |
+| black.bin | 144,774 bytes | Very dark scene calibration |
+
+These are loaded by the ISP framework automatically and do NOT need to be
+embedded in the sensor driver.
+
+## Comparison with SC500AI
+
+| Aspect | SC500AI | SC635HAI | Compatible? |
+|--------|---------|----------|-------------|
+| I2C address | 0x30 (7-bit) | 0x30 (7-bit) | Yes |
+| Register arch | SmartSens standard | SmartSens standard | Yes |
+| SDK object | `ot_isp_sns_obj` (11 ptrs) | Same structure | Yes |
+| Mirror/flip reg | 0x3221 | 0x3221 | Yes |
+| Exposure regs | 0x3E01-0x3E02 | 0x3E01-0x3E02 | Yes (same bank) |
+| Gain regs | 0x3E08-0x3E09 | 0x3E08-0x3E09 | Yes (same bank) |
+| Resolution | 2880x1620 | 3200x1800 | Different |
+| Init registers | Proprietary | Proprietary | Different |
+| PLL config | Different | Different | Different |
+| VTS/HTS | Different | 1920/2812 | Different |
+| Chip ID | Different | 0xCE7C | Different |
+
+**The register architecture is the same. The specific register VALUES differ.**
+An SC500AI driver can serve as a structural template, but the init sequences,
+timing, and gain parameters must be replaced with SC635HAI-specific values.
+
+## Path to a Working Driver
+
+### What We Have
+1. Complete running register state (captured via I2C from live camera)
+2. SDK headers with exact structure definitions (`ot_isp_sns_obj`, `ot_isp_sns_exp_func`)
+3. Sample code showing registration flow
+4. PQ calibration bins (ISP tuning data)
+5. All Ghidra function addresses and sizes
+6. I2C address and bus confirmed
+7. Chip ID confirmed
+8. Resolution and timing confirmed
+
+### What We Need
+1. **Decompiled init functions** -- `sc635hai_linear_6m30_10bit_init` (102 bytes
+   at 0x00432f80) and the WDR variant. These set up the register init table
+   pointer. Run Ghidra with a targeted decompilation script to get these.
+
+2. **Register init table data** -- The const arrays that the init functions
+   reference. These are in the binary's `.rodata` section. The live register
+   dump above IS effectively the end result of applying these tables, but
+   having the explicit table (which registers to write and in what order)
+   is cleaner for a driver.
+
+3. **AE callback implementation** -- How exposure and gain are calculated and
+   written. The register addresses (0x3E01-0x3E09) are known from the dump.
+   The gain model (coarse/fine analog + digital) needs to be understood.
+
+### Approach: "Snapshot Driver"
+
+The simplest viable approach uses the **live register dump as the init sequence**:
+
+1. At sensor init, write ALL non-zero registers from the dump above
+2. For AE callbacks, use the standard SmartSens gain model:
+   - Exposure: write 0x3E01-0x3E02 (integration time)
+   - Analog gain: write 0x3E08-0x3E09 (coarse + fine)
+   - Digital gain: write 0x3E06-0x3E07
+3. For mirror/flip: write 0x3221
+4. For standby: write 0x3000 = 0x01 (standby bit)
+5. VTS control: write 0x320E-0x320F for frame rate control
+
+This "snapshot" approach doesn't require decompiling the init functions at all --
+we already have the register state they produce.
+
+### Next Steps
+1. Write a new Ghidra script to decompile all sc635hai functions and extract
+   the register init tables from `.rodata`
+2. Build a `libsns_sc635hai.so` using the HIVIEW SDK headers and the captured
+   register data
+3. Test with HIVIEW or a custom application on the camera
+
+## Open Source Status
+
+**No open-source SC635HAI driver exists anywhere** (searched GitHub, OpenIPC,
+HIVIEW, general web). The sensor was announced September 2024 and is still
+very new. SmartSens keeps register maps under NDA. This analysis represents
+the most complete publicly-available SC635HAI driver information.

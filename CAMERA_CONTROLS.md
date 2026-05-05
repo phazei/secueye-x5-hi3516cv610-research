@@ -8,10 +8,12 @@ Main binary: `superb` (7.8MB, statically linked, replaces Xiongmai "Sofia")
 > [firmware/ANALYSIS_SUMMARY.md](firmware/ANALYSIS_SUMMARY.md) for firmware analysis.
 >
 > **Active tools for camera control:**
-> - `tools/isp_control.py` -- Direct ISP register control (brightness, contrast, saturation, hue)
-> - `tools/fix_timezone.py` -- Fix OSD timezone from China to local
 > - `tools/cam_cmd.py` -- Run any shell command on the camera
 > - `tools/parse_syscfg.py` -- Read and display SystemCfg.ini
+> - `tools/fix_timezone.py` -- Fix OSD timezone from China to local
+> - `tools/test_settings.py` -- Interactive SystemCfg.ini key tester (edit, reboot, verify)
+> - `tools/monitor_alerts.py` -- Real-time alarm event monitor (superb.log based)
+> - `tools/isp_control.py` -- Direct ISP register control (no visible effect, see notes)
 
 ## Architecture
 
@@ -51,22 +53,52 @@ thing.service.property.set   SystemCfg.ini (some settings persisted here)
 | **SystemCfg.ini + reboot** | - | Some settings work | - | See tested results below |
 | **Root shell (port 9999)** | Full filesystem | Config files, processes | - | Requires backdoor |
 
-### Tested Results (Verified)
+### Tested Results (Verified 2026-05-04)
 
-| Setting Method | Setting Changed | Effect on Camera | Result |
-|---|---|---|---|
-| SystemCfg.ini `brightness=0` + reboot | Value persisted | **No visible change** on RTSP | ISP ignores it |
-| SystemCfg.ini `saturation=0` + reboot | Value persisted | **No visible change** on RTSP | ISP ignores it |
-| SystemCfg.ini `contrast=0` + reboot | Value persisted | **No visible change** on RTSP | ISP ignores it |
-| SystemCfg.ini `sharpness=0` + reboot | Value persisted | **No visible change** on RTSP | ISP ignores it |
-| ONVIF SetImagingSettings brightness=10 | Value reads back as 10 | **No visible change** on RTSP | Stored, not applied |
-| ONVIF SetImagingSettings IrCutFilter=OFF | Value reads back | **Not tested visually** | Likely not applied |
-| Killing superb (SIGHUP) | Process dies | mySystem restarts it | Config re-read on restart |
+**SystemCfg.ini settings that WORK (edit + full reboot):**
 
-**Conclusion**: SystemCfg.ini brightness/contrast/saturation/sharpness values are stored
-but NOT used by the ISP pipeline. They appear to be placeholder values for the cloud
-app UI only. The actual ISP tuning is done by `superb` internally using hardcoded
-sensor-specific PQ (Picture Quality) calibration files from `resfs/sensor/sc635hai/pqbin/`.
+| Key | Description | Verified Effect |
+|-----|-------------|-----------------|
+| `bShowOSD` | OSD visibility (1=show, 0=hide) | OSD overlay disappeared/appeared |
+| `doublelight_bOutVoice` | Voice alarm (1=on, 0=off) | Voice announcement silenced on alarm |
+| `timezone` / `posixTZ` / `regionTZ` | Timezone | OSD timestamp corrected |
+| `ntpServer` | NTP server | Time sync works from new server |
+| `hours_fmt` | 12/24h format (requires full reboot) | OSD time format changed |
+
+**SystemCfg.ini settings that DO NOT WORK:**
+
+| Key | Description | Result |
+|-----|-------------|--------|
+| `channelName` | OSD text | Value persists, OSD unchanged |
+| `nightVisionMode` | Night mode (0=auto, 1=color, 2=B&W) | No effect (also broken in app) |
+| `IVPEnable` | AI detection on/off | No effect (green box still appears) |
+| `RegionDetectEnable` | Region intrusion on/off | No effect |
+| `brightness` / `contrast` / `saturation` / `sharpness` | ISP image quality | No effect |
+
+**ONVIF settings that DO NOT WORK:**
+
+| Method | Result |
+|--------|--------|
+| SetImagingSettings brightness=10 | Stored internally, **not applied** to ISP |
+| SetImagingSettings IrCutFilter=OFF | Stored internally, **not applied** |
+| SetImagingSettings EFlip | Stored internally, **not applied** (never calls sensor flip) |
+| ONVIF PullPoint events (MotionAlarm) | Subscription works, **events never fire** |
+
+**Other verified behaviors:**
+
+| Method | Result |
+|--------|--------|
+| Killing superb (SIGHUP) | mySystem restarts it. Config re-read on restart. |
+| ISP CSC registers via `bspmm` | Registers read/write, **no visible effect** on stream |
+
+**Pattern**: Simple output toggle flags (`bShowOSD`, `doublelight_bOutVoice`)
+work via SystemCfg.ini. Core processing pipeline settings (ISP, AI detection,
+OSD content, night vision) are controlled exclusively through Alibaba IoT MQTT
+cloud commands and ignore config file values at startup.
+
+**Conclusion**: The only reliable local control path for most settings is the
+Alibaba IoT MQTT protocol. ONVIF and DVRIP are facade implementations. The
+camera is architecturally cloud-dependent by design.
 
 ---
 
@@ -328,10 +360,10 @@ armingStime0=0          # Start: 00:00:00
 armingEtime0=86399      # End: 23:59:59
 ```
 
-### ONVIF Events (Read-Only)
+### ONVIF Events — NON-FUNCTIONAL
 
-Available event topics:
-- `tns1:VideoSource/MotionAlarm` -- motion alarm state
+Available event topics (advertised but **never fire**):
+- `tns1:VideoSource/MotionAlarm` -- tested, no events delivered on IVP trigger
 - `tns1:VideoSource/ImageTooBlurry`
 - `tns1:VideoSource/ImageTooDark`
 - `tns1:VideoSource/ImageTooBright`
@@ -339,8 +371,44 @@ Available event topics:
 - `tns1:VideoSource/SignalLoss`
 - `tns1:Device/ProfileChanged`
 
-Pull-point subscription works for reading events.
+PullPoint subscription succeeds (`CreatePullPointSubscription` returns a
+reference, `PullMessages` returns valid XML), but **no alarm events are
+ever delivered** when detection triggers. The ONVIF event layer is not
+wired to the IVP detection pipeline. Tested 2026-05-05.
+
 Cannot configure detection parameters via ONVIF.
+
+### Local Alarm Detection via superb.log — WORKS
+
+`tools/monitor_alerts.py` monitors `/tmp/superb.log` (superb's stdout, redirected
+by the `debug.sh` backdoor) for alarm patterns in real-time.
+
+**Confirmed alarm indicators:**
+
+| Log Pattern | Event Type | Latency |
+|-------------|------------|---------|
+| `start maudio_speaker` | Voice alarm prompt fired | ~0ms (instant) |
+| `Create snap` | Alarm snapshot captured | ~0ms |
+| `goto preset NNN` | PTZ preset triggered (100=alarm, 103=tracking) | ~0ms |
+| `mivp_set_param` burst | IVP reconfiguration post-alarm | ~30s |
+
+**Recording:** M-prefix files (`M{HHMMSS}.H265`) are created **instantly** at
+alarm time and grow as recording continues. N-prefix = normal, M-prefix = alarm.
+
+**NPU inference:** The `det_hv_hor.bin` model runs at ~17fps on the SVP NPU.
+Output shape: 3x(Nx6) = 5040 candidate detections per frame. Results are not
+accessible from the shell -- they flow via `/dev/svp_npu` ioctl to superb's
+userspace memory only. Status readable at `/proc/umap/svp_npu`.
+
+**Limitation:** The camera has no `wget`, `curl`, `nc`, or any outbound HTTP
+capability from the shell. To send webhook notifications from the camera, a
+cross-compiled static ARM binary for HTTP POST is needed on the SD card.
+`superb` itself has full TLS/HTTP internally but doesn't expose it to shell.
+
+**Note on `doublelight_bOutVoice`:** Setting this to 0 via SystemCfg.ini
+silences the voice alarm. If silenced, the `start maudio_speaker` log line
+may still appear (untested) or may not -- this could affect log-based detection.
+The `Create snap` and `goto preset` patterns are independent of voice setting.
 
 ### Cloud Properties
 
@@ -535,6 +603,7 @@ nOSDbInvColEn=1         # Inverse color
 osdSize=32              # Font size
 channelName=H.265 IPC   # Channel name text
 timeFormat=MM/DD/YYYY hh:mm:ss
+hours_fmt=1             # 0=24-hour, 1=12-hour (requires reboot, not just superb restart)
 osdText0= through osdText7=  # Custom text lines
 multiPosition=4         # Multiple OSD positions
 alignment=0             # Text alignment
@@ -546,7 +615,8 @@ alignment=0             # Text alignment
 |----------|-------------|
 | `CustomIPCOSDName` | Custom OSD text |
 | `DateFormat` | Date display format |
-| `HoursFormat` | 12/24 hour format |
+| `HoursFormat` | 12/24 hour format (maps to `hours_fmt` in SystemCfg.ini) |
+| `TimeFormat` | Date format string (maps to `timeFormat` in SystemCfg.ini) |
 
 ---
 
@@ -576,10 +646,14 @@ alignment=0             # Text alignment
 ### System Settings (SystemCfg.ini)
 
 ```ini
-timezone=800            # UTC+8 (CST)
-posixTZ=CST-8
-regionTZ=Asia/Shanghai
-ntpServer=ntp.fudan.edu.cn
+# Factory defaults (Chinese):
+#   timezone=800, posixTZ=CST-8, regionTZ=Asia/Shanghai,
+#   ntpServer=ntp.fudan.edu.cn (unreachable outside China)
+# Fixed by tools/fix_timezone.py:
+timezone=-800           # UTC-8 (PST). Offset in 1/100 hours; negative=west of UTC
+posixTZ=PST8PDT,M3.2.0,M11.1.0  # POSIX TZ with DST rules (this is what the OSD uses)
+regionTZ=America/Los_Angeles     # Olson timezone name
+ntpServer=pool.ntp.org           # Global NTP (was ntp.fudan.edu.cn)
 sntpInterval=24         # NTP sync every 24 hours
 nLanguage=1             # Language (1=English?)
 DevName=H.265 IPC       # Device name

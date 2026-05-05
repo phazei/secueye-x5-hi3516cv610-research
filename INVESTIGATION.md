@@ -16,6 +16,10 @@
 - [Local-Only Operation Guide](#local-only-operation-guide)
 - [Known Issues](#known-issues)
 - [Scripts Reference](#scripts-reference)
+- [Mobile App Testing](#mobile-app-testing-secueye-v237)
+- [SystemCfg.ini Settings Test Results](#systemcfgini-settings-test-results)
+- [Image Orientation Control](#image-orientation-control)
+- [Alarm Event Detection](#alarm-event-detection-local)
 - [Future Work](#future-work)
 
 ---
@@ -1072,7 +1076,9 @@ All remote access and file transfer tools have been intentionally removed.
 
 ### What Requires UART Shell Access (or WiFi Backdoor)
 
-- ~~Fixing OSD timezone~~ (requires modifying SystemCfg.ini or superb behavior)
+- ~~Fixing OSD timezone~~ — **DONE.** `tools/fix_timezone.py` changes timezone,
+  POSIX TZ, region, NTP server, and 12/24h format in SystemCfg.ini. NTP server
+  changed from Chinese `ntp.fudan.edu.cn` to `pool.ntp.org`.
 - Enabling DVRIP JSON responses (requires patching superb binary)
 - ~~Full firmware dump/analysis~~ — **DONE**, all 7 partitions dumped and verified
 - ~~Enabling telnet for remote administration~~ — **DONE**, tcpsvd backdoor on port 9999
@@ -1100,12 +1106,26 @@ All remote access and file transfer tools have been intentionally removed.
 
 ## Known Issues
 
-### OSD Timestamp Wrong Timezone
+### ~~OSD Timestamp Wrong Timezone~~ — FIXED
 
-The on-screen display shows UTC+8 (China Standard Time) instead of local time.
-The camera's internal UTC clock is correct (verified via DVRIP OPMachine
-query). The OSD renderer reads from a timezone config that cannot be changed
-via ONVIF or DVRIP on this firmware. **Requires UART shell access to fix.**
+~~The on-screen display shows UTC+8 (China Standard Time) instead of local time.~~
+**Fixed by `tools/fix_timezone.py`**, which modifies `SystemCfg.ini` values
+(`timezone`, `posixTZ`, `regionTZ`) and the NTP server (`ntpServer`) via the
+root shell on port 9999, then reboots. The OSD now displays the correct local
+time. The 12/24-hour format is controlled by `hours_fmt` in SystemCfg.ini
+(0=24h, 1=12h). The NTP server was changed from `ntp.fudan.edu.cn` (Chinese
+university, unreachable from US) to `pool.ntp.org`.
+
+**Root cause:** The Secueye app partially set the timezone (changed the numeric
+`timezone` offset to -800) but did not update `posixTZ` (left as `CST-8`,
+meaning UTC+8) or `regionTZ` (left as `Asia/Shanghai`). The OSD renderer uses
+the POSIX TZ string, so it continued to display China time. The fix updates
+all three values consistently.
+
+**Note:** The cloud may re-push timezone settings via the `DeviceTime` MQTT
+property. If the timezone reverts, block cloud access with the firewall rule.
+ONVIF and DVRIP still cannot change timezone (the shim/stub behavior is
+unchanged).
 
 ### ONVIF Settings Don't Apply
 
@@ -1155,6 +1175,8 @@ Requires Python 3.12+ and `pip install bleak pyserial passlib`.
 | `isp_control.py` | **ISP register control.** Reads/writes Hi3516CV610 ISP CSC registers (brightness, contrast, saturation, hue) via `bspmm`. Subcommands: `read`, `set brightness 60`, `reset`. Full register map documented in script. |
 | `fix_timezone.py` | **Fix OSD timezone.** Changes timezone from UTC+8 (China default) to local timezone in `SystemCfg.ini`, updates NTP server, restarts `superb`. Supports `--apply`, `--restore`, `--ntp-only`, and timezone presets (EST, CST, MST, PST, etc.). |
 | `parse_syscfg.py` | **Config parser.** Reads `SystemCfg.ini` from the camera and displays it in a readable, organized format. |
+| `test_settings.py` | **Settings tester.** Interactive tool that tests whether SystemCfg.ini keys actually affect camera behavior. Edits a key, reboots, prompts for visual verification, restores original, reboots again. Supports `--list`, `--read-only`, `--test N`. |
+| `monitor_alerts.py` | **Alarm monitor.** Real-time alarm event detection via superb.log monitoring. Detects `start maudio_speaker`, `Create snap`, `goto preset` patterns. Supports `--webhook URL` for notifications and `--webhook-json` for custom payloads. |
 | `setup_sd_logging2.py` | **SD card logging setup.** Modifies `debug.sh` to redirect `superb` stdout/stderr to a log file on the SD card. Logs initially to `/tmp` (tmpfs), then moves to SD once mounted. |
 | `monitor_reboot.py` | **Reboot monitor.** Long-running script that detects camera reboots and immediately reads SD card logs from the previous boot. Designed to run in a separate terminal. |
 | `monitor_uptime.py` | **Uptime monitor.** Continuously polls `/proc/uptime` to detect reboots, logs timestamps. |
@@ -1265,6 +1287,198 @@ python dump_firmware.py --output my_backup     # Custom output dir
 
 ---
 
+## Mobile App Testing (Secueye v2.3.7)
+
+Tested 2026-05-04. Device was factory-reset to connect via the app. Backdoor
+persists across factory reset (configfs is not wiped).
+
+### Features That Work
+
+| Feature | Notes |
+|---------|-------|
+| Live video | Works, but laggy. WebRTC via Alibaba cloud. |
+| Screen flip | 180-degree combined mirror+vflip toggle. Works. |
+| Device volume | Speaker volume slider. Works. |
+| Channel name | OSD overlay text. Works from app. |
+| Human shape detection | AI detection with green bounding box. Works. |
+| Cross-line detection | Tripwire with voice alarm. Works (triggers "please note that you have entered the monitoring and alert area" on repeat). |
+| Area detection | Region intrusion. Works but UI is terrible (can only drag one corner). |
+| Intercom | Two-way audio via mic/speaker. Works well. |
+| Zoom (digital) | Works. |
+| Photo/video capture | Saves to app "album". Works. |
+| Time/timezone | Can set timezone. Partially works (see issues). |
+| Auto night vision | Camera auto-switches to IR in the dark. Works (grainy but functional). |
+
+### Features That Don't Work / Are Broken
+
+| Feature | Notes |
+|---------|-------|
+| Night mode dropdown | "Automatic" / "Infrared" toggle does nothing at all. |
+| Strong light suppression | Intensity slider does nothing. |
+| PTZ controls | No motor hardware on this device. |
+| Focus | Fixed focus hardware, slider does nothing. |
+| Playback | Broken: "Network exception, please try again later [1100]". Causes device to become briefly unreachable. |
+
+### Observed Issues
+
+- **Timezone reverts**: After setting timezone, it eventually reverts to China
+  time. Saving timezone settings causes the device to disconnect briefly.
+- **Year bug**: After timezone sync, year showed 2025. App year picker max is 2025.
+- **Dark/covered lag**: Camera becomes extremely laggy and even unreachable when
+  covered (e.g. shirt over lens). `monitor_uptime.cmd` shows it as unreachable.
+  Stabilizes after ~10 minutes. Possibly AI-ISP NR overloading NPU in low-light,
+  or IR LED power draw affecting WiFi.
+- **Heat**: Camera body runs warm. SD card edge is noticeably hot.
+- **No contrast/saturation controls**: Not exposed in the app at all. ISP
+  auto-tunes based on sensor calibration files.
+- **Power modes**: "AOV mode" (intelligent power savings) and "Always-On Mode"
+  (24/7 recording) present but unclear if AOV does anything on WiFi model.
+- **Firmware version**: `MZ0201V160_EN_2 0251126` (displayed as reported by app;
+  actual build date 2025-11-26).
+
+---
+
+## SystemCfg.ini Settings Test Results
+
+Tested 2026-05-04 using `tools/test_settings.py`. Each test: edit config via
+sed on root shell, full reboot, verify visually, restore original, reboot.
+
+### Settings That WORK via SystemCfg.ini + Reboot
+
+| Key | Description | Verified |
+|-----|-------------|----------|
+| `bShowOSD` | OSD overlay visibility (1=show, 0=hide) | OSD disappeared completely |
+| `doublelight_bOutVoice` | Voice alarm announcement (1=on, 0=off) | Voice silenced on alarm trigger |
+| `timezone` / `posixTZ` / `regionTZ` | Timezone settings | Previously confirmed |
+| `ntpServer` | NTP server address | Previously confirmed |
+| `hours_fmt` | 12/24 hour format | Previously confirmed (requires full reboot) |
+
+### Settings That DO NOT WORK via SystemCfg.ini + Reboot
+
+| Key | Description | Result |
+|-----|-------------|--------|
+| `channelName` | OSD overlay text | No effect. Value persists but OSD text unchanged. |
+| `nightVisionMode` | Night vision mode (0=auto, 1=color, 2=B&W) | No effect. Also broken in the app. |
+| `IVPEnable` | AI human/vehicle detection master switch | No effect. Green detection box still appears with value=0. |
+| `RegionDetectEnable` | Region intrusion detection | No effect. |
+| `brightness` / `contrast` / `saturation` / `sharpness` | ISP image quality | No effect. ISP ignores config values entirely. |
+
+### Pattern
+
+Simple on/off flags for output features (`bShowOSD`, `doublelight_bOutVoice`)
+work. Core processing pipeline settings (ISP, detection engine, OSD content)
+are configured only through the Alibaba IoT cloud MQTT path and ignore
+SystemCfg.ini values at startup.
+
+---
+
+## Image Orientation Control
+
+### Flip/Mirror
+
+- **Cloud property**: `ImageFlipState` (binary 0/1 toggle)
+- **App behavior**: Simple on/off switch, toggles both mirror AND vertical flip
+  simultaneously (XOR bitmask 0x6 on sensor params)
+- **Internal chain**: `sp_image_set_flip()` -> `msensor_setparam()` ->
+  `msensor_flush()` -> `secu_sensor_mirror_flip_set()` ->
+  `media_sensor_mirrorflip()` -> SC635HAI sensor register write
+- **SystemCfg.ini**: `bLRSW`/`bUDSW` are PTZ motor direction swaps only, NOT
+  image orientation
+- **ONVIF**: `onvif_EFlipModeToString` exists but `SetImagingSettings` is a
+  dead-end (stores value, never calls sensor flip functions)
+- **Local control**: Not possible without cloud MQTT
+
+### Rotation (90-degree)
+
+- **Not functional on this firmware.** `secu_sensor_rotate_set()` and
+  `secu_sensor_rotate_get()` are both empty stubs (return 0, do nothing).
+- `hwconfig.cfg` has `rotate=0` but no code reads it.
+- The framework has `msensor_rotate_calc()` (204 bytes of real logic) and ONVIF
+  rotate mode functions, suggesting rotation is supported on other hardware
+  variants but disabled for this sensor/firmware build.
+
+---
+
+## Alarm Event Detection (Local)
+
+### ONVIF Events — NOT FUNCTIONAL
+
+ONVIF PullPoint subscription was tested (2026-05-05). `CreatePullPointSubscription`
+succeeds and returns a subscription reference. `PullMessages` returns correctly.
+However, **no alarm events are ever delivered** when IVP detection triggers.
+The ONVIF event layer is not wired to the IVP detection pipeline. The function
+`onvif_send_simulate_events` (578 bytes) exists but never fires for real alarms.
+
+Topics advertised but non-functional:
+- `tns1:VideoSource/MotionAlarm`
+- `tns1:VideoSource/ImageTooBlurry`
+- `tns1:VideoSource/ImageTooDark`
+- `tns1:VideoSource/ImageTooBright`
+- `tns1:VideoSource/GlobalSceneChange`
+- `tns1:VideoSource/SignalLoss`
+
+### superb.log Monitoring — WORKS
+
+The `debug.sh` backdoor redirects superb's stdout/stderr to `/tmp/superb.log`.
+Real-time monitoring via `tail -f /tmp/superb.log` shows alarm activity:
+
+**Confirmed alarm indicators (tested 2026-05-05):**
+
+| Log Pattern | Meaning | Latency |
+|-------------|---------|---------|
+| `start maudio_speaker` | Voice alarm prompt started | Instant (~0ms) |
+| `Create snap` | Alarm snapshot captured | Instant |
+| `goto preset NNN` | PTZ preset triggered by alarm (100, 103 observed) | Instant |
+| `mivp_set_param` burst | IVP reconfiguration after alarm | ~30s after |
+
+**M-prefix recording files** are created instantly at alarm time (not after
+recording completes). File appears immediately and grows as recording continues.
+Path: `/progs/rec/00/YYYYMMDD/M{HHMMSS}.H265`.
+
+### NPU Detection Pipeline
+
+The HiSilicon SVP NPU runs the `det_hv_hor.bin` model at ~17 inferences/sec:
+
+```
+Model:  det_hv_hor (human + vehicle horizontal detection)
+Input:  1x3x384x640 (384x640 RGB image)
+Output: 1x3840x6x1 + 1x960x6x1 + 1x240x6x1
+        (5040 total candidate detections, 6 values each: x, y, w, h, conf, class)
+```
+
+NPU status is readable at `/proc/umap/svp_npu` (irq counts, utilization,
+model info). Detection results are NOT readable -- they flow from the NPU
+kernel driver through `/dev/svp_npu` ioctl to superb's userspace memory.
+A custom ARM binary using the HiSilicon SVP NPU SDK would be needed to
+read detection results directly.
+
+### On-Camera Capabilities for Alert Forwarding
+
+| Capability | Available | Notes |
+|------------|-----------|-------|
+| Write scripts to /tmp | Yes | `sh` execution works |
+| Named pipes (FIFO) | Yes | `mkfifo` works |
+| Background processes | Yes | `nohup &` works |
+| Write to SD card | Yes | Files persist across reboots |
+| TCP server (`tcpsvd`) | Yes | Busybox applet, runs the backdoor |
+| UDP server (`udpsvd`) | Yes | Busybox applet |
+| `wget` / `curl` | **No** | Not in busybox build |
+| `nc` (netcat) | **No** | Not in busybox build |
+| `httpd` | **No** | Not in busybox build |
+| `/dev/tcp` | **No** | Shell is `ash`, no bash socket support |
+| `openssl` | **No** | Not available |
+| Any outbound HTTP | **No** | No shell tools for outbound connections |
+
+`superb` itself has full TLS/MQTT/HTTP capabilities (Alibaba IoT, WebRTC,
+NTP, OTA) but these are internal C code, not exposed to the shell.
+
+**To enable on-camera webhooks, a static ARM binary for HTTP POST must be
+cross-compiled and deployed via SD card.** Target: ARMv7 Cortex-A7 with
+NEON/VFPv4. Alternatively, busybox `awk` with `/inet` support could work
+if the build supports it (untested).
+
+---
+
 ## Future Work
 
 ### Completed
@@ -1281,52 +1495,96 @@ python dump_firmware.py --output my_backup     # Custom output dir
   cloud handler dispatch tables, and string cross-references. See
   `tools/ghidra/output/` for results.
 - ~~Fix OSD timezone~~ — **DONE.** `tools/fix_timezone.py` modifies SystemCfg.ini
-  timezone/NTP settings and restarts superb.
-- ~~ISP register control~~ — **DONE.** `tools/isp_control.py` reads/writes ISP CSC
-  registers (brightness, contrast, saturation, hue) directly via `bspmm`.
+  timezone/NTP settings. Fixed: `posixTZ` (was `CST-8`, the actual cause of
+  wrong OSD time), `regionTZ`, `ntpServer` (was Chinese university server,
+  unreachable from US), and `hours_fmt` (12/24h toggle). Requires reboot
+  (not just superb restart) for `hours_fmt` to take effect.
+- ~~ISP register control~~ — **DONE but ineffective.** `tools/isp_control.py`
+  reads/writes ISP CSC registers (brightness, contrast, saturation, hue) via
+  `bspmm`. Registers accept writes and read back correctly, but ISP auto-tuning
+  continuously overrides the values. No visible effect on the RTSP stream.
 - ~~SD card testing~~ — **DONE.** Camera auto-records to SD card. Recording files
   are raw H.265 streams at `/progs/rec/00/YYYYMMDD/`.
 - ~~binwalk analysis~~ — **DONE.** `analyze_firmware.py` extracts and analyzes all
   squashfs partitions. Full results in `firmware/ANALYSIS_SUMMARY.md`.
+- ~~SystemCfg.ini settings testing~~ — **DONE.** `tools/test_settings.py` tests
+  whether editing config keys + reboot affects camera behavior. Most settings
+  are cloud-locked. See test results above.
+- ~~Alarm event detection~~ — **PARTIALLY DONE.** `tools/monitor_alerts.py`
+  monitors superb.log for alarm events in real-time. ONVIF events confirmed
+  non-functional. Log-based detection works but requires a listener.
 
 ### High Value — Active Investigation
 
-1. **Manually control `superb` image settings** — The ISP CSC register approach
-   (`isp_control.py`) works for direct hardware control, but the ideal path is
-   to find how to send `thing.service.property.set` commands to `superb`
-   locally (without Alibaba cloud). This would control brightness, contrast,
-   saturation, night vision mode, and all other cloud-only settings.
+1. **Cross-compile static HTTP client for ARM** — The camera has no `wget`,
+   `curl`, or `nc`. A tiny static ARM binary (~50KB) that can do HTTP POST
+   would enable on-camera webhook alerts. Deploy via SD card. This is the
+   critical missing piece for standalone alarm notifications.
 
-2. **Local MQTT broker** — Build a local MQTT broker that impersonates
+2. **On-camera alarm watcher** — Shell script using `tail -f /tmp/superb.log`
+   that detects alarm patterns (`start maudio_speaker`, `Create snap`) and
+   triggers actions. Combined with a static HTTP client, this enables
+   push notifications to ntfy/Discord without any external PC.
+
+3. **Lightweight on-camera web UI** — A minimal HTTP server (static ARM binary
+   or busybox httpd if cross-compiled) serving a settings page from the SD card.
+   Would allow configuring webhooks, viewing alarm history, and toggling
+   the few SystemCfg.ini settings that actually work.
+
+4. **Local MQTT broker** — Build a local MQTT broker that impersonates
    `public.iot-as-mqtt.cn-shanghai.aliyuncs.com`. Redirect camera DNS to it.
-   Send `thing.service.property.set` JSON commands. Challenge: TLS certificate
-   verification in `superb` (uses mbedtls) may need to be bypassed.
+   Send `thing.service.property.set` JSON commands.
 
-3. **Crack appfs root password** — Different hash from rootfs (`GIgEh3ZZNHRh2`,
-   DES crypt, salt=`GI`). Exhausted 1-6 character keyspace. 7 characters
-   requires ~2.4 hours, 8 characters ~9.5 days at 8 GH/s on RTX 5090.
+   **Protocol fully mapped** (from Ghidra RE + APK decompilation):
+   - Topic: `/sys/{ProductKey}/{DeviceName}/thing/service/property/set`
+   - Payload: `{"id":"1","method":"thing.service.property.set","version":"1.0","params":{"PropertyName":value}}`
+   - MQTT username: `{DeviceName}&{ProductKey}`
+   - MQTT password: HMAC-SHA1 of sorted key-value pairs, keyed with DeviceSecret
+   - ClientID: `{DN}&{PK}|securemode=2,signmethod=hmacsha1,...|`
+   - 50+ property names resolved from `linkkit_set_property_handler` (see
+     `tools/ghidra/output/resolved_strings.txt`)
 
-4. **Patch superb for local DVRIP control** — The camera returns binary-only
-   DVRIP responses. Patching superb to return JSON would make it compatible
-   with standard VMS clients and python-dvr.
+   **Blocker: TLS certificate verification.** The camera uses mbedtls with
+   server certificate validation enabled (`"Verifying peer X.509 certificate.."`
+   and `"Loading the CA root certificate ..."` strings in binary). The Alibaba
+   IoT CA cert is compiled into `superb`. A self-signed mosquitto broker will
+   fail the TLS handshake. Possible bypasses:
+   - Patch `superb` to use `securemode=3` (plaintext TCP on port 1883)
+   - Find and replace the embedded CA cert in the binary
+   - Investigate if `HAL_SSL_Establish` loads CAs from a file path on configfs
+
+   **Credentials are per-device** (provisioned via SD card at the factory), but
+   the protocol and property names are universal across this firmware version.
+   BLE command `PK&DN?` returns product key and device name without needing
+   UART access.
+
+5. **Read NPU detection results directly** — Write a C program using the
+   HiSilicon SVP NPU SDK that creates its own inference stream or reads
+   superb's detection output via shared memory / ioctl. This would give
+   direct access to bounding boxes, confidence scores, and object classes
+   without log scraping.
 
 ### Medium Value
 
-5. **OpenIPC contribution** — Donate firmware dumps to the OpenIPC project
+6. **Crack appfs root password** — Different hash from rootfs (`GIgEh3ZZNHRh2`,
+   DES crypt, salt=`GI`). Exhausted 1-6 character keyspace. 7 characters
+   requires ~2.4 hours, 8 characters ~9.5 days at 8 GH/s on RTX 5090.
+
+7. **Patch superb for local DVRIP control** — The camera returns binary-only
+   DVRIP responses. Patching superb to return JSON would make it compatible
+   with standard VMS clients and python-dvr.
+
+8. **OpenIPC contribution** — Donate firmware dumps to the OpenIPC project
    for Hi3516CV610 support development. The kernel modules and ISP pipeline
    details in the dump would be valuable. OpenIPC does not yet support CV610.
 
-6. **Cross-compile ISP tool** — Write a small ARM binary using HiSilicon MPP
-   SDK headers (from OpenIPC or leaked SDKs) that calls `hi_mpi_isp_set_csc_attr`
-   directly, bypassing the need for register-level access.
-
 ### Low Value
 
-7. **Native library extraction** — Extract `liblinkvision.so` from the APK's
+9. **Native library extraction** — Extract `liblinkvision.so` from the APK's
    `lib/` directory. Reverse-engineer the P2P protocol.
 
-8. **Android BLE HCI snoop** — Protocol is already fully reverse-engineered
-   from APK decompilation. Only useful for validation.
+10. **Android BLE HCI snoop** — Protocol is already fully reverse-engineered
+    from APK decompilation. Only useful for validation.
 
 ---
 
