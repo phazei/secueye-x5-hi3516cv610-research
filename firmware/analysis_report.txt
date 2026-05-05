@@ -1,0 +1,4283 @@
+===========================================================================
+FIRMWARE ANALYSIS REPORT
+SECUEYE X5 / Hi3516CV610 Camera
+===========================================================================
+
+===========================================================================
+FILE TREE: Root Filesystem (mtd3, squashfs)
+===========================================================================
+  bin/
+  bin\arch  (0B)
+  bin\ash  (0B)
+  bin\base32  (0B)
+  bin\base64  (0B)
+  bin\bspddrs  (0B)
+  bin\bspmd  (0B)
+  bin\bspmd.l  (0B)
+  bin\bspmm  (0B)
+  bin\btools  (29.5KB)
+  bin\busybox  (721.2KB)
+  bin\cat  (0B)
+  bin\chgrp  (0B)
+  bin\chmod  (0B)
+  bin\chown  (0B)
+  bin\conspy  (0B)
+  bin\cp  (0B)
+  bin\cpio  (0B)
+  bin\cttyhack  (0B)
+  bin\date  (0B)
+  bin\dd  (0B)
+  bin\df  (0B)
+  bin\dmesg  (0B)
+  bin\dnsdomainname  (0B)
+  bin\dumpkmap  (0B)
+  bin\echo  (0B)
+  bin\ed  (0B)
+  bin\egrep  (0B)
+  bin\false  (0B)
+  bin\fatattr  (0B)
+  bin\fdflush  (0B)
+  bin\fgrep  (0B)
+  bin\fsync  (0B)
+  bin\getopt  (0B)
+  bin\grep  (0B)
+  bin\gunzip  (0B)
+  bin\gzip  (0B)
+  bin\hostname  (0B)
+  bin\i2c_read  (0B)
+  bin\i2c_write  (0B)
+  bin\ionice  (0B)
+  bin\iostat  (0B)
+  bin\ipcalc  (0B)
+  bin\kbd_mode  (0B)
+  bin\kill  (0B)
+  bin\link  (0B)
+  bin\linux32  (0B)
+  bin\linux64  (0B)
+  bin\ln  (0B)
+  bin\login  (0B)
+  bin\ls  (0B)
+  bin\lzop  (0B)
+  bin\makemime  (0B)
+  bin\mkdir  (0B)
+  bin\mknod  (0B)
+  bin\mktemp  (0B)
+  bin\more  (0B)
+  bin\mount  (0B)
+  bin\mount_as_tmpfs  (264B)
+  bin\mountpoint  (0B)
+  bin\mpstat  (0B)
+  bin\mt  (0B)
+  bin\mv  (0B)
+  bin\netstat  (0B)
+  bin\nice  (0B)
+  bin\pidof  (0B)
+  bin\ping  (0B)
+  bin\ping6  (0B)
+  bin\pipe_progress  (0B)
+  bin\printenv  (0B)
+  bin\ps  (0B)
+  bin\pwd  (0B)
+  bin\reformime  (0B)
+  bin\resume  (0B)
+  bin\rev  (0B)
+  bin\rm  (0B)
+  bin\rmdir  (0B)
+  bin\rpm  (0B)
+  bin\run-parts  (0B)
+  bin\scriptreplay  (0B)
+  bin\sed  (0B)
+  bin\setarch  (0B)
+  bin\setpriv  (0B)
+  bin\setserial  (0B)
+  bin\sh  (0B)
+  bin\sleep  (0B)
+  bin\ssp_read  (0B)
+  bin\ssp_write  (0B)
+  bin\stat  (0B)
+  bin\stty  (0B)
+  bin\su  (0B)
+  bin\sync  (0B)
+  bin\tar  (0B)
+  bin\touch  (0B)
+  bin\true  (0B)
+  bin\udevadm  (204.5KB)
+  bin\umount  (0B)
+  bin\uname  (0B)
+  bin\usleep  (0B)
+  bin\vi  (0B)
+  bin\watch  (0B)
+  bin\zcat  (0B)
+  boot/
+  dev/
+  etc/
+  etc\fs-version  (29B)
+  etc\fstab  (161B)
+  etc\group  (9B)
+  etc\init.d/
+  etc\init.d\rcS  (544B)
+  etc\init.d\S00devs  (147B)
+  etc\init.d\S01udev  (114B)
+  etc\init.d\S80network  (828B)
+  etc\init.d\S90hibernate  (321B)
+  etc\inittab  (3.3KB)
+  etc\mtab  (101B)
+  etc\passwd  (38B)
+  etc\passwd-  (38B)
+  etc\profile  (558B)
+  etc\protocols  (2.4KB)
+  etc\services  (15.6KB)
+  etc\shadow  (128B)
+  etc\sysctl.conf  (34B)
+  etc\udev/
+  etc\udev\firmware.sh  (564B)
+  etc\udev\rules.d/
+  etc\udev\rules.d\11-usb-hotplug.rules  (151B)
+  etc\udev\rules.d\50-firmware.rules  (82B)
+  etc\udev\rules.d\54-gphoto.rules  (199B)
+  etc\udev\rules.d\60-pcmcia.rules  (1.0KB)
+  etc\udev\rules.d\75-cd-aliases-generator.rules.optional  (390B)
+  etc\udev\rules.d\75-persistent-net-generator.rules.optional  (2.3KB)
+  etc\udev\rules.d\90-hal.rules  (84B)
+  etc\udev\rules.d\97-bluetooth-serial.rules  (2.2KB)
+  etc\udev\rules.d\99-fuse.rules  (28B)
+  etc\udev\rules.d\device-mapper.rules  (201B)
+  etc\udev\udev.conf  (206B)
+  etc\udev\usbdev-hotplug.sh  (1.9KB)
+  home/
+  init  (0B)
+  lib/
+  lib\ld-musl-arm.so.1  (0B)
+  lib\libatomic.so  (0B)
+  lib\libatomic.so.1  (0B)
+  lib\libatomic.so.1.2.0  (13.3KB)
+  lib\libc.so  (329.8KB)
+  lib\libgcc_s.so  (0B)
+  lib\libgcc_s.so.1  (33.4KB)
+  lib\libgomp.so  (0B)
+  lib\libgomp.so.1  (0B)
+  lib\libgomp.so.1.0.0  (121.8KB)
+  lib\libsecurec.so  (45.3KB)
+  lib\libstdc++.so  (0B)
+  lib\libstdc++.so.6  (0B)
+  lib\libstdc++.so.6.0.28  (737.7KB)
+  lib\libtirpc.so  (0B)
+  lib\libtirpc.so.3  (0B)
+  lib\libtirpc.so.3.0.0  (93.5KB)
+  linuxrc  (0B)
+  lost+found/
+  mkimg.rootfs  (1.3KB)
+  mknod_console  (431B)
+  mnt/
+  nfsroot/
+  opt/
+  proc/
+  progs/
+  root/
+  root\.profile  (20B)
+  root\pm_callback  (700B)
+  run/
+  sbin/
+  sbin\acpid  (0B)
+  sbin\adjtimex  (0B)
+  sbin\arp  (0B)
+  sbin\blkid  (0B)
+  sbin\blockdev  (0B)
+  sbin\bootchartd  (0B)
+  sbin\depmod  (0B)
+  sbin\fbsplash  (0B)
+  sbin\fdisk  (0B)
+  sbin\findfs  (0B)
+  sbin\freeramdisk  (0B)
+  sbin\fsck.minix  (0B)
+  sbin\fstrim  (0B)
+  sbin\getty  (0B)
+  sbin\halt  (0B)
+  sbin\hdparm  (0B)
+  sbin\hwclock  (0B)
+  sbin\ifconfig  (0B)
+  sbin\ifdown  (0B)
+  sbin\ifenslave  (0B)
+  sbin\ifup  (0B)
+  sbin\init  (0B)
+  sbin\insmod  (0B)
+  sbin\ip  (0B)
+  sbin\ipaddr  (0B)
+  sbin\iplink  (0B)
+  sbin\ipneigh  (0B)
+  sbin\iproute  (0B)
+  sbin\iprule  (0B)
+  sbin\iptunnel  (0B)
+  sbin\klogd  (0B)
+  sbin\loadkmap  (0B)
+  sbin\logread  (0B)
+  sbin\losetup  (0B)
+  sbin\lsmod  (0B)
+  sbin\makedevs  (0B)
+  sbin\mdev  (0B)
+  sbin\mkdosfs  (0B)
+  sbin\mke2fs  (0B)
+  sbin\mkfs.minix  (0B)
+  sbin\mkfs.vfat  (0B)
+  sbin\mkswap  (0B)
+  sbin\modinfo  (0B)
+  sbin\modprobe  (0B)
+  sbin\nameif  (0B)
+  sbin\pivot_root  (0B)
+  sbin\poweroff  (0B)
+  sbin\raidautorun  (0B)
+  sbin\reboot  (0B)
+  sbin\rmmod  (0B)
+  sbin\route  (0B)
+  sbin\run-init  (0B)
+  sbin\runlevel  (0B)
+  sbin\setconsole  (0B)
+  sbin\slattach  (0B)
+  sbin\start-stop-daemon  (0B)
+  sbin\sulogin  (0B)
+  sbin\swapoff  (0B)
+  sbin\swapon  (0B)
+  sbin\switch_root  (0B)
+  sbin\sysctl  (0B)
+  sbin\syslogd  (0B)
+  sbin\tc  (0B)
+  sbin\tunctl  (0B)
+  sbin\udevd  (210.5KB)
+  sbin\udhcpc  (0B)
+  sbin\uevent  (0B)
+  sbin\vconfig  (0B)
+  sbin\watchdog  (0B)
+  sbin\zcip  (0B)
+  share/
+  sys/
+  tmp/
+  usr/
+  usr\bin/
+  usr\bin\[  (0B)
+  usr\bin\[[  (0B)
+  usr\bin\ascii  (0B)
+  usr\bin\awk  (0B)
+  usr\bin\basename  (0B)
+  usr\bin\bc  (0B)
+  usr\bin\beep  (0B)
+  usr\bin\blkdiscard  (0B)
+  usr\bin\bunzip2  (0B)
+  usr\bin\bzcat  (0B)
+  usr\bin\bzip2  (0B)
+  usr\bin\cal  (0B)
+  usr\bin\chpst  (0B)
+  usr\bin\chrt  (0B)
+  usr\bin\chvt  (0B)
+  usr\bin\cksum  (0B)
+  usr\bin\clear  (0B)
+  usr\bin\cmp  (0B)
+  usr\bin\comm  (0B)
+  usr\bin\crc32  (0B)
+  usr\bin\crontab  (0B)
+  usr\bin\cryptpw  (0B)
+  usr\bin\cut  (0B)
+  usr\bin\dc  (0B)
+  usr\bin\deallocvt  (0B)
+  usr\bin\diff  (0B)
+  usr\bin\dirname  (0B)
+  usr\bin\dos2unix  (0B)
+  usr\bin\du  (0B)
+  usr\bin\dumpleases  (0B)
+  usr\bin\eject  (0B)
+  usr\bin\env  (0B)
+  usr\bin\envdir  (0B)
+  usr\bin\envuidgid  (0B)
+  usr\bin\expand  (0B)
+  usr\bin\expr  (0B)
+  usr\bin\factor  (0B)
+  usr\bin\fallocate  (0B)
+  usr\bin\fgconsole  (0B)
+  usr\bin\find  (0B)
+  usr\bin\flock  (0B)
+  usr\bin\fold  (0B)
+  usr\bin\free  (0B)
+  usr\bin\fuser  (0B)
+  usr\bin\groups  (0B)
+  usr\bin\hd  (0B)
+  usr\bin\head  (0B)
+  usr\bin\hexdump  (0B)
+  usr\bin\hexedit  (0B)
+  usr\bin\hostid  (0B)
+  usr\bin\id  (0B)
+  usr\bin\install  (0B)
+  usr\bin\ipcrm  (0B)
+  usr\bin\ipcs  (0B)
+  usr\bin\killall  (0B)
+  usr\bin\last  (0B)
+  usr\bin\less  (0B)
+  usr\bin\logger  (0B)
+  usr\bin\logname  (0B)
+  usr\bin\lpq  (0B)
+  usr\bin\lpr  (0B)
+  usr\bin\lsof  (0B)
+  usr\bin\lspci  (0B)
+  usr\bin\lsscsi  (0B)
+  usr\bin\lsusb  (0B)
+  usr\bin\lzcat  (0B)
+  usr\bin\lzopcat  (0B)
+  usr\bin\md5sum  (0B)
+  usr\bin\mesg  (0B)
+  usr\bin\microcom  (0B)
+  usr\bin\mkfifo  (0B)
+  usr\bin\mkpasswd  (0B)
+  usr\bin\nl  (0B)
+  usr\bin\nmeter  (0B)
+  usr\bin\nohup  (0B)
+  usr\bin\nproc  (0B)
+  usr\bin\nslookup  (0B)
+  usr\bin\od  (0B)
+  usr\bin\openvt  (0B)
+  usr\bin\passwd  (0B)
+  usr\bin\paste  (0B)
+  usr\bin\patch  (0B)
+  usr\bin\pgrep  (0B)
+  usr\bin\pkill  (0B)
+  usr\bin\pmap  (0B)
+  usr\bin\printf  (0B)
+  usr\bin\pscan  (0B)
+  usr\bin\pstree  (0B)
+  usr\bin\pwdx  (0B)
+  usr\bin\readlink  (0B)
+  usr\bin\realpath  (0B)
+  usr\bin\renice  (0B)
+  usr\bin\reset  (0B)
+  usr\bin\resize  (0B)
+  usr\bin\rpm2cpio  (0B)
+  usr\bin\runsv  (0B)
+  usr\bin\runsvdir  (0B)
+  usr\bin\rx  (0B)
+  usr\bin\script  (0B)
+  usr\bin\seq  (0B)
+  usr\bin\setfattr  (0B)
+  usr\bin\setkeycodes  (0B)
+  usr\bin\setsid  (0B)
+  usr\bin\setuidgid  (0B)
+  usr\bin\sha1sum  (0B)
+  usr\bin\sha256sum  (0B)
+  usr\bin\sha3sum  (0B)
+  usr\bin\sha512sum  (0B)
+  usr\bin\showkey  (0B)
+  usr\bin\shred  (0B)
+  usr\bin\shuf  (0B)
+  usr\bin\smemcap  (0B)
+  usr\bin\softlimit  (0B)
+  usr\bin\sort  (0B)
+  usr\bin\split  (0B)
+  usr\bin\ssl_client  (0B)
+  usr\bin\strings  (0B)
+  usr\bin\sum  (0B)
+  usr\bin\sv  (0B)
+  usr\bin\svc  (0B)
+  usr\bin\svok  (0B)
+  usr\bin\tac  (0B)
+  usr\bin\tail  (0B)
+  usr\bin\taskset  (0B)
+  usr\bin\tcpsvd  (0B)
+  usr\bin\tee  (0B)
+  usr\bin\test  (0B)
+  usr\bin\time  (0B)
+  usr\bin\timeout  (0B)
+  usr\bin\top  (0B)
+  usr\bin\tr  (0B)
+  usr\bin\traceroute  (0B)
+  usr\bin\traceroute6  (0B)
+  usr\bin\truncate  (0B)
+  usr\bin\ts  (0B)
+  usr\bin\tty  (0B)
+  usr\bin\ttysize  (0B)
+  usr\bin\udpsvd  (0B)
+  usr\bin\unexpand  (0B)
+  usr\bin\uniq  (0B)
+  usr\bin\unix2dos  (0B)
+  usr\bin\unlink  (0B)
+  usr\bin\unlzop  (0B)
+  usr\bin\unshare  (0B)
+  usr\bin\unxz  (0B)
+  usr\bin\unzip  (0B)
+  usr\bin\uptime  (0B)
+  usr\bin\users  (0B)
+  usr\bin\uudecode  (0B)
+  usr\bin\uuencode  (0B)
+  usr\bin\vlock  (0B)
+  usr\bin\volname  (0B)
+  usr\bin\w  (0B)
+  usr\bin\wall  (0B)
+  usr\bin\wc  (0B)
+  usr\bin\which  (0B)
+  usr\bin\who  (0B)
+  usr\bin\whoami  (0B)
+  usr\bin\whois  (0B)
+  usr\bin\xargs  (0B)
+  usr\bin\xxd  (0B)
+  usr\bin\xz  (0B)
+  usr\bin\xzcat  (0B)
+  usr\bin\yes  (0B)
+  usr\lib/
+  usr\sbin/
+  usr\sbin\add-shell  (0B)
+  usr\sbin\addgroup  (0B)
+  usr\sbin\adduser  (0B)
+  usr\sbin\arping  (0B)
+  usr\sbin\brctl  (0B)
+  usr\sbin\chat  (0B)
+  usr\sbin\chpasswd  (0B)
+  usr\sbin\chroot  (0B)
+  usr\sbin\crond  (0B)
+  usr\sbin\delgroup  (0B)
+  usr\sbin\deluser  (0B)
+  usr\sbin\dnsd  (0B)
+  usr\sbin\ether-wake  (0B)
+  usr\sbin\fakeidentd  (0B)
+  usr\sbin\fbset  (0B)
+  usr\sbin\fdformat  (0B)
+  usr\sbin\fsfreeze  (0B)
+  usr\sbin\i2cdetect  (0B)
+  usr\sbin\i2cdump  (0B)
+  usr\sbin\i2cget  (0B)
+  usr\sbin\i2cset  (0B)
+  usr\sbin\i2ctransfer  (0B)
+  usr\sbin\ifplugd  (0B)
+  usr\sbin\inetd  (0B)
+  usr\sbin\killall5  (0B)
+  usr\sbin\loadfont  (0B)
+  usr\sbin\lpd  (0B)
+  usr\sbin\mim  (0B)
+  usr\sbin\nbd-client  (0B)
+  usr\sbin\nologin  (0B)
+  usr\sbin\partprobe  (0B)
+  usr\sbin\popmaildir  (0B)
+  usr\sbin\powertop  (0B)
+  usr\sbin\rdate  (0B)
+  usr\sbin\rdev  (0B)
+  usr\sbin\readahead  (0B)
+  usr\sbin\readprofile  (0B)
+  usr\sbin\remove-shell  (0B)
+  usr\sbin\rtcwake  (0B)
+  usr\sbin\sendmail  (0B)
+  usr\sbin\setfont  (0B)
+  usr\sbin\setlogcons  (0B)
+  usr\sbin\svlogd  (0B)
+  usr\sbin\udhcpd  (0B)
+  usr\share/
+  usr\share\udhcpc/
+  usr\share\udhcpc\default.script  (1.3KB)
+  var/
+  var\run/
+  var\run\utmp  (0B)
+  --- 434 files ---
+
+===========================================================================
+FILE TREE: Application Filesystem (mtd4, squashfs)
+===========================================================================
+  home/
+  home\aiisp/
+  home\bashrc.sh  (7.2KB)
+  home\ble/
+  home\btools/
+  home\btools\bspddrs  (29.5KB)
+  home\btools\bspmd  (29.5KB)
+  home\btools\bspmd.l  (29.5KB)
+  home\btools\bspmm  (29.5KB)
+  home\btools\btools  (29.5KB)
+  home\btools\i2c_read  (29.5KB)
+  home\btools\i2c_write  (29.5KB)
+  home\btools\ssp_read  (29.5KB)
+  home\btools\ssp_write  (29.5KB)
+  home\ipc_drv/
+  home\ipc_drv\4g/
+  home\ipc_drv\extdrv/
+  home\ipc_drv\extdrv\hi_gpio.ko  (4.8KB)
+  home\ipc_drv\extdrv\motor_advance.ko  (13.7KB)
+  home\ipc_drv\extdrv\ot_piris.ko  (9.7KB)
+  home\ipc_drv\extdrv\ot_pwm.ko  (4.6KB)
+  home\ipc_drv\extdrv\ot_sample_ist.ko  (5.7KB)
+  home\ipc_drv\extdrv\ot_sensor_i2c.ko  (5.0KB)
+  home\ipc_drv\extdrv\ot_sensor_spi.ko  (6.4KB)
+  home\ipc_drv\loadhi3516cv610  (8.1KB)
+  home\ipc_drv\ot_acodec.ko  (26.6KB)
+  home\ipc_drv\ot_adc.ko  (8.3KB)
+  home\ipc_drv\ot_adec.ko  (9.3KB)
+  home\ipc_drv\ot_aenc.ko  (26.3KB)
+  home\ipc_drv\ot_ai.ko  (88.1KB)
+  home\ipc_drv\ot_aiisp.ko  (31.8KB)
+  home\ipc_drv\ot_aio.ko  (54.9KB)
+  home\ipc_drv\ot_ao.ko  (58.0KB)
+  home\ipc_drv\ot_base.ko  (18.8KB)
+  home\ipc_drv\ot_chnl.ko  (27.0KB)
+  home\ipc_drv\ot_cipher.ko  (162.1KB)
+  home\ipc_drv\ot_devstat.ko  (6.9KB)
+  home\ipc_drv\ot_h264e.ko  (140.7KB)
+  home\ipc_drv\ot_h265e.ko  (160.0KB)
+  home\ipc_drv\ot_hardware_cryptodev.ko  (28.2KB)
+  home\ipc_drv\ot_isp.ko  (190.9KB)
+  home\ipc_drv\ot_ive.ko  (399.7KB)
+  home\ipc_drv\ot_jpege.ko  (61.8KB)
+  home\ipc_drv\ot_km.ko  (27.9KB)
+  home\ipc_drv\ot_mipi_rx.ko  (52.5KB)
+  home\ipc_drv\ot_mmz.ko  (35.5KB)
+  home\ipc_drv\ot_osal.ko  (82.3KB)
+  home\ipc_drv\ot_otp.ko  (9.6KB)
+  home\ipc_drv\ot_pm.ko  (21.8KB)
+  home\ipc_drv\ot_rc.ko  (132.0KB)
+  home\ipc_drv\ot_rgn.ko  (72.9KB)
+  home\ipc_drv\ot_spi_dma_transfer.ko  (12.1KB)
+  home\ipc_drv\ot_svac3e.ko  (165.6KB)
+  home\ipc_drv\ot_svp_npu.ko  (110.0KB)
+  home\ipc_drv\ot_sys.ko  (80.1KB)
+  home\ipc_drv\ot_user.ko  (2.8KB)
+  home\ipc_drv\ot_user_proc.ko  (8.6KB)
+  home\ipc_drv\ot_uvc.ko  (25.8KB)
+  home\ipc_drv\ot_vb.ko  (65.4KB)
+  home\ipc_drv\ot_vca.ko  (117.8KB)
+  home\ipc_drv\ot_venc.ko  (421.3KB)
+  home\ipc_drv\ot_vgs.ko  (124.7KB)
+  home\ipc_drv\ot_vi.ko  (418.5KB)
+  home\ipc_drv\ot_vpp.ko  (73.3KB)
+  home\ipc_drv\ot_vpss.ko  (262.1KB)
+  home\ipc_drv\ot_wdt.ko  (12.1KB)
+  home\ipc_drv\sys_config.ko  (13.2KB)
+  home\ipc_drv\usb/
+  home\ipc_drv\uvc/
+  home\ivp/
+  home\libs/
+  home\libs\libiw.so.29  (37.6KB)
+  home\libs\libsecurec.so  (37.3KB)
+  home\libs\libupvqe.so  (33.8KB)
+  home\libs\libvoice_engine.so  (19.2KB)
+  home\libs\libvqe_aec.so  (77.0KB)
+  home\libs\libvqe_agc.so  (60.9KB)
+  home\libs\libvqe_anr.so  (56.8KB)
+  home\libs\libvqe_common.so  (28.9KB)
+  home\libs\libvqe_eq.so  (46.3KB)
+  home\libs\libvqe_hpf.so  (10.1KB)
+  home\libs\libvqe_record.so  (200.6KB)
+  home\libs\libvqe_res.so  (138.8KB)
+  home\libs\libvqe_talkv2.so  (301.2KB)
+  home\lswifi  (2.5KB)
+  home\nc-demo.sh  (213B)
+  home\npu/
+  home\passwd  (38B)
+  home\pq_bin/
+  home\sensor/
+  home\variable  (350B)
+  home\voice/
+  home\voice\common/
+  home\voice\language/
+  home\wifi/
+  progs/
+  progs\bin/
+  progs\bin\mySystem  (9.5KB)
+  progs\bin\superb  (7.5MB)
+  progs\bin\upgrade  (41.9KB)
+  progs\devInfo  (87B)
+  progs\html/
+  progs\language/
+  progs\networkcfg.sh  (2.7KB)
+  progs\rec/
+  progs\res/
+  progs\res\msyh16_CP936.bin  (255.6KB)
+  progs\res\nASC16.bin  (3.5KB)
+  progs\startup.sh  (1.8KB)
+  progs\updateID.sh  (5.4KB)
+  --- 86 files ---
+
+===========================================================================
+FILE TREE: Resource Filesystem (mtd6, squashfs)
+===========================================================================
+  4g/
+  aiisp/
+  aiisp\aibnr_model_2688x1520.bin  (256.2KB)
+  aiisp\aibnr_model_2688x1520_high_iso.bin  (256.2KB)
+  aiisp\aibnr_model_2688x1520_pro.bin  (252.7KB)
+  aiisp\aibnr_model_3200x1800.bin  (255.4KB)
+  aiisp\aibnr_model_3200x1800_high_iso.bin  (255.4KB)
+  ble/
+  ivp/
+  ivp\det_hv_hor.bin  (871.9KB)
+  npu/
+  sensor/
+  sensor\sc635hai/
+  sensor\sc635hai\lib/
+  sensor\sc635hai\pqbin/
+  sensor\sc635hai\pqbin\black.bin  (141.4KB)
+  sensor\sc635hai\pqbin\day.bin  (141.4KB)
+  sensor\sc635hai\pqbin\light.bin  (141.4KB)
+  sensor\sc635hai\pqbin\night.bin  (141.4KB)
+  usb/
+  uvc/
+  voice/
+  voice\common/
+  voice\common\arming.711  (9.2KB)
+  voice\common\disarm.711  (9.2KB)
+  voice\common\doorbell.711  (10.0KB)
+  voice\common\phone_call.711  (24.7KB)
+  voice\common\setid.711  (11.6KB)
+  voice\common\startok.711  (7.0KB)
+  voice\common\update.711  (12.0KB)
+  voice\language/
+  voice\language\br/
+  voice\language\br\alarming.711  (28.8KB)
+  voice\language\br\connected_successfully.711  (12.7KB)
+  voice\language\br\find_QR_code.711  (20.0KB)
+  voice\language\br\ip_get_fail.711  (12.9KB)
+  voice\language\br\link_4g_fail.711  (15.9KB)
+  voice\language\br\link_4g_ok.711  (43.5KB)
+  voice\language\br\linking_4g.711  (39.0KB)
+  voice\language\br\netmode_cut.711  (16.7KB)
+  voice\language\br\network_4g.711  (14.7KB)
+  voice\language\br\notfindnet.711  (15.7KB)
+  voice\language\br\prompt_type1.711  (5.5KB)
+  voice\language\br\prompt_type2.711  (28.6KB)
+  voice\language\br\prompt_type3.711  (11.2KB)
+  voice\language\br\prompt_type4.711  (23.9KB)
+  voice\language\br\prompt_type5.711  (38.6KB)
+  voice\language\br\reset.711  (16.3KB)
+  voice\language\br\reset_4g.711  (19.2KB)
+  voice\language\br\revNetSetting.711  (15.5KB)
+  voice\language\br\RF433_fail.711  (12.4KB)
+  voice\language\br\RF433_learn.711  (9.8KB)
+  voice\language\br\RF433_ok.711  (13.3KB)
+  voice\language\br\start_ap_mode.711  (61.4KB)
+  voice\language\br\start_QR_code_mode.711  (11.6KB)
+  voice\language\br\uart_4g_fail.711  (17.8KB)
+  voice\language\br\waitset.711  (21.0KB)
+  voice\language\br\wifi_fail.711  (13.3KB)
+  voice\language\br\wifi_ok.711  (14.3KB)
+  voice\language\cn/
+  voice\language\cn\alarming.711  (21.6KB)
+  voice\language\cn\connected_successfully.711  (11.6KB)
+  voice\language\cn\face_deletion_failed.711  (16.3KB)
+  voice\language\cn\face_deletion_successful.711  (16.3KB)
+  voice\language\cn\face_entry_already_exist.711  (22.5KB)
+  voice\language\cn\face_entry_done.711  (12.2KB)
+  voice\language\cn\face_entry_exit.711  (29.6KB)
+  voice\language\cn\face_entry_failed.711  (15.2KB)
+  voice\language\cn\face_entry_multiple_faces.711  (28.3KB)
+  voice\language\cn\face_entry_once.711  (9.2KB)
+  voice\language\cn\face_entry_small.711  (22.7KB)
+  voice\language\cn\face_entry_start.711  (17.8KB)
+  voice\language\cn\face_entry_successful.711  (15.6KB)
+  voice\language\cn\face_entry_timeout.711  (32.8KB)
+  voice\language\cn\find_QR_code.711  (9.8KB)
+  voice\language\cn\gpslocationsuccess.711  (18.0KB)
+  voice\language\cn\ip_get_fail.711  (15.5KB)
+  voice\language\cn\link_4g_fail.711  (25.3KB)
+  voice\language\cn\link_4g_ok.711  (36.3KB)
+  voice\language\cn\linking_4g.711  (31.4KB)
+  voice\language\cn\netmode_cut.711  (46.1KB)
+  voice\language\cn\network_4g.711  (26.9KB)
+  voice\language\cn\no_mask.711  (26.7KB)
+  voice\language\cn\notfindnet.711  (19.1KB)
+  voice\language\cn\prompt_type1.711  (8.2KB)
+  voice\language\cn\prompt_type2.711  (24.7KB)
+  voice\language\cn\prompt_type3.711  (16.3KB)
+  voice\language\cn\prompt_type4.711  (16.6KB)
+  voice\language\cn\prompt_type5.711  (34.6KB)
+  voice\language\cn\QR_code_error.711  (12.4KB)
+  voice\language\cn\recv_ap_ok.711  (33.7KB)
+  voice\language\cn\reset.711  (10.4KB)
+  voice\language\cn\reset_4g.711  (32.9KB)
+  voice\language\cn\revNetSetting.711  (16.2KB)
+  voice\language\cn\RF433_fail.711  (9.4KB)
+  voice\language\cn\RF433_learn.711  (9.6KB)
+  voice\language\cn\RF433_ok.711  (10.4KB)
+  voice\language\cn\start_ap_mode.711  (55.5KB)
+  voice\language\cn\start_QR_code_mode.711  (11.6KB)
+  voice\language\cn\starting_face_enrollment.711  (12.6KB)
+  voice\language\cn\uart_4g_fail.711  (21.6KB)
+  voice\language\cn\unbind.711  (9.2KB)
+  voice\language\cn\waitset.711  (21.5KB)
+  voice\language\cn\wifi_fail.711  (11.0KB)
+  voice\language\cn\wifi_ok.711  (11.6KB)
+  voice\language\en/
+  voice\language\en\alarming.711  (27.3KB)
+  voice\language\en\connected_successfully.711  (17.1KB)
+  voice\language\en\face_entry_done.711  (12.2KB)
+  voice\language\en\face_entry_start.711  (12.9KB)
+  voice\language\en\find_QR_code.711  (20.6KB)
+  voice\language\en\gpslocationsuccess.711  (22.5KB)
+  voice\language\en\ip_get_fail.711  (15.1KB)
+  voice\language\en\link_4g_fail.711  (14.7KB)
+  voice\language\en\link_4g_ok.711  (36.7KB)
+  voice\language\en\linking_4g.711  (39.8KB)
+  voice\language\en\netmode_cut.711  (17.8KB)
+  voice\language\en\network_4g.711  (16.5KB)
+  voice\language\en\notfindnet.711  (14.5KB)
+  voice\language\en\prompt_type1.711  (7.1KB)
+  voice\language\en\prompt_type2.711  (30.2KB)
+  voice\language\en\prompt_type3.711  (13.7KB)
+  voice\language\en\prompt_type4.711  (20.2KB)
+  voice\language\en\prompt_type5.711  (23.7KB)
+  voice\language\en\QR_code_error.711  (12.4KB)
+  voice\language\en\recv_ap_ok.711  (29.0KB)
+  voice\language\en\reset.711  (28.4KB)
+  voice\language\en\reset_4g.711  (26.5KB)
+  voice\language\en\revNetSetting.711  (12.9KB)
+  voice\language\en\RF433_fail.711  (8.4KB)
+  voice\language\en\RF433_learn.711  (10.1KB)
+  voice\language\en\RF433_ok.711  (9.0KB)
+  voice\language\en\start_ap_mode.711  (52.2KB)
+  voice\language\en\start_QR_code_mode.711  (12.0KB)
+  voice\language\en\uart_4g_fail.711  (18.8KB)
+  voice\language\en\unbind.711  (9.2KB)
+  voice\language\en\update.711  (12.4KB)
+  voice\language\en\waitset.711  (22.8KB)
+  voice\language\en\wifi_fail.711  (14.5KB)
+  voice\language\en\wifi_ok.711  (17.1KB)
+  voice\language\ln/
+  voice\language\ln\ip_get_fail.711  (18.5KB)
+  voice\language\ln\notfindnet.711  (13.7KB)
+  voice\language\ln\reset.711  (14.9KB)
+  voice\language\ln\revNetSetting.711  (21.9KB)
+  voice\language\ln\waitset.711  (30.3KB)
+  voice\language\ln\wifi_fail.711  (15.2KB)
+  voice\language\ln\wifi_ok.711  (15.7KB)
+  voice\language\rn/
+  voice\language\rn\ip_get_fail.711  (16.7KB)
+  voice\language\rn\notfindnet.711  (12.9KB)
+  voice\language\rn\reset.711  (9.4KB)
+  voice\language\rn\revNetSetting.711  (14.1KB)
+  voice\language\rn\waitset.711  (26.9KB)
+  voice\language\rn\wifi_fail.711  (12.9KB)
+  voice\language\rn\wifi_ok.711  (12.9KB)
+  voice\language\ru/
+  voice\language\ru\alarming.711  (27.8KB)
+  voice\language\ru\ip_get_fail.711  (18.4KB)
+  voice\language\ru\link_4g_fail.711  (24.9KB)
+  voice\language\ru\link_4g_ok.711  (41.2KB)
+  voice\language\ru\linking_4g.711  (41.2KB)
+  voice\language\ru\netmode_cut.711  (25.5KB)
+  voice\language\ru\network_4g.711  (13.4KB)
+  voice\language\ru\notfindnet.711  (23.5KB)
+  voice\language\ru\prompt_type1.711  (13.5KB)
+  voice\language\ru\prompt_type2.711  (33.1KB)
+  voice\language\ru\prompt_type3.711  (32.2KB)
+  voice\language\ru\prompt_type4.711  (26.5KB)
+  voice\language\ru\prompt_type5.711  (39.2KB)
+  voice\language\ru\reset.711  (36.1KB)
+  voice\language\ru\reset_4g.711  (15.6KB)
+  voice\language\ru\revNetSetting.711  (17.4KB)
+  voice\language\ru\start_ap_mode.711  (86.2KB)
+  voice\language\ru\start_QR_code_mode.711  (13.9KB)
+  voice\language\ru\uart_4g_fail.711  (18.2KB)
+  voice\language\ru\update.711  (14.7KB)
+  voice\language\ru\wifi_fail.711  (15.1KB)
+  voice\language\ru\wifi_ok.711  (15.6KB)
+  voice\language\vn/
+  voice\language\vn\alarming.711  (27.6KB)
+  voice\language\vn\ip_get_fail.711  (18.2KB)
+  voice\language\vn\link_4g_fail.711  (22.7KB)
+  voice\language\vn\link_4g_ok.711  (42.7KB)
+  voice\language\vn\linking_4g.711  (35.3KB)
+  voice\language\vn\netmode_cut.711  (19.2KB)
+  voice\language\vn\network_4g.711  (15.5KB)
+  voice\language\vn\notfindnet.711  (21.6KB)
+  voice\language\vn\prompt_type1.711  (8.6KB)
+  voice\language\vn\prompt_type2.711  (25.1KB)
+  voice\language\vn\prompt_type3.711  (18.8KB)
+  voice\language\vn\prompt_type4.711  (19.8KB)
+  voice\language\vn\prompt_type5.711  (25.1KB)
+  voice\language\vn\reset.711  (39.2KB)
+  voice\language\vn\revNetSetting.711  (11.8KB)
+  voice\language\vn\RF433_fail.711  (12.4KB)
+  voice\language\vn\RF433_learn.711  (7.1KB)
+  voice\language\vn\RF433_ok.711  (11.0KB)
+  voice\language\vn\start_ap_mode.711  (77.3KB)
+  voice\language\vn\start_QR_code_mode.711  (13.3KB)
+  voice\language\vn\uart_4g_fail.711  (20.6KB)
+  voice\language\vn\update.711  (10.4KB)
+  voice\language\vn\waitset.711  (31.2KB)
+  voice\language\vn\wifi_fail.711  (13.3KB)
+  voice\language\vn\wifi_ok.711  (16.9KB)
+  wifi/
+  wifi\atbm6x3x_wifi_usb.ko  (581.9KB)
+  wifi\ATBM6x6x_wifi_usb.ko  (723.9KB)
+  wifi\cfg80211.ko  (250.0KB)
+  wifi\firmware/
+  wifi\firmware\regulatory.db  (6.0KB)
+  wifi\firmware\regulatory.db.p7s  (1.1KB)
+  wifi\iwconfig  (22.1KB)
+  wifi\iwlist  (26.8KB)
+  wifi\libarc4.ko  (3.1KB)
+  wifi\libiw.so.29  (37.6KB)
+  wifi\mac80211.ko  (386.5KB)
+  wifi\udhcpd.conf  (442B)
+  wifi\wpa_cli  (57.6KB)
+  wifi\wpa_supplicant  (704.6KB)
+  --- 197 files ---
+
+===========================================================================
+BINARY ANALYSIS
+===========================================================================
+
+--- superb ---
+  ELF: Class: 32-bit, Endian: Little, Machine: ARM, Type: Executable, Entry: 0x16bc41, Size: 7,846,580 bytes
+
+--- mySystem ---
+  ELF: Class: 32-bit, Endian: Little, Machine: ARM, Type: Executable, Entry: 0x10e99, Size: 9,720 bytes
+
+--- upgrade ---
+  ELF: Class: 32-bit, Endian: Little, Machine: ARM, Type: Executable, Entry: 0x12f75, Size: 42,904 bytes
+
+===========================================================================
+SUPERB BINARY - STRING ANALYSIS
+===========================================================================
+
+Total strings (8+ chars): 46317
+
+--- URLS (41 unique) ---
+  http://%s/event_service/%u
+  http://%s:%d%s
+  http://%s:%d/FirmwareUpgrade
+  http://%s:%d/SystemRestore
+  http://%s:%d/event_service/%u
+  http://craiot.seculink.com.cn/shianh5/cardApp.html?iccid=%s
+  http://docs.oasis-open.org/wsn/bw-2/NotificationConsumer/Notify
+  http://docs.oasis-open.org/wsn/bw-2/NotificationProducer/SubscribeResponse
+  http://docs.oasis-open.org/wsn/bw-2/SubscriptionManager/RenewResponse
+  http://docs.oasis-open.org/wsn/bw-2/SubscriptionManager/UnsubscribeResponse
+  http://www.onvif.org/ver10/colorspace/YCbCr
+  http://www.onvif.org/ver10/device/wsdl
+  http://www.onvif.org/ver10/events/wsdl/EventPortType/CreatePullPointSubscriptionResponse
+  http://www.onvif.org/ver10/events/wsdl/EventPortType/GetEventPropertiesResponse
+  http://www.onvif.org/ver10/events/wsdl/EventPortType/GetServiceCapabilitiesResponse
+  http://www.onvif.org/ver10/events/wsdl/PullPointSubscription/PullMessagesResponse
+  http://www.onvif.org/ver10/events/wsdl/PullPointSubscription/SetSynchronizationPointResponse
+  http://www.onvif.org/ver10/tev/topicExpression/ConcreteSet
+  http://www.secueye.cn/monitor/cardApp.html?iccid=%s&dn=%s&pk=%s
+  http://www.w3.org/2005/08/addressing/soap/fault
+  http://wx.88iot.net/query?iccid=%s
+  https://
+  https://%s/auth/bootstrap
+  https://%s/auth/bootstrap/regionId/%d
+  https://%s/auth/register/device
+  https://admin.yywso.com/h5/detailsAppH5?icCid=%s
+  https://sim.eiotclub.com/2/%s
+  https://traffic.secueye.app/?iccidx=%s
+  https://traffic.secueye.app/?imei=%s
+  https://traffic.secueye.cn/?imei=%s&pk=%s&dn=%s&bd=%d
+  https://traffic.seculink.com.cn/?iccid=%s
+  https://wx.linksfield.net/login?partnerCode=CN00001444&deviceCode=%s
+  rtsp://%s
+  rtsp://%s/3
+  rtsp://%s/4
+  rtsp://%s/live1
+  rtsp://%s/live2
+  rtsp://%s/mpeg4
+  rtsp://%s/mpeg4cif
+  rtsp://%s:%d
+  rtsp://%s:5544/live%d.264
+
+--- IP_ADDRESSES (38 unique) ---
+  100.67.117.159
+  100.67.85.156
+  111.230.126.55
+  114.114.114.114
+  118.24.224.175
+  127.0.0.1
+  140.205.60.46
+  173.82.79.196
+  192.168.0.254
+  192.168.0.99
+  192.168.1.1
+  192.168.1.100
+  193.112.234.28
+  210.72.145.44
+  223.5.5.5
+  223.6.6.6
+  224.0.1.187
+  239.0.1.0
+  239.255.255.250
+  47.111.216.79
+  RADIUS_Server=192.168.2.3
+  Set EthIP 0.0.0.0 By Wi-Fi
+  echo "nameserver 192.168.0.1" > /etc/resolv.conf
+  ifconfig %s %s netmask 255.255.255.0
+  ifconfig %s 0.0.0.0
+  ifconfig eth0 0.0.0.0
+  ifconfig ra0 0.0.0.0
+  ifconfig ra0 10.10.0.1 netmask 255.255.255.0
+  ifconfig wlan0 0.0.0.0
+  ifconfig wlan1 10.10.0.1 netmask 255.255.255.0
+  ifconfig wlap1 10.10.0.1 netmask 255.255.255.0
+  own_ip_addr=192.168.5.234
+  route add -net 255.255.255.255 netmask 255.255.255.255 dev eth0
+  route add -net 255.255.255.255 netmask 255.255.255.255 dev ra0
+  route add -net 255.255.255.255 netmask 255.255.255.255 dev wlan0
+  route add default gw 10.10.0.1 dev ra0
+  route add default gw 192.168.0.1
+  route del default;route del 255.255.255.255
+
+--- FILE_PATHS (481 unique) ---
+  /!/D!@-)
+  /)S/R/V/U/C#Q
+  />1>0>T=2>F%3>/
+  /J/IzDyD
+  /dev/RT7601AP.dat
+  /dev/acodec
+  /dev/adec
+  /dev/aenc
+  /dev/aiisp
+  /dev/aio
+  /dev/atbm_ioctl
+  /dev/core/service/dev
+  /dev/core/service/dev/tick_notify
+  /dev/dooralarm
+  /dev/dooralarmopen error
+  /dev/gpioi2c-FM1188
+  /dev/hostapd.conf
+  /dev/i2c-%u
+  /dev/i2c-2
+  /dev/isp_dev
+  /dev/ive
+  /dev/logmpp
+  /dev/mem
+  /dev/mmcblk0
+  /dev/mmcblk0p%d
+  /dev/mmcblk0p1
+  /dev/mmcblk0p11
+  /dev/mmz_userdev
+  /dev/motor
+  /dev/mtd%d
+  /dev/mtd%d 0 0x%llx 0x%x
+  /dev/ot_lsadc
+  /dev/ot_mipi_rx
+  /dev/ot_proc
+  /dev/piris
+  /dev/pwm
+  /dev/random
+  /dev/rgn
+  /dev/soc_cipher
+  /dev/svp_npu
+  /dev/sys
+  /dev/ttyACM0
+  /dev/ttyACM1
+  /dev/ttyAMA1
+  /dev/ttyAMA2
+  /dev/ttyS3
+  /dev/ttyUSB0
+  /dev/ttyUSB1
+  /dev/ttyUSB2
+  /dev/ubi%d_%d
+  /dev/urandom
+  /dev/venc
+  /dev/vgs
+  /dev/video0
+  /dev/video1
+  /dev/vpp
+  /dev/vpss
+  /dev/watchdog
+  /etc/conf.d/aiot_kv.bin
+  /etc/conf.d/apn.json
+  /etc/conf.d/apn_adaptive.json
+  /etc/conf.d/basefs_sync_ok
+  /etc/conf.d/curve/
+  /etc/conf.d/curve/ir_mode.cfg
+  /etc/conf.d/customer.json
+  /etc/conf.d/devInfo
+  /etc/conf.d/fixed/custom_voice/
+  /etc/conf.d/fixed/custom_voice/%s.711
+  /etc/conf.d/fixed/hwconfig.cfg
+  /etc/conf.d/fixed/ivp/ivp.oms
+  /etc/conf.d/fixed/secu_lic.conf
+  /etc/conf.d/ivp_ability.cfg
+  /etc/conf.d/linkkit_kv.bin
+  /etc/conf.d/net4g.conf
+  /etc/conf.d/pq_bin/%s
+  /etc/conf.d/syscfg//account.dat
+  /etc/conf.d/syscfg//yst-pos.dat
+  /etc/conf.d/syscfg/RF433Key.dat
+  /etc/conf.d/syscfg/SystemCfg.ini
+  /etc/conf.d/syscfg/account.dat
+  /etc/conf.d/syscfg/af_zoom_max
+  /etc/conf.d/syscfg/bRestriction.cfg
+  /etc/conf.d/syscfg/check_4g_reboot_timeout
+  /etc/conf.d/syscfg/check_sdio_wifi
+  /etc/conf.d/syscfg/danale_private.cfg
+  /etc/conf.d/syscfg/default/force.cfg
+  /etc/conf.d/syscfg/firstpos.dat
+  /etc/conf.d/syscfg/gb28181.cfg
+  /etc/conf.d/syscfg/important.cfg
+  /etc/conf.d/syscfg/onvif_user.json
+  /etc/conf.d/syscfg/presetpos.cfg
+  /etc/conf.d/syscfg/sensor.sh
+  /etc/conf.d/syscfg/tutk.cfg
+  /etc/conf.d/syscfg/uvc_reboot_timeout
+  /etc/conf.d/syscfg/uvc_slave.json
+  /etc/hosts
+  /etc/network/interface.cfg
+  /etc/network/wifipasswd.cfg
+  /etc/network/wifisave.dat
+  /etc/ppp/pap-secrets
+  /ext/error/%s/%s
+  /ext/ntp/%s/%s/
+  /ext/session/%s/%s/
+  /home/aiisp/aibnr_model_%dx%d.bin
+  /home/aiisp/aibnr_model_%dx%d_high_iso.bin
+  /home/aiisp/aibnr_model_%dx%d_pro.bin
+  /home/apn/apn_info.json
+  /home/ipc_drv/ot_wdt.ko
+  /home/ivp/det_hv_hor.bin
+  /home/ivp/det_hvf_normal.bin
+  /home/ivp/ivp.oms
+  /home/mdiagsaver /dev/ttyUSB0 /tmp/
+  /home/sensor/%s/ini
+  /home/sensor/%s/ini_v200
+  /home/sensor/%s/ini_v300
+  /home/sensor/%s/ini_v400
+  /home/sensor/%s/pqbin/%s
+  /home/sensor/%s/pqbin_v200/%s
+  /home/sensor/%s/pqbin_v300/%s
+  /home/sensor/%s/pqbin_v400/%s
+  /home/variable
+  /home/voice/common/startok.711
+  /home/voice/common/update.711
+  /home/voice/language/%s.711
+  /home/voice/language/alarming.711
+  /home/voice/language/gpslocationsuccess.711
+  /home/voice/language/ip_get_fail.711
+  /home/voice/language/link_4g_fail.711
+  /home/voice/language/link_4g_ok.711
+  /home/voice/language/linking_4g.711
+  /home/voice/language/netmode_cut.711
+  /home/voice/language/network_4g.711
+  /home/voice/language/notfindnet.711
+  /home/voice/language/prompt_type%d.711
+  /home/voice/language/reset.711
+  /home/voice/language/reset_4g.711
+  /home/voice/language/revNetSetting.711
+  /home/voice/language/start_QR_code_mode.711
+  /home/voice/language/start_ap_mode.711
+  /home/voice/language/startspeak.711
+  /home/voice/language/uart_4g_fail.711
+  /home/voice/language/wifi_fail.711
+  /home/voice/language/wifi_ok.711
+  /home/wifi/9083h.ko
+  /home/wifi/ATBM6x6x_wifi_usb.ko
+  /home/wifi/aic8800_fdrv.ko
+  /home/wifi/atbm6012bx_wifi_usb.ko
+  /home/wifi/atbm603x_HT20.ko
+  /home/wifi/atbm603x_wifi_sdio.ko
+  /home/wifi/atbm6132BS.ko
+  /home/wifi/atbm6x3x_wifi_usb.ko
+  /home/wifi/hi3881.ko
+  /home/wifi/hostapd %s -B
+  /home/wifi/iwconfig wlan0 channel %d
+  /home/wifi/iwconfig wlan0 mode managed
+  /home/wifi/iwconfig wlan0 mode monitor
+  /home/wifi/iwconfig wlan1 channel %d
+  /home/wifi/iwpriv ra0 get_site_survey
+  /home/wifi/iwpriv ra0 set SiteSurvey=%s
+  /home/wifi/iwpriv ra0 wsc_ap_band 0
+  /home/wifi/iwpriv ra0 wsc_conf_mode 1
+  /home/wifi/iwpriv ra0 wsc_mode 2
+  /home/wifi/iwpriv ra0 wsc_start
+  /home/wifi/iwpriv ra0 wsc_stop
+  /home/wifi/mt7601.ko
+  /home/wifi/rda_tools wlan0 set_channel %d
+  /home/wifi/rda_tools wlan0 sniffer_enable 1
+  /home/wifi/rda_tools wlan0 sniffer_enable 2
+  /home/wifi/rdawfmac.ko
+  /home/wifi/rtl8188f.ko
+  /home/wifi/rtl8188fu.ko
+  /home/wifi/rtl8733bs.ko
+  /home/wifi/rtl8733bu.ko
+  /home/wifi/ssv6x5x.ko
+  /home/wifi/udhcpd.conf
+  /home/wifi/vt9271.ko
+  /home/wifi/wpa_supplicant -B -iwlan0 -c /etc/network/wpa_supplicant.conf -Dnl80211
+  /home/wifi/wpa_supplicant -B -iwlan0 -c /etc/network/wpa_supplicant.conf -Dwext
+  /home/wifi/ws73v100.ko
+  /lib/ld-musl-arm.so.1
+  /onvif/deviceIO_service
+  /onvif/device_service
+  /onvif/event_service
+  /onvif/image_service
+  /onvif/media2_service
+  /onvif/media_service
+  /onvif/media_service2
+  /onvif/ptz_service
+  /ota/device/%s/%s/%s
+  /ota/device/inform/%s/%s
+  /ota/device/request
+  /ota/device/upgrade
+  /proc/cmdline
+  /proc/mounts
+  /proc/mtd
+  /proc/net/dev
+  /proc/net/route
+  /proc/net/wireless
+  /proc/uptime
+  /progs/devInfo
+  ... (281 more)
+
+--- CONFIG_KEYS (633 unique) ---
+  A=<=4=;=
+  ADPercentage=%d;
+  ADThreshold=%d;
+  ADTimeInterval=%d;
+  APACM=0;0;0;0
+  APAifsn=3;7;1;1
+  APCwmax=6;10;4;3
+  APCwmin=4;4;3;2
+  APSDAC=0;0;0;0
+  APSDCapable=0
+  APTxop=0;0;94;47
+  AccessControlList0=
+  AccessControlList1=
+  AccessControlList2=
+  AccessControlList3=
+  AccessPolicy0=0
+  AccessPolicy1=0
+  AccessPolicy2=0
+  AccessPolicy3=0
+  AckPolicy=0;0;0;0
+  AlarmAudioRecord=%s;
+  AlarmLightSwitch=%d;
+  AntDiversity=0
+  AssocReqFloodThreshold=32
+  AuthFloodThreshold=32
+  AuthMode=
+  AuthMode=%s
+  AuthMode=WPA2PSK
+  AutoChannelSelect=0
+  AutoConnect=1
+  AutoLowFrameEn=%d;
+  AutoRoaming=0
+  AutoStartMulticast="%s" />
+  BC_bEnRecord=%d;
+  BGProtection=0
+  BSSACM=0;0;0;0
+  BSSAifsn=3;7;2;2
+  BSSCwmax=10;10;4;3
+  BSSCwmin=4;4;3;2
+  BSSTxop=0;0;94;47
+  BasicRate=15
+  BeaconLostTime=4
+  BeaconPeriod=100
+  BssidNum=1
+  CSPeriod=10
+  CalcFlag=%d;
+  CarrierDetect=0
+  Channel=0
+  ChannelGeography=1
+  CountryCode=
+  CountryRegion=5
+  CountryRegionABand=7
+  CrossLineDirection=%d;
+  CrossLineEnable=%d;
+  CrossLineEndX=%d;
+  CrossLineEndY=%d;
+  CrossLineStartX=%d;
+  CrossLineStartY=%d;
+  DDNS_Host=%s;
+  DDNS_Pwd=%s;
+  DDNS_Type=%d;
+  DDNS_User=%s;
+  DLSCapable=0
+  DeauthFloodThreshold=32
+  DefaultKeyID=%d
+  DefaultKeyID=2
+  DevName=%s;
+  DisableOLBC=0
+  DisassocFloodThreshold=32
+  DtimPeriod=1
+  EAPifname=br0
+  EZoomTrack=%d;
+  EapReqFooldThreshold=32
+  EncrypType=
+  EncrypType=%s
+  Error=%s ErrorID=%d (0x%x) Line number=%d
+  EthCloneMac=
+  EthConvertMode=
+  FastConnect=1
+  FixedTxMode=4
+  FlickerFrequency=%d;
+  FragThreshold=2346
+  FtSupport=1
+  FyD=M>K}D
+  G=L=M=K!9!U=[=Y=
+  HSCounter=0
+  HT_AMSDU=0
+  HT_AutoBA=1
+  HT_BADecline=0
+  HT_BAWinSize=64
+  HT_DisallowTKIP=1
+  HT_EXTCHA=0
+  HT_HTC=0
+  HT_LinkAdapt=0
+  HT_MCS=33
+  HT_MIMOPSMode=3
+  HT_MpduDensity=4
+  HT_MpduDensity=5
+  HT_OpMode=0
+  HT_OpMode=1
+  HT_RDG=0
+  HT_RDG=1
+  HasEth=%d;
+  HideSSID=0
+  HomeIPCFlag=%d;
+  IEEE80211H=0
+  IEEE8021X=0
+  IRLBrightness=%d;
+  IVPEnable=%d;
+  IVPExSwitch=%d;
+  IVPFunction=%d;
+  IVPIntelligentTracking=%d;
+  IVPSensitivity1=%d;
+  IVPSensitivity2=%d;
+  IVPSensitivity3=%d;
+  IVPSensitivity=%d;
+  IdsEnable=0
+  IspFrame=%f;
+  Key1Str=
+  Key1Str=12345678
+  Key1Type=1
+  Key2Str=
+  Key2Type=0
+  Key3Str=
+  Key3Type=0
+  Key4Str=
+  Key4Type=0
+  LEReverse=%d;
+  LEWeight=%d;
+  Len=%d step %d
+  LinkageEnable=%d;
+  MeshAuthMode=OPEN
+  MeshAutoLink=1
+  MeshDefaultkey=1
+  MeshEncrypType=NONE
+  MeshId=MESH
+  MeshWEPKEY=
+  MeshWPAKEY=
+  ModeByMicStatus=%d;
+  NetworkType=Infra
+  NoForwarding=0
+  NoForwardingBTNBSSID=0
+  O=C=I=K=.,F=
+  OT_VERSION=HI3516CV610_MPP_V1.0.2.0 B051 Release
+  PMFMFPC=0
+  PMFMFPR=0
+  PMFSHA256=0
+  PMKCachePeriod=10
+  PRODUCT=
+  PSMode=CAM
+  PktAggregate=0
+  PortUsed=%s;
+  PreAuth=0
+  PreAuthifname=br0
+  ProbeReqFloodThreshold=32
+  PtzBeginX=%d;
+  PtzBeginY=%d;
+  PtzEndX=%d;
+  PtzEndY=%d;
+  RADIUS_Key=ralink
+  RADIUS_Port=1812
+  RTSPWebSocketUri="%s" 
+  RTSThreshold=2347
+  RadioOn=1
+  ReassocReqFloodThreshold=32
+  RecFileLength=%d;
+  RecTimingChn=%d;
+  RecTimingCount=%d;
+  RegionDetectEnable=%d;
+  RegionLeftBottomX=%d;
+  RegionLeftBottomY=%d;
+  RegionLeftTopX=%d;
+  RegionLeftTopY=%d;
+  RegionRightBottomX=%d;
+  RegionRightBottomY=%d;
+  RegionRightTopX=%d;
+  RegionRightTopY=%d;
+  RekeyInterval=0
+  RekeyMethod=DISABLE
+  RoamThreshold=70
+  RxAntenna=
+  SENSOR=sc450ai
+  STATUS=wifi_connecting
+  STATUS=wifi_failed
+  STATUS=wifi_find
+  STATUS=wifi_success
+  STATUS=wifi_wait
+  ShortSlot=1
+  StationKeepAlive=0
+  T=T@T,T-T<T.T6T)T
+  T=TOTAT(T$TGT
+  TGnWifiTest=0
+  TandemVuAlarm=%d;
+  TurboRate=0
+  TxAntenna=
+  TxBurst=1
+  TxPower=100
+  TxPreamble=0
+  TxRate=0
+  UPDATE=netupdate %s 0x%x
+  ... (433 more)
+
+--- DVRIP_COMMANDS (9 unique) ---
+  CONFIG_VER=%d;
+  MONITOR_REQ: i=%d,sid=%d,keepalive =%d 
+  NetStream.Record.Start
+  NetStream.Record.Stop
+  Thanks for using our company's IP Camera.<br>  This email that you received is recorded and sent out automatically by the IP Camera.<br>The reason is as follows: <br><b>%s At Time: %s Device number
+  _Z29FDKsbrEnc_extractSbrEnvelope1P15SBR_CONFIG_DATAP15SBR_HEADER_DATAP18SBR_BITSTREAM_DATAP11ENV_CHANNELP11COMMON_DATAP17SBR_ENV_TEMP_DATAP19SBR_FRAME_TEMP_DATA
+  _Z29FDKsbrEnc_extractSbrEnvelope2P15SBR_CONFIG_DATAP15SBR_HEADER_DATAP19T_PARAMETRIC_STEREOP18SBR_BITSTREAM_DATAP11ENV_CHANNELS8_P11COMMON_DATAP17SBR_ENV_TEMP_DATAP19SBR_FRAME_TEMP_DATAi
+  _Z30FDKsbrEnc_InitTonCorrParamExtriP16SBR_TON_CORR_ESTP15SBR_CONFIG_DATAiiiiij
+  getSystemInfo
+
+--- ONVIF_SOAP (1285 unique) ---
+   onvif://www.onvif.org/Profile/Streaming
+   onvif://www.onvif.org/Profile/T
+  "></tds:Misc>
+  %s, create onvif_timer_task failed
+  %s, onvif_save_audio_decoder_configuration failed
+  %s, onvif_save_audio_decoder_configurations failed
+  %s, onvif_save_audio_encoder_configuration failed
+  %s, onvif_save_audio_encoder_configurations failed
+  %s, onvif_save_audio_output failed
+  %s, onvif_save_audio_output_configuration failed
+  %s, onvif_save_audio_output_configurations failed
+  %s, onvif_save_audio_outputs failed
+  %s, onvif_save_audio_source failed
+  %s, onvif_save_audio_source_configuration failed
+  %s, onvif_save_audio_source_configurations failed
+  %s, onvif_save_audio_sources failed
+  %s, onvif_save_device_information failed
+  %s, onvif_save_digital_input failed
+  %s, onvif_save_digital_inputs failed
+  %s, onvif_save_event_cfg failed
+  %s, onvif_save_imaging_options failed
+  %s, onvif_save_imaging_settings failed
+  %s, onvif_save_mask failed
+  %s, onvif_save_masks failed
+  %s, onvif_save_metadata_configuration failed
+  %s, onvif_save_metadata_configurations failed
+  %s, onvif_save_network failed
+  %s, onvif_save_osd_configuration failed
+  %s, onvif_save_osd_configurations failed
+  %s, onvif_save_profile failed
+  %s, onvif_save_profiles failed
+  %s, onvif_save_ptz_configuration failed
+  %s, onvif_save_ptz_configurations failed
+  %s, onvif_save_ptz_node failed
+  %s, onvif_save_ptz_nodes failed
+  %s, onvif_save_relay_output failed
+  %s, onvif_save_relay_outputs failed
+  %s, onvif_save_remote_user failed
+  %s, onvif_save_scope failed
+  %s, onvif_save_serial_port failed
+  %s, onvif_save_serial_ports failed
+  %s, onvif_save_server failed
+  %s, onvif_save_system_datetime failed
+  %s, onvif_save_user failed
+  %s, onvif_save_video_encoder_configuration failed
+  %s, onvif_save_video_encoder_configurations failed
+  %s, onvif_save_video_output failed
+  %s, onvif_save_video_output_configuration failed
+  %s, onvif_save_video_output_configurations failed
+  %s, onvif_save_video_outputs failed
+  %s, onvif_save_video_source failed
+  %s, onvif_save_video_source_configuration failed
+  %s, onvif_save_video_source_configurations failed
+  %s, onvif_save_video_source_mode failed
+  %s, onvif_save_video_sources failed
+  %s, xml_node_soap_get[Body] ret null!!!
+  </tds:Capabilities>
+  </tds:Capabilities></tds:GetCapabilitiesResponse>
+  </tds:DNSInformation>
+  </tds:DynamicDNSInformation>
+  </tds:GetDNSResponse>
+  </tds:GetDeviceInformationResponse>
+  </tds:GetDynamicDNSResponse>
+  </tds:GetNTPResponse>
+  </tds:GetNetworkDefaultGatewayResponse>
+  </tds:GetNetworkInterfacesResponse>
+  </tds:GetNetworkProtocolsResponse>
+  </tds:GetRelayOutputsResponse>
+  </tds:GetRemoteUserResponse>
+  </tds:GetScopesResponse>
+  </tds:GetServiceCapabilitiesResponse>
+  </tds:GetServicesResponse>
+  </tds:GetSystemDateAndTimeResponse>
+  </tds:GetSystemUrisResponse>
+  </tds:GetUsersResponse>
+  </tds:GetZeroConfigurationResponse>
+  </tds:NTPInformation>
+  </tds:NetworkGateway>
+  </tds:NetworkInterfaces>
+  </tds:NetworkProtocols>
+  </tds:Networks>
+  </tds:RelayOutputs>
+  </tds:RemoveScopesResponse>
+  </tds:ScanAvailableDot11NetworksResponse>
+  </tds:Scopes>
+  </tds:Service>
+  </tds:Status></tds:GetDot11StatusResponse>
+  </tds:SystemDateAndTime>
+  </tds:SystemLogUris>
+  </tds:ZeroConfiguration>
+  </timg:GetCurrentPresetResponse>
+  </timg:GetPresetsResponse>
+  </timg:GetServiceCapabilitiesResponse>
+  </timg:GetStatusResponse>
+  </timg:ImagingOptions></timg:GetOptionsResponse>
+  </timg:ImagingSettings></timg:GetImagingSettingsResponse>
+  </timg:MoveOptions></timg:GetMoveOptionsResponse>
+  </timg:Preset>
+  </timg:Status>
+  </tptz:CreatePresetTourResponse>
+  </tptz:GetCompatibleConfigurationsResponse>
+  </tptz:GetConfigurationOptionsResponse>
+  </tptz:GetConfigurationResponse>
+  </tptz:GetConfigurationsResponse>
+  </tptz:GetNodeResponse>
+  </tptz:GetNodesResponse>
+  </tptz:GetPresetTourOptionsResponse>
+  </tptz:GetPresetTourResponse>
+  </tptz:GetPresetToursResponse>
+  </tptz:GetPresetsResponse>
+  </tptz:GetServiceCapabilitiesResponse>
+  </tptz:GetStatusResponse>
+  </tptz:Options>
+  </tptz:PTZConfiguration>
+  </tptz:PTZConfigurationOptions>
+  </tptz:PTZNode>
+  </tptz:PTZStatus>
+  </tptz:Preset>
+  </tptz:PresetTour>
+  </tptz:SendAuxiliaryCommandResponse>
+  </tptz:SetPresetResponse>
+  </trt:AudioSources>
+  </trt:Capabilities>
+  </trt:Configuration>
+  </trt:Configurations>
+  </trt:CreateProfileResponse>
+  </trt:GetAudioDecoderConfigurationOptionsResponse>
+  </trt:GetAudioDecoderConfigurationResponse>
+  </trt:GetAudioDecoderConfigurationsResponse>
+  </trt:GetAudioEncoderConfigurationResponse>
+  </trt:GetAudioEncoderConfigurationsResponse>
+  </trt:GetAudioOutputConfigurationOptionsResponse>
+  </trt:GetAudioOutputConfigurationResponse>
+  </trt:GetAudioOutputConfigurationsResponse>
+  </trt:GetAudioOutputsResponse>
+  </trt:GetAudioSourceConfigurationOptionsResponse>
+  </trt:GetAudioSourceConfigurationResponse>
+  </trt:GetAudioSourceConfigurationsResponse>
+  </trt:GetAudioSourcesResponse>
+  </trt:GetCompatibleAudioDecoderConfigurationsResponse>
+  </trt:GetCompatibleAudioEncoderConfigurationsResponse>
+  </trt:GetCompatibleAudioOutputConfigurationsResponse>
+  </trt:GetCompatibleAudioSourceConfigurationsResponse>
+  </trt:GetCompatibleMetadataConfigurationsResponse>
+  </trt:GetCompatibleVideoEncoderConfigurationsResponse>
+  </trt:GetCompatibleVideoSourceConfigurationsResponse>
+  </trt:GetMetadataConfigurationOptionsResponse>
+  </trt:GetMetadataConfigurationResponse>
+  </trt:GetMetadataConfigurationsResponse>
+  </trt:GetOSDResponse>
+  </trt:GetOSDsResponse>
+  </trt:GetProfileResponse>
+  </trt:GetProfilesResponse>
+  </trt:GetServiceCapabilitiesResponse>
+  </trt:GetVideoEncoderConfigurationResponse>
+  </trt:GetVideoEncoderConfigurationsResponse>
+  </trt:GetVideoSourceConfigurationOptionsResponse>
+  </trt:GetVideoSourceConfigurationResponse>
+  </trt:GetVideoSourceConfigurationsResponse>
+  </trt:GetVideoSourceModesResponse>
+  </trt:GetVideoSourcesResponse>
+  </trt:MaxResolution>
+  </trt:OSD>
+  </trt:OSDOptions></trt:GetOSDOptionsResponse>
+  </trt:OSDs>
+  </trt:Options>
+  </trt:Options></trt:GetAudioEncoderConfigurationOptionsResponse>
+  </trt:Options></trt:GetVideoEncoderConfigurationOptionsResponse>
+  </trt:Profile>
+  </trt:Profiles>
+  </trt:VideoSourceModes>
+  </trt:VideoSources>
+  </wstop:TopicSet><wsnt:TopicExpressionDialect>http://www.onvif.org/ver10/tev/topicExpression/ConcreteSet</wsnt:TopicExpressionDialect><wsnt:TopicExpressionDialect>http://docs.oasis-open.org/wsnt/t-1/TopicExpression/ConcreteSet</wsnt:TopicExpressionDialect><wsnt:TopicExpressionDialect>http://docs.oasis-open.org/wsn/t-1/TopicExpression/Concrete</wsnt:TopicExpressionDialect><tev:MessageContentFilterDialect>http://www.onvif.org/ver10/tev/messageContentFilter/ItemFilter</tev:MessageContentFilterDialect><tev:MessageContentSchemaLocation>http://www.onvif.org/onvif/ver10/schema/onvif.xsd</tev:MessageContentSchemaLocation></tev:GetEventPropertiesResponse>
+  <?xml version="1.0" encoding="UTF-8"?><s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:enc="http://www.w3.org/2003/05/soap-encoding" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsa5="http://www.w3.org/2005/08/addressing" xmlns:d="http://schemas.xmlsoap.org/ws/2005/04/discovery" xmlns:dn="http://www.onvif.org/ver10/network/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema" xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
+  <?xml version="1.0" encoding="utf-8"?><config><server_ip></server_ip><server_port>80</server_port><http_max_users>4</http_max_users><https_enable>0</https_enable><need_auth>0</need_auth><log_enable>0</log_enable><log_level>1</log_level><information><Manufacturer></Manufacturer><Model>IP Camera</Model><FirmwareVersion>2.4</FirmwareVersion><SerialNumber>123456</SerialNumber><HardwareId>1.0</HardwareId></information><profile><video_source><width>2560</width><height>1920</height></video_source><video_encoder><width>2560</width><height>1920</height><quality>80</quality><session_timeout>10</session_timeout><framerate>20</framerate><encoding_interval>60</encoding_interval><bitrate_limit>4096</bitrate_limit><encoding>H264</encoding><h264><gov_length>80</gov_length><h264_profile>Main</h264_profile></h264></video_encoder><audio_source></audio_source><audio_encoder><session_timeout>10</session_timeout><sample_rate>8</sample_rate><bitrate>16</bitrate><encoding>G711</encoding></audio_encoder><stream_uri></stream_uri></profile><profile><video_source><width>2560</width><height>1920</height></video_source><video_encoder><width>720</width><height>576</height><quality>80</quality><session_timeout>10</session_timeout><framerate>20</framerate><encoding_interval>60</encoding_interval><bitrate_limit>1024</bitrate_limit><encoding>H264</encoding><h264><gov_length>80</gov_length><h264_profile>Main</h264_profile></h264></video_encoder><audio_source></audio_source><audio_encoder><session_timeout>10</session_timeout><sample_rate>8</sample_rate><bitrate>16</bitrate><encoding>G711</encoding></audio_encoder><stream_uri></stream_uri></profile><scope>onvif://www.onvif.org/location/country/china</scope><scope>onvif://www.onvif.org/type/video_encoder</scope><scope>onvif://www.onvif.org/name/IP-Camera</scope><scope>onvif://www.onvif.org/hardware/IPCamera</scope><event><renew_interval>60</renew_interval><simulate_enable>0</simulate_enable></event></config>
+  <s:Body><d:Hello><wsa:EndpointReference><wsa:Address>urn:uuid:%s</wsa:Address></wsa:EndpointReference><d:Types>dn:NetworkVideoTransmitter tds:Device</d:Types>
+  <s:Body><d:ProbeMatches><d:ProbeMatch><wsa:EndpointReference><wsa:Address>urn:uuid:%s</wsa:Address></wsa:EndpointReference><d:Types>dn:NetworkVideoTransmitter tds:Device</d:Types>
+  <s:Body><d:ResolveMatches><d:ResolveMatch><wsa:EndpointReference><wsa:Address>urn:uuid:%s</wsa:Address></wsa:EndpointReference><d:Types>dn:NetworkVideoTransmitter tds:Device</d:Types>
+  <tds:AddScopesResponse />
+  <tds:CreateUsersResponse />
+  <tds:DNSInformation>
+  <tds:DeleteUsersResponse />
+  <tds:DynamicDNSInformation>
+  <tds:FirmwareVersion>%s</tds:FirmwareVersion>
+  <tds:GetCapabilitiesResponse><tds:Capabilities>
+  <tds:GetDNSResponse>
+  <tds:GetDeviceInformationResponse>
+  <tds:GetDiscoveryModeResponse><tds:DiscoveryMode>%s</tds:DiscoveryMode></tds:GetDiscoveryModeResponse>
+  <tds:GetDot11CapabilitiesResponse><tds:Capabilities><tt:TKIP>%s</tt:TKIP><tt:ScanAvailableNetworks>%s</tt:ScanAvailableNetworks><tt:MultipleConfiguration>%s</tt:MultipleConfiguration><tt:AdHocStationMode>%s</tt:AdHocStationMode><tt:WEP>%s</tt:WEP></tds:Capabilities></tds:GetDot11CapabilitiesResponse>
+  <tds:GetDot11StatusResponse><tds:Status>
+  <tds:GetDynamicDNSResponse>
+  <tds:GetEndpointReferenceResponse><tds:GUID>%s</tds:GUID></tds:GetEndpointReferenceResponse>
+  <tds:GetHostnameResponse><tds:HostnameInformation><tt:FromDHCP>%s</tt:FromDHCP><tt:Name>%s</tt:Name></tds:HostnameInformation></tds:GetHostnameResponse>
+  <tds:GetNTPResponse>
+  <tds:GetNetworkDefaultGatewayResponse>
+  <tds:GetNetworkInterfacesResponse>
+  <tds:GetNetworkProtocolsResponse>
+  <tds:GetRelayOutputsResponse>
+  <tds:GetRemoteUserResponse>
+  <tds:GetScopesResponse>
+  ... (1085 more)
+
+--- CLOUD_MQTT (2578 unique) ---
+  "method":"thing.service.property.set
+  $$,,884484awss_bind_report_statis
+  ,"method":"thing.event.
+  ,"method":"thing.event.property.post"}
+  ..."}],"method":"thing.log.post"}
+  _LivingLink.thing.reset.reply
+  _ZN10linkvisual10AesEncrypt7DecryptEPhjPKcS3_
+  _ZN10linkvisual10AesEncrypt7EncryptEPKcS2_PhjPc
+  _ZN10linkvisual10AudioCheck10CheckFrameEv
+  _ZN10linkvisual10AudioCheckC1Ev
+  _ZN10linkvisual10AudioCheckC2Ev
+  _ZN10linkvisual10AudioCheckD1Ev
+  _ZN10linkvisual10AudioCheckD2Ev
+  _ZN10linkvisual10DasService4InitEb
+  _ZN10linkvisual10DasService5StartEv
+  _ZN10linkvisual10DeviceAuth5EqualEPKcS2_S2_i
+  _ZN10linkvisual10DeviceAuth5LoginEv
+  _ZN10linkvisual10DeviceAuthC1EPKcS2_S2_i
+  _ZN10linkvisual10DeviceAuthC2EPKcS2_S2_i
+  _ZN10linkvisual10DeviceAuthD1Ev
+  _ZN10linkvisual10DeviceAuthD2Ev
+  _ZN10linkvisual10DnsService11GetAddrInfoERKSstyNS_9SharedPtrINS_9NetEngineEEENS3_INS_17DnsProtocolResultEEE
+  _ZN10linkvisual10DnsService11getAddrInfoERKSsS2_tyNS_9SharedPtrINS_9NetEngineEEENS3_INS_17DnsProtocolResultEEE
+  _ZN10linkvisual10DnsService13hostConfParseEv
+  _ZN10linkvisual10DnsService15resolvConfParseERSt3mapISsjSt4lessISsESaISt4pairIKSsjEEE
+  _ZN10linkvisual10DnsService17externalConfParseEjPPcRSt3mapISsjSt4lessISsESaISt4pairIKSsjEEE
+  _ZN10linkvisual10DnsService17hostConfParseLineEPc
+  _ZN10linkvisual10DnsService19checkDnsNameServiceERSt3mapISsjSt4lessISsESaISt4pairIKSsjEEE
+  _ZN10linkvisual10DnsService19resolvConfParseLineEPcRSt3mapISsjSt4lessISsESaISt4pairIKSsjEEE
+  _ZN10linkvisual10DnsService5ResetEijPPc
+  _ZN10linkvisual10DnsService5StartEijPPc
+  _ZN10linkvisual10DnsService6UpdateEiRKSsS2_S2_t
+  _ZN10linkvisual10DnsService8parseDnsEijPPc
+  _ZN10linkvisual10DnsServiceC1Ev
+  _ZN10linkvisual10DnsServiceC2Ev
+  _ZN10linkvisual10DnsServiceD1Ev
+  _ZN10linkvisual10DnsServiceD2Ev
+  _ZN10linkvisual10EventLimit14SingleIsPermitEii
+  _ZN10linkvisual10EventLimit20eventLimitDownstreamEPviRKSsS3_
+  _ZN10linkvisual10EventLimit25parseEventLimitDownstreamERKSs
+  _ZN10linkvisual10EventLimit4StopEv
+  _ZN10linkvisual10EventLimit5StartEi
+  _ZN10linkvisual10EventLimit8upstreamEPv
+  _ZN10linkvisual10EventLimitC1Ev
+  _ZN10linkvisual10EventLimitC2Ev
+  _ZN10linkvisual10EventLimitD1Ev
+  _ZN10linkvisual10EventLimitD2Ev
+  _ZN10linkvisual10HttpClient11ConnectAddrERKSsty
+  _ZN10linkvisual10HttpClient11SendContentEPKcj
+  _ZN10linkvisual10HttpClient11SendRequestERKNS_20HttpRequestConstructE
+  _ZN10linkvisual10HttpClient12OnDisConnectENS_25NetSocketDisconnectResultE
+  _ZN10linkvisual10HttpClient12SetConnectorEj
+  _ZN10linkvisual10HttpClient13OnStatusCheckEv
+  _ZN10linkvisual10HttpClient5CloseEv
+  _ZN10linkvisual10HttpClient6CreateENS_9SharedPtrINS_17HttpClientHandlerEEEPKcj
+  _ZN10linkvisual10HttpClient6OnDataEPKcj
+  _ZN10linkvisual10HttpClient7OnWriteEv
+  _ZN10linkvisual10HttpClient9OnConnectEv
+  _ZN10linkvisual10HttpClientC1ENS_9SharedPtrINS_17HttpClientHandlerEEE
+  _ZN10linkvisual10HttpClientC2ENS_9SharedPtrINS_17HttpClientHandlerEEE
+  _ZN10linkvisual10HttpClientD0Ev
+  _ZN10linkvisual10HttpClientD1Ev
+  _ZN10linkvisual10HttpClientD2Ev
+  _ZN10linkvisual10MakeSharedINS_10DeviceAuthEPKcS3_S3_iEENS_9SharedPtrIT_EET0_T1_T2_T3_
+  _ZN10linkvisual10MakeSharedINS_13OneTimePutStsEPNS_16AsyncProcessPoolENS_9SharedPtrINS_17OneTimePutHandlerEEEEENS4_IT_EET0_T1_
+  _ZN10linkvisual10MakeSharedINS_14RpcQueryRecordEEENS_9SharedPtrIT_EEv
+  _ZN10linkvisual10MakeSharedINS_15NetConnectorDnsEEENS_9SharedPtrIT_EEv
+  _ZN10linkvisual10MakeSharedINS_15StreamCheckUnitEEENS_9SharedPtrIT_EEv
+  _ZN10linkvisual10MakeSharedINS_16RelayServiceLiveEEENS_9SharedPtrIT_EEv
+  _ZN10linkvisual10MakeSharedINS_17OneTimePutProcessEPNS_16AsyncProcessPoolENS_9SharedPtrINS_17OneTimePutHandlerEEEEENS4_IT_EET0_T1_
+  _ZN10linkvisual10MakeSharedINS_22AlarmEventResultSingleEEENS_9SharedPtrIT_EEv
+  _ZN10linkvisual10MakeSharedINS_28IntelligentAlarmResultSingleEEENS_9SharedPtrIT_EEv
+  _ZN10linkvisual10MakeSharedINS_34IntelligentAlarmResultGatewayBatchENS_40IntelligentAlarmResultGatewayBatchHelperEEENS_9SharedPtrIT_EENS3_IT0_EE
+  _ZN10linkvisual10MakeSharedINS_35IntelligentAlarmResultGatewaySingleEEENS_9SharedPtrIT_EEv
+  _ZN10linkvisual10PingClient11ConnectAddrERKSsy
+  _ZN10linkvisual10PingClient12OnDisConnectENS_25NetSocketDisconnectResultE
+  _ZN10linkvisual10PingClient12SetConnectorEj
+  _ZN10linkvisual10PingClient13OnStatusCheckEv
+  _ZN10linkvisual10PingClient14SetTimeOptionsEyy
+  _ZN10linkvisual10PingClient5CloseEv
+  _ZN10linkvisual10PingClient6CreateENS_9SharedPtrINS_16PingClientResultEEE
+  _ZN10linkvisual10PingClient6OnDataEPKcj
+  _ZN10linkvisual10PingClient7OnWriteEv
+  _ZN10linkvisual10PingClient7SetDataERKSt6vectorIjSaIjEE
+  _ZN10linkvisual10PingClient9OnConnectEv
+  _ZN10linkvisual10PingClientC1ENS_9SharedPtrINS_16PingClientResultEEE
+  _ZN10linkvisual10PingClientC2ENS_9SharedPtrINS_16PingClientResultEEE
+  _ZN10linkvisual10PingClientD0Ev
+  _ZN10linkvisual10PingClientD1Ev
+  _ZN10linkvisual10PingClientD2Ev
+  _ZN10linkvisual10PortDetect11call_limit_E
+  _ZN10linkvisual10PortDetect4InitEv
+  _ZN10linkvisual10PortDetect6DeinitEv
+  _ZN10linkvisual10PortDetect6ResultERKNS_14PortDetectTaskE
+  _ZN10linkvisual10PortDetect7NewTaskEiRKSsS2_RKSt6vectorINS_14PortDetectTaskESaIS4_EEPFviS2_S2_S8_E
+  _ZN10linkvisual10PortDetectC1Ev
+  _ZN10linkvisual10PortDetectC2Ev
+  _ZN10linkvisual10PortDetectD0Ev
+  _ZN10linkvisual10PortDetectD1Ev
+  _ZN10linkvisual10PortDetectD2Ev
+  _ZN10linkvisual10RingBuffer10dataCopyInEPKhj
+  _ZN10linkvisual10RingBuffer11dataCopyOutEjPhb
+  _ZN10linkvisual10RingBuffer12CleanAllDataEv
+  _ZN10linkvisual10RingBufferC1EjRKSs
+  _ZN10linkvisual10RingBufferC2EjRKSs
+  _ZN10linkvisual10RingBufferD0Ev
+  _ZN10linkvisual10RingBufferD1Ev
+  _ZN10linkvisual10RingBufferD2Ev
+  _ZN10linkvisual10RpcSession10getLogInfoEiRKSs
+  _ZN10linkvisual10RpcSession15onCmpDownstreamEPviRKSsS3_
+  _ZN10linkvisual10RpcSession15queryRecordListEiPK32lv_query_record_response_param_sRKSs
+  _ZN10linkvisual10RpcSession17PostDeviceRequestEPK16lv_device_auth_sPK25lv_device_request_param_sPi
+  _ZN10linkvisual10RpcSession17onAsyncTaskInvokeEPviRKSsS3_
+  _ZN10linkvisual10RpcSession17onQueryRecordListEPviRKSsS3_S3_
+  _ZN10linkvisual10RpcSession18onMtuDetectRequestEPviRKSsS3_
+  _ZN10linkvisual10RpcSession19QueryRecordResponseEiPK32lv_query_record_response_param_s
+  _ZN10linkvisual10RpcSession19onMtuDetectResponseEiRKSsS2_RKSt6vectorINS_13MtuResultDataESaIS4_EE
+  _ZN10linkvisual10RpcSession19onPortDetectRequestEPviRKSsS3_
+  _ZN10linkvisual10RpcSession19onStunDetectRequestEPviRKSsS3_
+  _ZN10linkvisual10RpcSession20onDelayDetectRequestEPviRKSsS3_
+  _ZN10linkvisual10RpcSession20onPortDetectResponseEiRKSsS2_RKSt6vectorINS_14PortDetectTaskESaIS4_EE
+  _ZN10linkvisual10RpcSession20onStunDetectResponseEiRKSsS2_RKSt6vectorINS_12StunDataUnitESaIS4_EE
+  _ZN10linkvisual10RpcSession21PostAsyncTaskResponseEiPK31lv_cloud_event_response_param_s
+  _ZN10linkvisual10RpcSession21onDelayDetectResponseEiRKSsS2_RKSt6vectorINS_14PingResultDataESaIS4_EE
+  _ZN10linkvisual10RpcSession21onQueryRecordTimeListEPviRKSsS3_S3_
+  _ZN10linkvisual10RpcSession21queryRecordByTimeListEiPK32lv_query_record_response_param_sRKSs
+  _ZN10linkvisual10RpcSession23addStreamGroupOfPictureEiiiid
+  _ZN10linkvisual10RpcSession24onQueryRecordListByMonthEPviRKSsS3_S3_
+  _ZN10linkvisual10RpcSession24onSendMessageToDevInvokeEPviRKSsS3_
+  _ZN10linkvisual10RpcSession25onDelayDetectTestResponseEiRKSsS2_RKSt6vectorINS_14PingResultDataESaIS4_EE
+  _ZN10linkvisual10RpcSession28addStreamGroupOfPictureEntryEPv
+  _ZN10linkvisual10RpcSession28onStreamGroupOfPictureInvokeEPviRKSsS3_
+  _ZN10linkvisual10RpcSession33queryStorageRecordByMonthResponseEiPK32lv_query_record_response_param_sRKSs
+  _ZN10linkvisual10RpcSession34onCustomerDoorLockConfigDownstreamEPviRKSsS3_
+  _ZN10linkvisual10RpcSession4InitEv
+  _ZN10linkvisual10RpcSession7DestroyEv
+  _ZN10linkvisual10RpcSession8PingTestEjPKc
+  _ZN10linkvisual10RpcSession9mergeFileEiRKSt3mapIjjSt4lessIjESaISt4pairIKjjEEE
+  _ZN10linkvisual10RpcSessionC1Ev
+  _ZN10linkvisual10RpcSessionC2Ev
+  _ZN10linkvisual10RpcSessionD1Ev
+  _ZN10linkvisual10RpcSessionD2Ev
+  _ZN10linkvisual10RtmpClient10SendScriptENS_6FlvMux10ScriptTypeEPKcj
+  _ZN10linkvisual10RtmpClient10SetLogInfoERKSs
+  _ZN10linkvisual10RtmpClient12OnDisConnectENS_25NetSocketDisconnectResultE
+  _ZN10linkvisual10RtmpClient12SendMetadataEd
+  _ZN10linkvisual10RtmpClient12SetConnectorEj
+  _ZN10linkvisual10RtmpClient13OnStatusCheckEv
+  _ZN10linkvisual10RtmpClient13SetAudioCodecENS_11AudioFormatENS_8AudioBitENS_12AudioChannelENS_9AudioRateENS_19AudioAdditionalRateE
+  _ZN10linkvisual10RtmpClient13SetEncryptionERKSsS2_
+  _ZN10linkvisual10RtmpClient17flvMuxDataHandlerEPvNS_6FlvMux8DataTypeEPKcjj
+  _ZN10linkvisual10RtmpClient18SetPassThroughDataERKSs
+  _ZN10linkvisual10RtmpClient19SendPassThroughDataERKSs
+  _ZN10linkvisual10RtmpClient19flvMuxStatusHandlerEPvNS_6FlvMux6StatusE
+  _ZN10linkvisual10RtmpClient4StopEv
+  _ZN10linkvisual10RtmpClient4sendEPvPKvjS3_j
+  _ZN10linkvisual10RtmpClient5StartERKSsii
+  _ZN10linkvisual10RtmpClient6CreateENS_9SharedPtrINS_17RtmpClientHandlerEEE
+  _ZN10linkvisual10RtmpClient6OnDataEPKcj
+  _ZN10linkvisual10RtmpClient7OnWriteEv
+  _ZN10linkvisual10RtmpClient7onAudioEPKvjj
+  _ZN10linkvisual10RtmpClient7onAudioEPvPKvjj
+  _ZN10linkvisual10RtmpClient7onVideoEPKvjj
+  _ZN10linkvisual10RtmpClient7onVideoEPvPKvjj
+  _ZN10linkvisual10RtmpClient8onNotifyENS_20rtmp_client_notify_tEPv
+  _ZN10linkvisual10RtmpClient8onNotifyEPvNS_20rtmp_client_notify_tES1_
+  _ZN10linkvisual10RtmpClient8onScriptEPKvjj
+  _ZN10linkvisual10RtmpClient8onScriptEPvPKvjj
+  _ZN10linkvisual10RtmpClient9OnConnectEv
+  _ZN10linkvisual10RtmpClient9SendAudioEPcjj
+  _ZN10linkvisual10RtmpClient9SendVideoEiiPcjj
+  _ZN10linkvisual10RtmpClientC1ENS_9SharedPtrINS_17RtmpClientHandlerEEE
+  _ZN10linkvisual10RtmpClientC2ENS_9SharedPtrINS_17RtmpClientHandlerEEE
+  _ZN10linkvisual10RtmpClientD0Ev
+  _ZN10linkvisual10RtmpClientD1Ev
+  _ZN10linkvisual10RtmpClientD2Ev
+  _ZN10linkvisual10SlsService10DeviceTypeEj
+  _ZN10linkvisual10SlsService11slsIdentifyERKNS_15SlsIdentifyDataE
+  _ZN10linkvisual10SlsService14checkSlsUploadEv
+  _ZN10linkvisual10SlsService18slsIdentifyHandlerEPvRKNS_15SlsIdentifyDataE
+  _ZN10linkvisual10SlsService4StopEv
+  _ZN10linkvisual10SlsService6AddLogERKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEb
+  _ZN10linkvisual10SlsService6addLogERKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEb
+  _ZN10linkvisual10SlsService7OnCloseENS_16SlsClientHandler11CloseResultERKSt4listISsSaISsEE
+  _ZN10linkvisual10SlsService7OnWriteEv
+  _ZN10linkvisual10SlsService9OnConnectEv
+  _ZN10linkvisual10SlsServiceC1Ev
+  _ZN10linkvisual10SlsServiceC2Ev
+  _ZN10linkvisual10SlsServiceD0Ev
+  _ZN10linkvisual10SlsServiceD1Ev
+  _ZN10linkvisual10SlsServiceD2Ev
+  _ZN10linkvisual10StreamSave11SetMetaDataEjjjjjj
+  _ZN10linkvisual10StreamSave11SetSavePathERKSs
+  _ZN10linkvisual10StreamSave11getFileNameERKSsi
+  _ZN10linkvisual10StreamSave12SetServiceIdEi
+  _ZN10linkvisual10StreamSave9AddStreamEjPhjbj
+  _ZN10linkvisual10StreamSaveC1Ev
+  _ZN10linkvisual10StreamSaveC2Ev
+  _ZN10linkvisual10StreamSaveD1Ev
+  _ZN10linkvisual10StreamSaveD2Ev
+  ... (2378 more)
+
+--- CRYPTO (807 unique) ---
+    ! mbedtls_ssl_conf_own_cert returned %d
+    . Verifying peer X.509 certificate..
+   conn_itvl=%d conn_latency=%d supervision_timeout=%d encrypted=%d authenticated=%d bonded=%d
+   failed ! ssl_client_init returned -0x%04x
+   failed! mbedtls_ssl_config_defaults returned %d
+   mbedtls_x509_crt_parse_der
+  ! fail ! server certificate has been revoked
+  ","encrypt":"
+  "awssVer":%s,"productKey":"%s","deviceName":"%s","mac":"%s","ip":"%s","cipherType":%d,"fwVersion":"%s","service":%d,"serviceVer":%s
+  "secret_key"
+  %sData Encipherment
+  %sDecipher Only
+  %sEncipher Only
+  %sKey Encipherment
+  %s|securemode=%d%s,_v=sdk-c-2.3.0_FY_1.6.6-6,timestamp=%s,signmethod=hmacsha1,lan=C,pid=%s,mid=%s%s,_fy=%s,_ss=1%s|
+  ,"token":"%s","tokenType":%d,"remainTime":%d,"type":%d
+  ,reset=%d,tokenType=%d,token=%s
+  -----BEGIN RSA PRIVATE KEY-----
+  -----END RSA PRIVATE KEY-----
+  <= decrypt buf
+  <= encrypt buf
+  <= mbedtls_ssl_resend
+  <= parse certificate
+  <= parse certificate request
+  <= parse change cipher spec
+  <= skip parse certificate
+  <= skip parse certificate request
+  <= skip write certificate
+  <= skip write certificate verify
+  <= write certificate
+  <= write certificate verify
+  <= write change cipher spec
+  <AudioDecoderConfiguration token="%s"></AudioDecoderConfiguration>
+  <AudioDecoderConfigurations token="%s">
+  <AudioEncoderConfiguration token="%s"></AudioEncoderConfiguration>
+  <AudioEncoderConfigurations token="%s">
+  <AudioOutputConfiguration token="%s"></AudioOutputConfiguration>
+  <AudioOutputConfigurations token="%s">
+  <AudioOutputs token="%s"></AudioOutputs>
+  <AudioSourceConfiguration token="%s"></AudioSourceConfiguration>
+  <AudioSourceConfigurations token="%s">
+  <Configuration token="%s" type="%s">
+  <DigitalInputs token="%s" IdleState="%s">
+  <Masks token="%s">
+  <MetadataConfiguration token="%s"></MetadataConfiguration>
+  <MetadataConfigurations token="%s">
+  <OSDConfigurations token="%s">
+  <Options token="%s">
+  <PTZConfiguration token="%s"></PTZConfiguration>
+  <PTZConfigurations token="%s" MoveRamp="%d" PresetRamp="%d" PresetTourRamp="%d">
+  <PTZNodes token="%s">
+  <PresetTours token="%s">
+  <Presets token="%s">
+  <RelayOutputs token="%s">
+  <SerialPorts token="%s">
+  <VideoEncoderConfiguration token="%s"></VideoEncoderConfiguration>
+  <VideoEncoderConfigurations token="%s"
+  <VideoOutputConfigurations token="%s">
+  <VideoOutputs token="%s">
+  <VideoSourceConfiguration token="%s"></VideoSourceConfiguration>
+  <VideoSourceConfigurations token="%s">
+  <VideoSourceModes token="%s" Enabled="%s">
+  <VideoSources token="%s">
+  <profile token="%s" fixed="%s">
+  <tmd:AudioOutputConfiguration token="%s">
+  <tmd:DigitalInputs token="%s" IdleState="%s"></tmd:DigitalInputs>
+  <tmd:RelayOutputOptions token="%s">
+  <tmd:RelayOutputs token="%s">
+  <tmd:SerialPort token="%s"></tmd:SerialPort>
+  <tmd:SerialPortConfiguration token="%s" type="%s">
+  <tmd:SerialPortOptions token="%s">
+  <tmd:VideoOutputConfiguration token="%s">
+  <tmd:VideoOutputs token="%s">
+  <tr2:AudioDecoder token="%s">
+  <tr2:AudioEncoder token="%s">
+  <tr2:AudioOutput token="%s">
+  <tr2:AudioSource token="%s">
+  <tr2:Configurations token="%s"
+  <tr2:Configurations token="%s">
+  <tr2:Masks token="%s">
+  <tr2:Metadata token="%s">
+  <tr2:OSDs token="%s">
+  <tr2:PTZ token="%s" MoveRamp="%d" PresetRamp="%d" PresetTourRamp="%d">
+  <tr2:Profiles token="%s" fixed="%s"><tr2:Name>%s</tr2:Name><tr2:Configurations>
+  <tr2:VideoEncoder token="%s"
+  <tr2:VideoSource token="%s">
+  <tr2:VideoSourceModes token="%s" Enabled="%s">
+  <tt:AudioDecoderConfiguration token="%s">
+  <tt:AudioEncoderConfiguration token="%s">
+  <tt:AudioOutputConfiguration token="%s">
+  <tt:AudioSourceConfiguration token="%s">
+  <tt:MetadataConfiguration token="%s">
+  <tt:PTZConfiguration token="%s" MoveRamp="%d" PresetRamp="%d" PresetTourRamp="%d">
+  <tt:VideoEncoderConfiguration token="%s">
+  <tt:VideoSourceConfiguration token="%s">
+  => calc  finished tls sha256
+  => calc verify sha256
+  => decrypt buf
+  => encrypt buf
+  => mbedtls_ssl_resend
+  => parse certificate
+  => parse certificate request
+  => parse change cipher spec
+  => write certificate
+  => write certificate verify
+  => write change cipher spec
+  A referred entity token is not found
+  AES - Invalid data input length
+  AES - Invalid key length
+  AES Known Answer Test check FIPS error
+  AES-128-CBC
+  AES-128-CFB128
+  AES-128-ECB
+  AES-192-CBC
+  AES-192-CFB128
+  AES-192-ECB
+  AES-256-CBC
+  AES-256-CFB128
+  AES-256-ECB
+  AES-CCM Authentication check fail
+  AES-CCM invocation counter overflow
+  AES-GCM Authentication check fail
+  AES-GCM invocation counter overflow
+  AESCCM Known Answer Test check FIPS error
+  AESGCM Known Answer Test check FIPS error
+  Bad usage of mbedtls_ssl_set_bio() or mbedtls_ssl_set_bio()
+  Bad user ticket callback encrypt Error
+  Ciphertext to decrypt is out of range
+  Connect p2p vod by time, token=%s, session=%s ip=%s port:%d key:%s 
+  DEK-Info: AES-
+  DEK-Info: AES-128-CBC,
+  DEK-Info: AES-192-CBC,
+  DEK-Info: AES-256-CBC,
+  DHE-RSA-AES256-SHA256
+  Decrypted AES key wrap IV does not match expected
+  ECDHE-ECDSA-AES128-GCM-SHA256
+  ECDHE-ECDSA-AES128-SHA
+  ECDHE-ECDSA-AES128-SHA256
+  ECDHE-ECDSA-AES256-GCM-SHA384
+  ECDHE-ECDSA-AES256-SHA
+  ECDHE-ECDSA-AES256-SHA384
+  ECDHE-RSA-AES128-GCM-SHA256
+  ECDHE-RSA-AES128-SHA
+  ECDHE-RSA-AES128-SHA256
+  ECDHE-RSA-AES256-GCM-SHA384
+  ECDHE-RSA-AES256-SHA
+  ECDHE-RSA-AES256-SHA384
+  ECDHE-RSA-CHACHA20-POLY1305
+  ECDHE-RSA-CHACHA20-POLY1305-OLD
+  EncrypType=AES
+  Failed to delete, credential token is in use
+  Key Use keyEncipherment not set Error
+  Loading the CA root certificate ...
+  NTRU decrypt error
+  NTRU encrypt error
+  Need peer certificate verify Error
+  PEM - Given private key password does not allow for correct decryption
+  PEM - RSA IV is not in hex-format
+  PEM - Unavailable feature, e.g. hashing/encryption combination
+  PEM - Unsupported key encryption algorithm
+  PK - Given private key password does not allow for correct decryption
+  PK - Key algorithm is unsupported (only RSA and EC are supported)
+  PK - The pubkey tag or value is invalid (only RSA and EC are supported)
+  PK - Type mismatch, eg attempt to encrypt with an ECDSA key
+  PK - Unavailable feature, e.g. RSA disabled for RSA key
+  RSA - Bad input parameters to function
+  RSA - Input data contains invalid padding and is rejected
+  RSA - Key failed to pass the library's validity check
+  RSA - Something failed during generation of a key
+  RSA - The PKCS#1 verification failed
+  RSA - The output buffer for decryption is not large enough
+  RSA - The private key operation failed
+  RSA - The public key operation failed
+  RSA - The random generator failed to generate non-zeros
+  RSA Key Pair-Wise Consistency check fail
+  RSA Known Answer Test check FIPS error
+  RSA Signature Fault Error
+  RSA buffer error, output too small or input too big
+  RSA key too small
+  RSA with MD5
+  RSA with SHA-224
+  RSA with SHA-256
+  RSA with SHA1
+  RSA wrong block type for RSA function
+  RSASSA-PSS
+  SHA256wRSA
+  SHA384wRSA
+  SHA512wRSA
+  SSL - An unknown cipher was received
+  SSL - None of the common ciphersuites is usable (eg, no suitable certificate, see debug messages)
+  SSL - Our own certificate(s) is/are too large to send in an SSL message
+  SSL - Public key type mismatch (eg, asked for RSA key exchange and presented EC key)
+  SSL - The own certificate is not set, but needed by the server
+  SSL - The server has no ciphersuites in common with the client
+  Sanity check on ciphertext failed
+  TLS-PSK-WITH-AES-128-CBC-SHA
+  TLS-PSK-WITH-AES-128-CBC-SHA256
+  TLS-PSK-WITH-AES-256-CBC-SHA
+  TLS-RSA-PSK-WITH-AES-128-CBC-SHA
+  TLS-RSA-PSK-WITH-AES-128-CBC-SHA256
+  ... (607 more)
+
+--- ERROR_MESSAGES (4410 unique) ---
+   BLE_HCI_OCF_LE_RX_TEST FAILED
+   BLE_HCI_OCF_LE_TX_TEST FAILED
+   ECC Qx or Qy out of range error
+   ECC point at infinity error
+   ECC private key is not valid error
+   HCI_LE_RECEIVER_TEST_OCF FAILED
+   HCI_LE_TRANSMITTER_TEST_OCF FAILED
+   HCI_LE_Test_End FAILED
+   backup failed ! net_connect returned -0x%04x
+   ble_start_srrc FAILED
+   ble_stop_srrc FAILED
+   ble_tone_tx_start FAILED
+   ble_tone_tx_stop FAILED
+   called with invalid media streams.
+   failed  ! verify result not confirmed.
+   failed ! x509parse_crt returned -0x%04x
+   failed because DTLS identity request failed
+   failed because remote_description is not an offer.
+   failed because the session was shut down
+   invalid len = %d
+   recvfrom() failed!
+   recvfrom() failed: %s
+  ! fail ! ERROR_CERTIFICATE_EXPIRED
+  !!!FreeList Error,Linked item count[%u] > real item count[%u]
+  "message":"FailedBecauseOfNoCandidateReceived"}
+  "message":"FailedBecauseOfOfferSdpNotRecv"}
+  "message":"FailedWhenLocalAndRemoteCandidateReceived"}
+  "message":"FailedWhenLocalCandidateReceived"}
+  "message":"FailedWhenRemoteCandidateReceived"}
+  # Fatal error in 
+  # last system error: 
+  %-8.16s  Failed to read scan data : %s
+  %s  mchnosd_get_str_bmp Error!
+  %s Bind socket failed, error = %d 
+  %s ConnectIp failed, ip = %s, port = %d, error = %d 
+  %s Create json failed
+  %s Create json string failed
+  %s Create rtmp failed
+  %s Create socket failed, error = %d , ret = %d
+  %s Delete picture error, len = %u size = %u
+  %s Delete picture error,len = %u size = %u
+  %s Index error, %u %u %u
+  %s Invalid buffer parameter
+  %s Invalid param
+  %s Json error
+  %s Parse param error
+  %s Put picture result = Failed.OSS info: id = %s, error = %d, code = %s
+  %s Query storage record id failed
+  %s RTMPClient started failed, url:%s, it's impossible
+  %s Read data error
+  %s Read data failed
+  %s Read error, read size error
+  %s Read error, ret = %zd, errno = %d
+  %s Recv error notify: %s
+  %s Set audio codec failed
+  %s Set socket non-block, error = %d 
+  %s Socket error, shutdown
+  %s Start voice assistant failed
+  %s Status error, status = %d
+  %s Time error occur, current = %ld, last = %ld
+  %s Url parse failed
+  %s Url protocol failed
+  %s Voice service Read data failed
+  %s Write failed
+  %s Write failed %d %d %s
+  %s error (%x)
+  %s failed, ret %d
+  %s parse url error
+  %s parse value error:%s
+  %s(%d) : bind device %s failed
+  %s(%d) : recvfrom failed
+  %s(%d) : sendto error
+  %s, %d vi pipe %d get pipe frame failed! wait time = %d
+  %s, %d, attr memcpy_s failed with 0x%x!
+  %s, %d, malloc adpcm ctx failed!
+  %s, %d, malloc g711a ctx failed!
+  %s, %d, malloc g711u ctx failed!
+  %s, %d, malloc g726 ctx failed!
+  %s, %d, outbuf memcpy_s failed, ret = 0x%x!
+  %s, Bind udp socket fail,error = %s
+  %s, Invalid number of quantisation tables
+  %s, accept ret error[%d]!!!
+  %s, create rtsp task queue failed!!!
+  %s, create task queue failed!!!
+  %s, epoll_create failed
+  %s, format error!!!
+  %s, get audio capture instace (%d) failed
+  %s, get properties ability failed 
+  %s, get sip line error!!!
+  %s, hdrv_buf_init failed!!!
+  %s, hqBufGet failed
+  %s, http_get_msg_buf failed
+  %s, http_get_msg_large_buf failed
+  %s, index [%u]error!!!
+  %s, init live audio capture failed
+  %s, init live video capture failed
+  %s, log init sem_init failed[%s]
+  %s, malloc failed
+  %s, memory malloc failed
+  %s, memory malloc failed,len = %d
+  %s, net_buf_get_idle failed
+  %s, net_buf_init failed!!!
+  %s, open file(%s) failed
+  %s, open file(%s) failed 
+  %s, parse json failed 
+  %s, pthread_create failed, ret = %d
+  %s, rtsp_net_listen_init failed!!!
+  %s, rtsp_timer_task failed
+  %s, send failed, fd[%d],tlen[%d,%d],err[%d][%s]!!!
+  %s, send message failed!!!
+  %s, send msg[NULL] to main task failed!!!
+  %s, send rx msg to main task failed!!!
+  %s, setsockopt IP_ADD_MEMBERSHIP error!%s
+  %s, setsockopt SO_REUSEADDR error!
+  %s, setsockopt SO_SNDBUF error!!!
+  %s, socket SOCK_DGRAM error!
+  %s, socket failed
+  %s, unit ptr error!!!
+  %s, unit ptr error!!!!!!
+  %s, unit ptr error,pps_ctx[0x%08x],ptr[0x%08x],low_offset[0x%08x],offset[0x%08x],like entry[%u]
+  %s,Failed open %s, because: %s
+  %s: Allocation failed
+  %s: ERROR opening %s: %s
+  %s: ERROR writing %s: %s
+  %s: ad_chn = %d error.
+  %s: ae_chn = %d error.
+  %s: ai_dev = %d, ai_chn = %d error.
+  %s: ao_dev = %d error.
+  %s: audio init failed with %d!
+  %s: get aenc fd failed
+  %s: get ai chn param failed
+  %s: get ai fd failed
+  %s: get buf line failed
+  %s: hi_mpi_adec_create_chn(%d) failed with %#x!
+  %s: hi_mpi_adec_destroy_chn(%d) failed with %#x!
+  %s: hi_mpi_adec_send_end_of_stream failed!
+  %s: hi_mpi_adec_send_stream(%d) failed with %#x!
+  %s: hi_mpi_adec_send_stream(%d), failed with %#x!
+  %s: hi_mpi_aenc_create_chn(%d) failed with %#x!
+  %s: hi_mpi_aenc_destroy_chn(%d) failed with %#x!
+  %s: hi_mpi_aenc_get_stream(%d), failed with %#x!
+  %s: hi_mpi_aenc_release_stream(%d), failed with %#x!
+  %s: hi_mpi_aenc_send_frame(%d), failed with %#x!
+  %s: hi_mpi_ai_enable(%d) failed with %#x
+  %s: hi_mpi_ai_enable_chn(%d,%d) failed with %#x
+  %s: hi_mpi_ai_enable_re_smp(%d,%d) failed with %#x
+  %s: hi_mpi_ai_enable_vqe(%d,%d) failed with %#x
+  %s: hi_mpi_ai_get_talk_vqe_attr SetAiVqe failed with %#x
+  %s: hi_mpi_ai_release_frame(%d, %d), failed with %#x!
+  %s: hi_mpi_ai_set_pub_attr(%d) failed with %#x
+  %s: hi_mpi_ai_set_talk_vqe_attr(%d,%d) failed with %#x
+  %s: hi_mpi_ao_disable failed with %#x!
+  %s: hi_mpi_ao_disable_chn failed with %#x!
+  %s: hi_mpi_ao_disable_re_smp failed with %#x!
+  %s: hi_mpi_ao_disable_resample (%d,%d) failed with %#x!
+  %s: hi_mpi_ao_disable_vqe(%d,%d) failed with %#x
+  %s: hi_mpi_ao_enable(%d) failed with %#x!
+  %s: hi_mpi_ao_enable_chn(%d) failed with %#x!
+  %s: hi_mpi_ao_enable_resample(%d,%d) failed with %#x!
+  %s: hi_mpi_ao_enable_vqe(%d,%d) failed with %#x
+  %s: hi_mpi_ao_send_frame(%d, %d), failed with %#x!
+  %s: hi_mpi_ao_set_pub_attr(%d) failed with %#x!
+  %s: hi_mpi_ao_set_volume(%d), failed with %#x!
+  %s: hi_mpi_ao_set_vqe_attr(%d,%d) failed with %#x
+  %s: invalid aenc payload type:%d
+  %s: malloc failed!
+  %s: read model[%s] data error.
+  %s: sample_comm_audio_destroy_thread_aenc_adec(%d) failed!
+  %s: sample_comm_audio_destroy_thread_ai(%d,%d) failed!
+  %s: sample_comm_audio_destroy_thread_ao_vol_ctrl(%d) failed!
+  %s: sample_comm_audio_destroy_thread_file_adec(%d) failed!
+  %s: select acodec input_mode failed
+  %s: set acodec micin volume failed
+  %s: set acodec sample rate failed
+  %s: set ai chn param failed
+  %s: set_ai_vqe%d(%d,%d) failed with %#x
+  %s: socket error: %s
+  %s:%d ==>secu_assert failed
+  %s:%d:strncpy_s failed.
+  %s:sample_inner_codec_cfg_audio failed
+  (%s): Invalid header parameters
+  ) failed: 
+  , "ossError": "
+  ----->secu_osddrv_create error F-->%s L-->%d
+  <create_raw_socket> bind(ETH_P_ALL) failed!
+  <create_raw_socket> ioctl(SIOCGIFINDEX) failed!
+  <create_raw_socket> setsockopt(PACKET_MR_PROMISC) failed!
+  <create_raw_socket> socket(PF_PACKET,SOCK_RAW,htons(ETH_P_ALL)) failed!
+  <error>ble_npl_eventq_init fail
+  <error>ble_npl_eventq_release fail
+  <send_80211_frame> write() failed!
+  <tt:Error>%s</tt:Error>
+  @@@@@@GetNetLinkStatus socket failed 
+  @@@@@open 7601 dat failed
+  AAC encode failed
+  ACL add dataset input buffer[%ld](%s) failed: %d
+  ACL add dataset output buffer[%ld](%s) failed: %d
+  ACL create context failed: %d
+  ACL create description failed: %d.
+  ACL destroy description failed: %d
+  ... (4210 more)
+
+--- SHELL_COMMANDS (260 unique) ---
+    echo %d > /sys/class/pwm/pwmchip3/pwm%d/duty_cycle
+   echo %d > /sys/class/pwm/pwmchip3/pwm%d/period
+   echo inversed > /sys/class/pwm/pwmchip3/pwm%d/polarity
+   echo normal > /sys/class/pwm/pwmchip3/pwm%d/polarity
+  %s, bind tcp socket fail,err[%s]!!!
+  %s, listen tcp socket fail,err[%s]!!!
+  *********mount ok user data************
+  *********mount ok************
+  On rtcp heartbeat timeOut, client uuid = 
+  The specified media profile does not have the minimum amount of configurations to have streams
+  [%s:%d]:osal_proc_mkdir return NULL
+  [Func]:%s [Line]:%d [Info]:Invalid ae_route_ex_valid!
+  [Func]:%s [Line]:%d [Info]:ae route error! cur_node multiply = %llu, next_node multiply = %llu
+  [Func]:%s [Line]:%d [Info]:error! the route node number %u is larger than 16!
+  [Func]:%s [Line]:%d [Info]:error! the route node's exposure should not be larger than 0x7FFFFFFFFFFFFFFF in DC-iris mode!
+  [Func]:%s [Line]:%d [Info]:error! the route node's exposure(int_time*sys_gain) should not be larger than 0x1FFFFFFFFFFFFF in P-iris mode!
+  [Func]:%s [Line]:%d [Info]:error! the route node's int_time should not be less than 1!
+  [Func]:%s [Line]:%d [Info]:error! the route node's iris_fno should not be larger than ISP_IRIS_F_NO_1_0!
+  [Func]:%s [Line]:%d [Info]:error! the route node's iris_fno_lin range is [1, 1024]!
+  [Func]:%s [Line]:%d [Info]:error! the route node's sys_gain should not be less than 0x400!
+  [Func]:%s [Line]:%d [Info]:error! the route node[%u]&node[%u]'s param is illegal!
+  [Func]:%s [Line]:%d [Info]:error! the route node[%u]'s multiply is larger than node[%u]!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node number %u is larger than 16!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node's again should not be larger than 0x3FFFFF!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node's again should not be less than 0x400!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node's dgain should not be larger than 0x3FFFFF!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node's dgain should not be less than 0x400!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node's equivalent sys_gain should not be larger than 0xFFFFFFFF!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node's exposure should not be larger than 0x7FFFFFFFFFFFFFFF in DC-iris mode!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node's exposure(int_time*sys_gain) should not be larger than 0x1FFFFFFFFFFFFF in P-iris mode!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node's int_time should not be less than 1!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node's iris_fno should not be larger than ISP_IRIS_F_NO_1_0!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node's iris_fno_lin range is [1, 1024]!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node's isp_dgain should not be larger than 0x40000!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node's isp_dgain should not be less than 0x400!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node[%u]&node[%u]'s param is illegal!
+  [Func]:%s [Line]:%d [Info]:error! the route_ex node[%u]'s multiply is larger than node[%u]!
+  [Func]:%s [Line]:%d [Info]:mkdir (%s) failed !
+  _%s:%d_ mount status [%d], format flag [%d], curPart %d
+  __ifconfig_eth_set
+  __ifconfig_same_network
+  __utl_ifconfig_wifi_WPS_thread
+  ae_ext_regs_update_route
+  ae_proc_write_route
+  ae_proc_write_route_sf
+  ae_route_default
+  ae_route_del_rdcy
+  ae_route_ex_default
+  ae_route_ex_del_rdcy
+  ae_route_ex_get_dw_node
+  ae_route_ex_get_first_node
+  ae_route_ex_get_free
+  ae_route_ex_get_joint
+  ae_route_ex_get_up_node
+  ae_route_ex_init
+  ae_route_ex_initialize
+  ae_route_ex_limit
+  ae_route_ex_print
+  ae_route_ex_update
+  ae_route_ex_update_max_int_time
+  ae_route_ext_regs_read
+  ae_route_get_dw_node
+  ae_route_get_first_node
+  ae_route_get_free
+  ae_route_get_joint
+  ae_route_get_up_node
+  ae_route_init
+  ae_route_initialize
+  ae_route_limit
+  ae_route_node_stgy
+  ae_route_print
+  ae_route_sf_ex_update
+  ae_route_sf_update
+  ae_route_update
+  ae_route_update_max_int_time
+  cat /tmp/wpa_status.txt | grep wifi
+  cp /progs/devInfo /etc/conf.d/
+  cp /progs/rec/00/ralink7601.dat /dev/ra_temp.dat
+  cp /progs/rec/00/wpa_supplicant.conf /etc/network/wpa_supplicant.conf
+  echo %d > /sys/class/pwm/pwmchip3/export
+  echo 0 > /sys/class/pwm/pwmchip3/pwm%d/enable
+  echo 1 > /sys/class/pwm/pwmchip3/pwm%d/enable
+  echo 3 > /proc/sys/vm/drop_caches
+  establish tcp connection with server(host='%s', port=[%u])
+  get default routeing ifname
+  get_route_if_ip
+  get_route_if_mask
+  hi_mpi_isp_get_ae_route_attr
+  hi_mpi_isp_get_ae_route_attr_ex
+  hi_mpi_isp_get_ae_route_sf_attr
+  hi_mpi_isp_get_ae_route_sf_attr_ex
+  hi_mpi_isp_set_ae_route_attr
+  hi_mpi_isp_set_ae_route_attr_ex
+  hi_mpi_isp_set_ae_route_sf_attr
+  hi_mpi_isp_set_ae_route_sf_attr_ex
+  http user over tcp from[0x%08x,%u]
+  ifconfig %s %s
+  ifconfig %s down
+  ifconfig %s mtu 1400
+  ifconfig %s up
+  ifconfig %s|grep %s
+  ifconfig eth0 down;ifconfig eth0 hw ether A6:88:E0:%02X:%02X:%02X;ifconfig eth0 up
+  ifconfig eth0 mtu 1460
+  ifconfig ra0 down
+  ifconfig ra0 up
+  ifconfig wlan0 down
+  ifconfig wlan0 mtu 1460
+  ifconfig wlan0 up
+  ifconfig wlan1 down
+  ifconfig wlan1 up
+  input info format is not support, the correct sample is (echo 'aialgo = 1' > /proc/umap/aialgo)!
+  insmod /home/ipc_drv/extdrv/dooralarm.ko
+  insmod /home/ipc_drv/extdrv/gpioi2c-FM1188.ko
+  insmod /home/ipc_drv/ot_wdt.ko default_margin=60 nodeamon=1
+  insmod /home/wifi/vt9271.ko wlanmode=%d
+  isp_route_check
+  isp_route_check_part1
+  isp_route_check_part2
+  isp_route_ex_check
+  isp_route_ex_check_part1
+  isp_route_ex_check_part2
+  isp_route_ex_check_part3
+  isp_route_ex_check_part4
+  mkdir %s
+  mkdir %s err: %s
+  mkdir -p %s
+  mkdir -p /tmp/index
+  mount /progs/rec/00/ abnormal 
+  mount ok, nPart%d, TotalSpace:%d, FreeSpace:%d
+  mount_sd
+  mstorage_halt_umount
+  mstorage_mount
+  mstorage_resume_mount
+  mstorage_umount
+  new user over tcp from[%s,%u]
+  osal_proc_mkdir
+  ot_mpi_isp_get_ae_route_attr
+  ot_mpi_isp_get_ae_route_attr_ex
+  ot_mpi_isp_get_ae_route_sf_attr
+  ot_mpi_isp_get_ae_route_sf_attr_ex
+  ot_mpi_isp_set_ae_route_attr
+  ot_mpi_isp_set_ae_route_attr_ex
+  ot_mpi_isp_set_ae_route_sf_attr
+  ot_mpi_isp_set_ae_route_sf_attr_ex
+  rm -f /etc/conf.d/hwinfo.json
+  rm -f /etc/conf.d/seted_id
+  rm -f /etc/network/wpa_supplicant.conf
+  rm -rf %s
+  rm -rf /etc/conf.d/fixed/custom_voice/*
+  rm -rf /etc/conf.d/syscfg/*
+  rm -rf /etc/conf.d/syscfg//network; cp /etc/conf.d/syscfg//default/interface.cfg /etc/conf.d/syscfg//network/
+  rm -rf /etc/conf.d/syscfg/face/*
+  rm -rf /etc/conf.d/syscfg/network/*
+  rm -rf /etc/conf.d/syscfg/watchpos.cfg
+  rm -rf /tmp/index
+  rm -rf /var/run/wpa_supplicant/wlan0
+  route del default
+  scene_load_static_ae_route_ex
+  set_net_config::sp_ifconfig_eth_set error, addr=%s, mask=%s, gateway=%s
+  sp_ifconfig_audo_ip
+  sp_ifconfig_eth_get
+  sp_ifconfig_eth_set
+  sp_ifconfig_get_iface
+  sp_ifconfig_get_inet
+  sp_ifconfig_net_deinit
+  sp_ifconfig_ppp_get
+  sp_ifconfig_ppp_set
+  sp_ifconfig_server_get
+  sp_ifconfig_server_set
+  sp_ifconfig_wifi_connect
+  sp_ifconfig_wifi_get
+  sp_ifconfig_wifi_get_by_ssid
+  sp_ifconfig_wifi_get_current
+  sp_ifconfig_wifi_info_get
+  sp_ifconfig_wifi_list_ap
+  sp_ifconfig_wifi_list_cnt
+  sp_ifconfig_wifi_start_ap
+  sp_ifconfig_wifi_start_sta
+  ss_mpi_isp_get_ae_route_attr
+  ss_mpi_isp_get_ae_route_attr_ex
+  ss_mpi_isp_get_ae_route_sf_attr
+  ss_mpi_isp_get_ae_route_sf_attr_ex
+  ss_mpi_isp_set_ae_route_attr
+  ss_mpi_isp_set_ae_route_attr_ex
+  ss_mpi_isp_set_ae_route_sf_attr
+  ss_mpi_isp_set_ae_route_sf_attr_ex
+  static_ae:ae_route_ex_valid
+  static_aerouteex:again
+  static_aerouteex:dgain
+  static_aerouteex:int_time
+  static_aerouteex:isp_dgain
+  static_aerouteex:total_num
+  tcp sock read %d bytes
+  tmp=`netstat -an|grep %d|cut -d ":" -f2|cut -d " " -f1`;echo ${tmp//9101/ }
+  userdata partition mount dev:%s failed, errno: %s
+  utl_ifconfig_all_test
+  utl_ifconfig_bSupport_ETH_check
+  utl_ifconfig_b_linkdown
+  utl_ifconfig_build_attr
+  utl_ifconfig_build_attr SIOCGIFADDR failed
+  ... (60 more)
+
+--- DVRIP CONFIG PATHS (SystemCfg.ini keys) ---
+  ADPercentage
+  ADThreshold
+  ADTimeInterval
+  APACM
+  APAifsn
+  APCwmax
+  APCwmin
+  APSDAC
+  APSDCapable
+  APTxop
+  Ability
+  AccessControlList0
+  AccessControlList1
+  AccessControlList2
+  AccessControlList3
+  AccessPolicy0
+  AccessPolicy1
+  AccessPolicy2
+  AccessPolicy3
+  AccessPolicyConfig
+  AckPolicy
+  AdaptablePreset
+  AlarmAudioRecord
+  AlarmLightSwitch
+  AntDiversity
+  AssocReqFloodThreshold
+  AudioOutputs
+  AudioSources
+  AuthFloodThreshold
+  AuthMode
+  AutoChannelSelect
+  AutoConnect
+  AutoGeo
+  AutoLowFrameEn
+  AutoRoaming
+  AutoStartMulticast
+  AuxiliaryCommands
+  BC_bEnRecord
+  BGProtection
+  BSSACM
+  BSSAifsn
+  BSSCwmax
+  BSSCwmin
+  BSSTxop
+  BasicRate
+  BeaconLostTime
+  BeaconPeriod
+  BitRate
+  BssidNum
+  CCED
+  CEREG
+  CFUN
+  CGACT
+  CGDCONT
+  CGDFAUTH
+  CGDFLT
+  CGPS
+  CGPSPORT
+  CGSN
+  CONFIG_VER
+  COPS
+  CSPeriod
+  CURC
+  CalcFlag
+  CarrierDetect
+  Channel
+  ChannelGeography
+  Colorspace
+  ConfigurationsSupported
+  ConstantBitRate
+  ConstantBitRateSupported
+  CountryCode
+  CountryRegion
+  CountryRegionABand
+  CrossLineDirection
+  CrossLineEnable
+  CrossLineEndX
+  CrossLineEndY
+  CrossLineStartX
+  CrossLineStartY
+  DDNS_Host
+  DDNS_Pwd
+  DDNS_Type
+  DDNS_User
+  DHCPv6
+  DLSCapable
+  Date
+  DateAndTime
+  DeauthFloodThreshold
+  DefaultAccessPolicy
+  DefaultKeyID
+  DevName
+  Dialect
+  DigitalInputOptions
+  DigitalInputs
+  DisableOLBC
+  DisassocFloodThreshold
+  DiscoveryBye
+  DiscoveryResolve
+  Dot11Configuration
+  Dot1X
+  Dot1XConfigurations
+  DtimPeriod
+  DynDNS
+  EAPifname
+  EFlip
+  EXICompression
+  EZoomTrack
+  EapReqFooldThreshold
+  EjJKSZp4A
+  Enabled
+  Encoding
+  EncrypType
+  Error
+  ErrorID
+  EthCloneMac
+  EthConvertMode
+  F1F8
+  F3FBF8F
+  FastConnect
+  FirmwareUpgrade
+  FixedHomePosition
+  FixedTxMode
+  FlickerFrequency
+  FragThreshold
+  FrameRateLimit
+  FrameRatesSupported
+  FtSupport
+  GTRNDIS
+  GTUSBMODE
+  GeoLocation
+  GeoLocationEntries
+  GeoMove
+  GetCompatibleConfigurations
+  GovLength
+  GovLengthRange
+  HSCounter
+  HT_AMSDU
+  HT_AutoBA
+  HT_BADecline
+  HT_BAWinSize
+  HT_DisallowTKIP
+  HT_EXTCHA
+  HT_HTC
+  HT_LinkAdapt
+  HT_MCS
+  HT_MIMOPSMode
+  HT_MpduDensity
+  HT_OpMode
+  HT_RDG
+  HasEth
+  HideSSID
+  HomeIPCFlag
+  HostnameFromDHCP
+  HttpDigest
+  HttpFirmwareUpgrade
+  HttpSupportInformation
+  HttpSystemBackup
+  HttpSystemLogging
+  IEEE80211H
+  IEEE8021X
+  IPFilter
+  IPVersion6
+  IRLBrightness
+  IVPEnable
+  IVPExSwitch
+  IVPFunction
+  IVPIntelligentTracking
+  IVPSensitivity
+  IVPSensitivity1
+  IVPSensitivity2
+  IVPSensitivity3
+  IdleState
+  IdsEnable
+  Image
+  ImageStabilization
+  IsProperty
+  IspFrame
+  KerberosToken
+  Key1Str
+  Key1Type
+  Key2Str
+  Key2Type
+  Key3Str
+  Key3Type
+  Key4Str
+  Key4Type
+  LEReverse
+  LEWeight
+  LinkageEnable
+  MDIALUP
+  MQTTVersion
+  Mask
+  MaxNotificationProducers
+  MaxPasswordLength
+  MaxPullPoints
+  MaxStorageConfigurations
+  MaxUserNameLength
+  MaxUsers
+  MaximumNumberOfProfiles
+  MeshAuthMode
+  MeshAutoLink
+  MeshDefaultkey
+  MeshEncrypType
+  MeshId
+  MeshWEPKEY
+  MeshWPAKEY
+  ModeByMicStatus
+  MoveRamp
+  MoveStatus
+  NETCFG
+  N_ba
+  Name
+  NetworkType
+  NoForwarding
+  NoForwardingBTNBSSID
+  NoRTSPStreaming
+  NonAggregateControl
+  OT_VERSION
+  OUO0OPOQO
+  OnboardKeyGeneration
+  PMFMFPC
+  PMFMFPR
+  PMFSHA256
+  PMKCachePeriod
+  PRODUCT
+  PSMode
+  PassWord
+  PersistentNotificationStorage
+  PktAggregate
+  PlainText
+  PortUsed
+  PreAuth
+  PreAuthifname
+  PresetRamp
+  PresetTourRamp
+  Presets
+  ProbeReqFloodThreshold
+  Profile
+  ProfilesSupported
+  PropertyOperation
+  PtzBeginX
+  PtzBeginY
+  PtzEndX
+  PtzEndY
+  QCFG
+  QCPDPP
+  QNETDEVCTL
+  QhajXn
+  Quality
+  Qv3mW
+  RADIUS_Key
+  RADIUS_Port
+  RADIUS_Server
+  RELToken
+  RTPMulticast
+  RTP_RTSP_TCP
+  RTP_TCP
+  RTSPStreaming
+  RTSPWebSocketUri
+  RTSThreshold
+  RadioOn
+  RandomPresetOrder
+  ReassocReqFloodThreshold
+  RecFileLength
+  RecTimingChn
+  RecTimingCount
+  RectangleOnly
+  RegionDetectEnable
+  RegionLeftBottomX
+  RegionLeftBottomY
+  RegionLeftTopX
+  RegionLeftTopY
+  RegionRightBottomX
+  RegionRightBottomY
+  RegionRightTopX
+  RegionRightTopY
+  RekeyInterval
+  RekeyMethod
+  RelayOutputs
+  RemoteDiscovery
+  RemoteUserHandling
+  Reverse
+  RoamThreshold
+  Rotation
+  RxAntenna
+  SAMLToken
+  SENSOR
+  SIMAUTO
+  SIMAUTOSET
+  SIMCROSS
+  SIMTYPE
+  SINGLESIM
+  STATUS
+  SWITCHSIM
+  SYSNV
+  SerialPorts
+  ShortSlot
+  SingleColorOnly
+  SiteSurvey
+  SnapshotUri
+  SourceMask
+  StationKeepAlive
+  StatusPosition
+  StorageConfiguration
+  StorageTypesSupported
+  SupportedEAPMethods
+  SystemBackup
+  SystemLogging
+  TGnWifiTest
+  TandemVuAlarm
+  TemporaryOSDText
+  Time
+  Token
+  Total
+  Transparent
+  TurboRate
+  TxAntenna
+  TxBurst
+  TxPower
+  TxPreamble
+  TxRate
+  Type
+  UPDATE
+  UROM
+  UserName
+  UsernameToken
+  UtcTime
+  VERCTRL
+  VPJC
+  Value
+  VideoEncoding
+  VideoOutputs
+  VideoSourceMode
+  VideoSources
+  VoicePrompt
+  WLBrightness
+  WPAPSK
+  WSPausableSubscriptionManagerInterfaceSupport
+  WSPullPointSupport
+  WSSubscriptionPolicySupport
+  WapiAsCertPath
+  WapiPsk
+  WapiPskType
+  WapiUserCertPath
+  Wapiifname
+  Watchdog
+  WdsEnable
+  WdsEncrypType
+  WdsList
+  WirelessEvent
+  WirelessMode
+  WmmCapable
+  WscDeviceName
+  WscManufacturer
+  WscModelName
+  WscModelNumber
+  WscSerialNumber
+  XSOKFB
+  YUQMIEA
+  ZeroConfiguration
+  _OWO2O
+  __bSupport_WIFI_check
+  _uuid
+  aPatrol
+  acDevName
+  acMailSender
+  acReceiver0
+  acReceiver1
+  acReceiver2
+  acReceiver3
+  acSMTPCrypto
+  acSMTPPasswd
+  acSMTPPort
+  acSMTPServer
+  acSMTPUser
+  ack_type
+  action
+  addr
+  addr_type
+  adv_itvl
+  aggregate_state
+  aindex
+  alarm_duration
+  alarm_pre_record
+  alarmin_bBuzzing
+  alarmin_bEnRecord
+  alarmin_bEnable
+  alarmin_bNormallyClosed
+  alarmin_bSendEmail
+  alarmin_bSendtoClient
+  alarmin_bSendtoVMS
+  alarmin_u8Num
+  alarming
+  alignment
+  alloc
+  antifog
+  appearance
+  argv0
+  argv1
+  armingAlarmMode
+  armingChn
+  armingDetect
+  armingEnable
+  armingEnablePush
+  armingIsReocrd
+  armingMainEnable
+  armingPlanStatus
+  armingSensitivity
+  athenc
+  attr_handle
+  auth_alg
+  auth_algs
+  authenticated
+  authtype
+  bAEME
+  bAlarmEnable
+  bAlarmSound
+  bAudioEn
+  bBCEnable
+  bByPassAE
+  bCoverRgn
+  bDRCEnable
+  bDoorAPreset
+  bDoorASupport
+  bEightPrivacy
+  bEnable
+  bEnable4G
+  bEnableDST
+  bEnablePrivateProto
+  bEnableSl
+  bEnableWdr
+  bExpSupport
+  bFZSW
+  bFlickerAuto
+  bFlickerEnable
+  bForceUltraLowFps
+  bIPSelfAdapt
+  bIZSW
+  bIsFishEye
+  bLDCEnable
+  bLRSW
+  bLargeOSD
+  bMDEnable
+  bMD_EnFollow
+  bManualAGainEnable
+  bManualDGainEnable
+  bManualExpLineEnable
+  bManualFlip
+  bManualISPGainEnable
+  bOldLinkDown
+  bPDTracking
+  bRecAlarmEnable
+  bRecChFrameEnable
+  bRecDisconEnable
+  bRecEnable
+  bRecTimingEnable
+  bRectStretch
+  bReplayByTime
+  bRestriction
+  bRunning
+  bSch1En
+  bSch2En
+  bShowOSD
+  bSntp
+  bSupportLDC
+  bSupportMultiOsd
+  bSupportSetRedLed
+  bSupportSl
+  bSupportWdr
+  bUDSW
+  bZSW
+  b_floodlight_alarm
+  b_manual_light_flag
+  base
+  beacon_int
+  bitrate
+  bitrate_kbps
+  bits_per_sample
+  blkdevparts
+  bonded
+  bootItem
+  bottom
+  boundary
+  brightness
+  buf_size_send
+  buflen
+  cexp
+  chFrameSec
+  chYF0F
+  channel
+  channelName
+  charset
+  chartset
+  chatMode
+  clientID
+  clientId
+  client_port
+  clientuuid
+  cmd_type
+  code
+  color
+  con_current_socket_num
+  config
+  config_methods
+  configs
+  connId
+  conn_cost
+  conn_handle
+  conn_itvl
+  conn_latency
+  conn_ret
+  conn_type
+  connection
+  contrast
+  count
+  ctrl_interface
+  ctrl_interface_group
+  curi
+  curn
+  cutDelay
+  cut_rate
+  dStr
+  dType
+  d_enable
+  data
+  date
+  dayEnd
+  dayStart
+  daynightMode
+  default_margin
+  destination
+  detect_bEnRecord
+  detecting
+  dev_id
+  deviceCode
+  deviceName
+  dooralarm_bBuzzing
+  dooralarm_bEnRecord
+  dooralarm_bEnable
+  dooralarm_bSendEmail
+  dooralarm_bSendtoClient
+  dooralarm_bSendtoVMS
+  doublelight_bEnable
+  doublelight_bLightOn
+  doublelight_bOutVoice
+  driver
+  dtim_period
+  dummy_packet_len
+  dummy_packet_per_second
+  dummy_packet_ttl
+  dump
+  dump_file
+  duration
+  dyn_recv_buf
+  eap_server
+  effect_flag
+  emailAddress
+  enableStreamWatchDog
+  enble
+  encoding
+  encrypted
+  endX
+  endY
+  errno
+  error
+  errors
+  event_type
+  expHighLightEnable
+  expHighLightLevel
+  exp_mode
+  exp_offset
+  exp_slope
+  exposure
+  exposureMax
+  exposureMin
+  fakedualEnable
+  file_offset_
+  filename
+  first
+  fixed
+  flags
+  floodlightScheduleEnable
+  follow
+  format
+  fragm_threshold
+  frameNo
+  frameType
+  framerate
+  fread_ret
+  gAliMetaInfo
+  g_awss_stop
+  gateway
+  getDeviceNums
+  getStreamNums
+  guardTime
+  guardType
+  guardValue
+  guid
+  handle
+  height
+  host
+  hours_fmt
+  hsPSh
+  ht_capab
+  http
+  http_msg_parse_part1
+  http_msg_parse_part2
+  http_pkt_len
+  hw_mode
+  iCompression
+  iEiji9iBiWiYiziHiIi5ili3i
+  iEncryptType
+  iGOP
+  iLoginType
+  iQuality
+  iResolution
+  ibar
+  icCid
+  iccid
+  iccidx
+  ice_pwd
+  idle_timeout_interval
+  ieee80211n
+  iestat[0]
+  iestat[1]
+  iface
+  ignore_broadcast_ssid
+  imei
+  indexdeltalength
+  indexlength
+  indication
+  inet
+  ini9iti
+  interface
+  interleaved
+  ispFile
+  ispc
+  jmin
+  keepAliveInterval
+  key_mgmt
+  keystat
+  lang
+  last_nightVisionMode
+  last_nightVisionMode_mp1
+  last_nightVisionMode_mp2
+  last_nightVisionMode_mp3
+  lcmsServer
+  ldcRatio
+  left
+  left_t
+  length
+  level
+  light
+  local_address
+  local_priority
+  local_simple_nat_type
+  lock
+  logger_stdout
+  logger_stdout_level
+  logger_syslog
+  logger_syslog_level
+  m_index
+  macaddr_acl
+  mainBitRate
+  mainEncType
+  mainFps
+  mainHeight
+  mainIGOP
+  mainWidth
+  manufacturer
+  mark
+  mask
+  match
+  match_end
+  match_group
+  maxFramerate
+  maxIQP
+  maxQP
+  maxShutterSpeed
+  maxStreamRes
+  max_num_sta
+  max_pathlen
+  media
+  media_ip
+  method
+  mfg_data
+  minIQP
+  minQP
+  mipiChn
+  mlen
+  mmcblk
+  mode
+  model_name
+  model_number
+  modifiers
+  moveSpeed
+  msgId
+  mtd_num
+  mtdparts
+  multiPosition
+  muted
+  nAlarmDelay
+  nBCOutBuzzing
+  nBCOutClient
+  nBCOutEMail
+  nBCOutVMS
+  nBaud
+  nCharSize
+  nCur
+  nFPS
+  nFlowCtl
+  nGOP
+  nGOP_S
+  nIndex
+  nLanguage
+  nMDDelay
+  nMDFunction
+  nMDOutBuzzing
+  nMDOutClient
+  nMDOutEMail
+  nMDOutVMS
+  nMDOutVoice
+  nMDRegion
+  nMDSensitivity
+  nMDTracking
+  nMDadvancedPushSwitch
+  nMDpushSwitch
+  nOSDbInvColEn
+  nPTZAddr
+  nParityBit
+  nPosition
+  nProtocol
+  nSaved
+  nSize
+  nStopBit
+  nTimeFormat
+  nTimePosition
+  nTimes
+  name
+  netmask
+  network
+  nickName
+  nightVisionMode1
+  nodeamon
+  nonce
+  notify_cmd
+  nprotocol
+  ntpServer
+  number
+  numcmp
+  o4oF
+  offset
+  orientation
+  origin
+  osdSize
+  osdText0
+  osdText1
+  osdText2
+  osdText3
+  osdText4
+  osdText5
+  osdText6
+  osdText7
+  osdX
+  osdY
+  own_ip_addr
+  owner
+  pNetwork
+  packetLength
+  packetType
+  pairwise
+  param1
+  param2
+  part
+  partnerCode
+  patrolSpeed
+  payloadlen
+  pmods
+  port
+  posixTZ
+  powerFreq
+  powermode
+  preset
+  presetnum
+  previ
+  prevn
+  productKey
+  proto
+  ptzScheduleEnable
+  public_tgt_addr
+  quality
+  random
+  rate
+  rcMode
+  realm
+  reason
+  rebootDay
+  rebootHour
+  rebootSwitch
+  rebootTime
+  rebootWeekMask
+  recordMode
+  recordQuality
+  regionTZ
+  remote_address
+  remote_priority
+  remote_simple_nat_type
+  resList
+  resListCnt
+  reset
+  reset_detect_times
+  reset_type
+  resources
+  right
+  rlen
+  roiReverse
+  roiWeight
+  rotate
+  rotateBSupport
+  rssi
+  rtptime
+  rts_threshold
+  rtsp_msg_parse_part1
+  rtsp_pkt_len
+  rx_phy
+  s32AGain
+  s32DGain
+  sPassword
+  sUserName
+  s_mode
+  sample_rate
+  saturation
+  scanSpeed
+  scan_ssid
+  sch1TimeEnd
+  sch1TimeStart
+  sch2TimeEnd
+  sch2TimeStart
+  schedule1
+  schedule2
+  score
+  sdp_pkt_len
+  securemode
+  sence
+  send
+  sensorType
+  serialNumber
+  server_port
+  service_id
+  session
+  sessionId
+  session_id
+  session_timeout_interval
+  sharpness
+  side
+  siganl
+  sign
+  signMethod
+  signmethod
+  simMode
+  simple_port_diff
+  simple_port_retry_num
+  sip_pkt_len
+  size
+  sizelength
+  slave_itvl_range
+  slen
+  sntpInterval
+  socket
+  source
+  space
+  speed
+  ssid
+  staWirelessMode
+  start
+  startX
+  startY
+  start_streaming
+  start_time
+  status
+  storageMode
+  strategy
+  streamType
+  streamTypes
+  stream_type
+  streamtype
+  stun_key
+  stun_port
+  stun_server
+  subBitRate
+  subEncType
+  subFps
+  subHeight
+  subIGOP
+  subWidth
+  supervision_timeout
+  svc_data_uuid128
+  svc_data_uuid16
+  svc_data_uuid32
+  sw_cut
+  tick
+  time
+  timeFormat
+  timeout
+  timestamp
+  timezone
+  timg
+  tm_fmt
+  tns1
+  token
+  tokenType
+  topic
+  topic_msg
+  tptz
+  triplet
+  try_port_detect_num
+  tx_phy
+  tx_pwr_lvl
+  type
+  u16AGainMax
+  u16AGainMin
+  u16DGainMax
+  u16DGainMin
+  u32ExpLine
+  u32ISPDGain
+  u32ISPDGainMax
+  u32SystemGainMax
+  ubi_num
+  update_config
+  username
+  uuid
+  vAFMode
+  vAFNearLimit
+  vBaud
+  vDataSize
+  vFlowCtl
+  vParityBit
+  vStopBit
+  vZoomSpeed
+  v_index
+  value
+  vencSet
+  vencType
+  version
+  viHeight
+  viWidth
+  vmsServerIp
+  vmsServerPort
+  vol_count
+  w1w2w4w3w
+  wdrStrength
+  wep_key0
+  whiteBalanceBGain
+  whiteBalanceMode
+  whiteBalanceRGain
+  width
+  wifi_status
+  wlanmode
+  wme_enabled
+  wpa_group_rekey
+  wpa_key_mgmt
+  wpa_pairwise
+  wpa_passphrase
+  wpa_state
+  wps_state
+  writable
+  wsa5
+  wsadis
+  wsaw
+  wsdl
+  wsnt
+  wsntw
+  wsoap12
+  wstop
+  x1x2x3x5x6x
+  xmlns
+  y0y1y2y3y5y6y7y8y9y
+  --- 978 config keys found ---
+
+===========================================================================
+RESFS - RESOURCE ANALYSIS
+===========================================================================
+
+--- WiFi Driver Files ---
+  wifi\atbm6x3x_wifi_usb.ko  (595,904 bytes)
+  wifi\ATBM6x6x_wifi_usb.ko  (741,240 bytes)
+  wifi\cfg80211.ko  (255,976 bytes)
+  wifi\firmware\regulatory.db  (6,192 bytes)
+  wifi\firmware\regulatory.db.p7s  (1,085 bytes)
+  wifi\iwconfig  (22,648 bytes)
+  wifi\iwlist  (27,472 bytes)
+  wifi\libarc4.ko  (3,124 bytes)
+  wifi\libiw.so.29  (38,548 bytes)
+  wifi\mac80211.ko  (395,800 bytes)
+  wifi\udhcpd.conf  (442 bytes)
+  wifi\wpa_cli  (59,012 bytes)
+  wifi\wpa_supplicant  (721,528 bytes)
+
+--- Voice Prompt Files ---
+  voice\common\arming.711
+  voice\common\disarm.711
+  voice\common\doorbell.711
+  voice\common\phone_call.711
+  voice\common\setid.711
+  voice\common\startok.711
+  voice\common\update.711
+  voice\language\br\alarming.711
+  voice\language\br\connected_successfully.711
+  voice\language\br\find_QR_code.711
+  voice\language\br\ip_get_fail.711
+  voice\language\br\link_4g_fail.711
+  voice\language\br\link_4g_ok.711
+  voice\language\br\linking_4g.711
+  voice\language\br\netmode_cut.711
+  voice\language\br\network_4g.711
+  voice\language\br\notfindnet.711
+  voice\language\br\prompt_type1.711
+  voice\language\br\prompt_type2.711
+  voice\language\br\prompt_type3.711
+  voice\language\br\prompt_type4.711
+  voice\language\br\prompt_type5.711
+  voice\language\br\reset.711
+  voice\language\br\reset_4g.711
+  voice\language\br\revNetSetting.711
+  voice\language\br\RF433_fail.711
+  voice\language\br\RF433_learn.711
+  voice\language\br\RF433_ok.711
+  voice\language\br\start_ap_mode.711
+  voice\language\br\start_QR_code_mode.711
+  voice\language\br\uart_4g_fail.711
+  voice\language\br\waitset.711
+  voice\language\br\wifi_fail.711
+  voice\language\br\wifi_ok.711
+  voice\language\cn\alarming.711
+  voice\language\cn\connected_successfully.711
+  voice\language\cn\face_deletion_failed.711
+  voice\language\cn\face_deletion_successful.711
+  voice\language\cn\face_entry_already_exist.711
+  voice\language\cn\face_entry_done.711
+  voice\language\cn\face_entry_exit.711
+  voice\language\cn\face_entry_failed.711
+  voice\language\cn\face_entry_multiple_faces.711
+  voice\language\cn\face_entry_once.711
+  voice\language\cn\face_entry_small.711
+  voice\language\cn\face_entry_start.711
+  voice\language\cn\face_entry_successful.711
+  voice\language\cn\face_entry_timeout.711
+  voice\language\cn\find_QR_code.711
+  voice\language\cn\gpslocationsuccess.711
+  voice\language\cn\ip_get_fail.711
+  voice\language\cn\link_4g_fail.711
+  voice\language\cn\link_4g_ok.711
+  voice\language\cn\linking_4g.711
+  voice\language\cn\netmode_cut.711
+  voice\language\cn\network_4g.711
+  voice\language\cn\no_mask.711
+  voice\language\cn\notfindnet.711
+  voice\language\cn\prompt_type1.711
+  voice\language\cn\prompt_type2.711
+  voice\language\cn\prompt_type3.711
+  voice\language\cn\prompt_type4.711
+  voice\language\cn\prompt_type5.711
+  voice\language\cn\QR_code_error.711
+  voice\language\cn\recv_ap_ok.711
+  voice\language\cn\reset.711
+  voice\language\cn\reset_4g.711
+  voice\language\cn\revNetSetting.711
+  voice\language\cn\RF433_fail.711
+  voice\language\cn\RF433_learn.711
+  voice\language\cn\RF433_ok.711
+  voice\language\cn\start_ap_mode.711
+  voice\language\cn\start_QR_code_mode.711
+  voice\language\cn\starting_face_enrollment.711
+  voice\language\cn\uart_4g_fail.711
+  voice\language\cn\unbind.711
+  voice\language\cn\waitset.711
+  voice\language\cn\wifi_fail.711
+  voice\language\cn\wifi_ok.711
+  voice\language\en\alarming.711
+  voice\language\en\connected_successfully.711
+  voice\language\en\face_entry_done.711
+  voice\language\en\face_entry_start.711
+  voice\language\en\find_QR_code.711
+  voice\language\en\gpslocationsuccess.711
+  voice\language\en\ip_get_fail.711
+  voice\language\en\link_4g_fail.711
+  voice\language\en\link_4g_ok.711
+  voice\language\en\linking_4g.711
+  voice\language\en\netmode_cut.711
+  voice\language\en\network_4g.711
+  voice\language\en\notfindnet.711
+  voice\language\en\prompt_type1.711
+  voice\language\en\prompt_type2.711
+  voice\language\en\prompt_type3.711
+  voice\language\en\prompt_type4.711
+  voice\language\en\prompt_type5.711
+  voice\language\en\QR_code_error.711
+  voice\language\en\recv_ap_ok.711
+  voice\language\en\reset.711
+  voice\language\en\reset_4g.711
+  voice\language\en\revNetSetting.711
+  voice\language\en\RF433_fail.711
+  voice\language\en\RF433_learn.711
+  voice\language\en\RF433_ok.711
+  voice\language\en\start_ap_mode.711
+  voice\language\en\start_QR_code_mode.711
+  voice\language\en\uart_4g_fail.711
+  voice\language\en\unbind.711
+  voice\language\en\update.711
+  voice\language\en\waitset.711
+  voice\language\en\wifi_fail.711
+  voice\language\en\wifi_ok.711
+  voice\language\ln\ip_get_fail.711
+  voice\language\ln\notfindnet.711
+  voice\language\ln\reset.711
+  voice\language\ln\revNetSetting.711
+  voice\language\ln\waitset.711
+  voice\language\ln\wifi_fail.711
+  voice\language\ln\wifi_ok.711
+  voice\language\rn\ip_get_fail.711
+  voice\language\rn\notfindnet.711
+  voice\language\rn\reset.711
+  voice\language\rn\revNetSetting.711
+  voice\language\rn\waitset.711
+  voice\language\rn\wifi_fail.711
+  voice\language\rn\wifi_ok.711
+  voice\language\ru\alarming.711
+  voice\language\ru\ip_get_fail.711
+  voice\language\ru\link_4g_fail.711
+  voice\language\ru\link_4g_ok.711
+  voice\language\ru\linking_4g.711
+  voice\language\ru\netmode_cut.711
+  voice\language\ru\network_4g.711
+  voice\language\ru\notfindnet.711
+  voice\language\ru\prompt_type1.711
+  voice\language\ru\prompt_type2.711
+  voice\language\ru\prompt_type3.711
+  voice\language\ru\prompt_type4.711
+  voice\language\ru\prompt_type5.711
+  voice\language\ru\reset.711
+  voice\language\ru\reset_4g.711
+  voice\language\ru\revNetSetting.711
+  voice\language\ru\start_ap_mode.711
+  voice\language\ru\start_QR_code_mode.711
+  voice\language\ru\uart_4g_fail.711
+  voice\language\ru\update.711
+  voice\language\ru\wifi_fail.711
+  voice\language\ru\wifi_ok.711
+  voice\language\vn\alarming.711
+  voice\language\vn\ip_get_fail.711
+  voice\language\vn\link_4g_fail.711
+  voice\language\vn\link_4g_ok.711
+  voice\language\vn\linking_4g.711
+  voice\language\vn\netmode_cut.711
+  voice\language\vn\network_4g.711
+  voice\language\vn\notfindnet.711
+  voice\language\vn\prompt_type1.711
+  voice\language\vn\prompt_type2.711
+  voice\language\vn\prompt_type3.711
+  voice\language\vn\prompt_type4.711
+  voice\language\vn\prompt_type5.711
+  voice\language\vn\reset.711
+  voice\language\vn\revNetSetting.711
+  voice\language\vn\RF433_fail.711
+  voice\language\vn\RF433_learn.711
+  voice\language\vn\RF433_ok.711
+  voice\language\vn\start_ap_mode.711
+  voice\language\vn\start_QR_code_mode.711
+  voice\language\vn\uart_4g_fail.711
+  voice\language\vn\update.711
+  voice\language\vn\waitset.711
+  voice\language\vn\wifi_fail.711
+  voice\language\vn\wifi_ok.711
+
+--- Sensor/ISP Files ---
+  sensor\sc635hai\pqbin\black.bin  (144,774 bytes)
+  sensor\sc635hai\pqbin\day.bin  (144,774 bytes)
+  sensor\sc635hai\pqbin\light.bin  (144,774 bytes)
+  sensor\sc635hai\pqbin\night.bin  (144,774 bytes)
+
+--- IVP (AI/NPU Model) Files ---
+  ivp\det_hv_hor.bin  (892,816 bytes)
+
+--- AIISP (AI ISP) Files ---
+  aiisp\aibnr_model_2688x1520.bin  (262,363 bytes)
+  aiisp\aibnr_model_2688x1520_high_iso.bin  (262,376 bytes)
+  aiisp\aibnr_model_2688x1520_pro.bin  (258,734 bytes)
+  aiisp\aibnr_model_3200x1800.bin  (261,542 bytes)
+  aiisp\aibnr_model_3200x1800_high_iso.bin  (261,542 bytes)
+
+===========================================================================
+APPFS - SHELL SCRIPTS
+===========================================================================
+
+--- home\bashrc.sh ---
+  #! /bin/sh
+  
+  mount_as_tmpfs	/etc/        
+  mount_as_tmpfs	/progs/rec
+  NET_STAT=0
+  
+  export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/home/libs"
+  
+  #���ñ����ڴ��С
+  echo 1024 > /proc/sys/vm/min_free_kbytes
+  #echo 4 > /proc/sys/kernel/printk
+  #����ջ��С
+  #ulimit -s 8192
+  ulimit -s unlimited 
+  ulimit -c unlimited
+  
+  #get /dev/mtdblockN with mtd name
+  getmtd()
+  {
+  	MTDNAME=$1
+  	temp=`grep $MTDNAME /proc/mtd`
+  	temp=${temp%%:*}
+  	echo ${temp/mtd/\/dev\/mtdblock}
+  }
+  
+  #mtd1: 00480000 00010000 "appfs"
+  CONFIG_MTD=`getmtd \"configfs\"`
+  CONFIG_MTD2=`getmtd \"config\"`
+  echo $CONFIG_MTD
+  
+  [ -d /etc/conf.d ] || mkdir /etc/conf.d
+  mount -t jffs2 $CONFIG_MTD /etc/conf.d/ || mount -t jffs2 $CONFIG_MTD2 /etc/conf.d/
+  [ -d /etc/conf.d/syscfg ] || mkdir /etc/conf.d/syscfg
+  [ -d /etc/conf.d/syscfg/network ] || mkdir /etc/conf.d/syscfg/network
+  [ -d /etc/conf.d/fixed ] || mkdir /etc/conf.d/fixed
+  
+  source /home/variable
+  source /etc/conf.d/fixed/hwconfig.cfg
+  
+  ######BSP##############
+  
+  if [[ $PART && $PART == 16 ]]; then
+  	RES_MTD=`getmtd \"resfs\"`
+  	echo $RES_MTD
+  	mkdir /tmp/resfs
+  	mount -t squashfs $RES_MTD /tmp/resfs
+  	
+  	mount /tmp/resfs/wifi /home/wifi
+  	if [ $WIFI == "aic8800_single" ]; then
+  		mount /tmp/resfs/wifi/aic8800_single /home/wifi/aic8800
+  	elif [ $WIFI == "aic8800_dual" ]; then
+  		mount /tmp/resfs/wifi/aic8800_dual /home/wifi/aic8800
+  	fi
+  
+  #	if [[ 1 == 1 ]];then
+  		mount /tmp/resfs/ble /home/ble
+  #	fi
+  	if [[ $IVP == 1 ]];then
+  		mount /tmp/resfs/ivp /home/ivp
+  	fi
+  
+  	if [[ $AIISP == 1 ]];then
+  		mount /tmp/resfs/aiisp /home/aiisp
+  	fi
+  
+  	if [[ $NPU == 1 ]];then
+  		mount /tmp/resfs/npu /home/npu
+  	fi
+  
+  	if [[ $USB == 1 ]];then
+  		mount /tmp/resfs/usb /home/ipc_drv/usb
+  		
+  		if [[ $NET4G == 1 ]];then
+  			mount /tmp/resfs/4g /home/ipc_drv/4g
+  		fi
+  		
+  		if [[ $UVC_TYPE ]];then
+  			mount /tmp/resfs/uvc/ /home/ipc_drv/uvc
+  		fi
+  	fi
+  
+  #	mount /tmp/resfs/sensor/${SENSOR}/pqbin /home/pq_bin
+  	mount /tmp/resfs/sensor /home/sensor
+  	
+  	mount /tmp/resfs/voice/common /home/voice/common
+  	if [ ! -z $lang ];then
+  		mount /tmp/resfs/voice/language/${lang} /home/voice/language
+  	else
+  		mount /tmp/resfs/voice/language/${language} /home/voice/language
+  	fi
+  fi 
+  
+  if [[ $USB == 1 ]];then
+  	echo "insmod usb controller ko"
+  
+  	if [[ $NET4G == 1 ]];then
+  		echo "insmod 4g ko"
+  
+  	fi
+  	if [[ $UVC_TYPE ]];then
+  		echo "insmod uvc v4l2 ko"
+  
+  		if [[ $UVC_TYPE == 1 ]];then
+  			echo "insmod uvc slave ko"
+  
+  		elif [[ $UVC_TYPE == 2 ]];then
+  			echo "insmod uvc host ko"
+  		fi
+  	fi
+  fi
+  
+  #insmod /home/ipc_drv/extdrv/hi_gpio.ko
+  if [ -f /home/ipc_drv/extdrv/motor_advance.ko ]; then
+  	echo "ins moto"
+  	insmod /home/ipc_drv/extdrv/motor_advance.ko
+  fi
+  
+  #set id  
+  if [ -f /home/aliyun.conf ]; then
+  	if [ ! -f /etc/conf.d/aliyun.conf ]; then
+  		echo "set aliyun id"
+  		cp /home/aliyun.conf /etc/conf.d/aliyun.conf
+  	fi
+  fi
+  /progs/updateID.sh
+  
+  ########MEDIA############
+  
+  cd /home/ipc_drv
+  
+  gkNetStat()
+  {
+  	reg=$1
+  	val=`devmem $reg`
+  	echo $((($val >> 1) & 0x1))
+  }
+  		
+  getSysMem()
+  {	
+  	#parse cmdline
+  	mem=40
+  	bootargs=$(cat /proc/cmdline)
+  	for i in $bootargs
+  	do
+  		if [[ "$(echo $i | grep "mem")" != "" ]];then	
+  			mem=${i##*=}
+  			mem=${mem%%M*}
+  			break
+  		fi
+  	done
+  	echo $mem
+  }
+  
+  echo SENSOR=${SENSOR} > /etc/conf.d/syscfg/sensor.sh
+  #echo SENSOR0=${SENSOR0} >> /etc/conf.d/syscfg/sensor.sh
+  echo SENSOR1=${SENSOR1} >> /etc/conf.d/syscfg/sensor.sh
+  
+  #/home/loadmpp.sh 
+  #./load${chip} -i -sensor ${SENSOR} -osmem ${OSMEM} -pcb ${PCBNAME}
+  #example: $0 -i -sensor0 sc4336p -sensor1 sc4336p -mmz_start 0x42000000 -mmz_size 32M -ir_auto 1\n"
+  
+  mem_total=64
+  mem_start=0x40000000 
+  if [[ $chip == "hi3516cv610_10b" ]]; then
+  	echo $chip
+  	mem_total=64
+  elif [[ $chip == "hi3516cv610_20s" ]]; then
+  	echo $chip
+  	mem_total=128
+  fi
+  
+  getSysMem()
+  {	
+  	#parse cmdline
+  	mem=37
+  	bootargs=$(cat /proc/cmdline)
+  	for i in $bootargs
+  	do
+  		if [[ "$(echo $i | grep "mem")" != "" ]];then	
+  			mem=${i##*=}
+  			mem=${mem%%M*}
+  			break
+  		fi
+  	done
+  	echo $mem
+  }
+  
+  os_mem_size=`getSysMem`
+  
+  mmz_start=`echo "$mem_start $os_mem_size"  |
+  awk 'BEGIN { temp = 0; }
+  {
+  		temp = $1/1024/1024 + $2;
+  }
+  END { printf("0x%x00000\n", temp); }'`
+  
+  mmz_size=`echo "$mem_total $os_mem_size"  |
+  awk 'BEGIN { temp = 0; }
+  {
+  		temp = $1 - $2;
+  }
+  END { printf("%dM\n", temp); }'`
+  
+  echo "mem_total: $mem_total, os_mem_size: $os_mem_size, mmz_start: $mmz_start, mmz_size: $mmz_size"
+  
+  if [[ -n "${VENC_ABILITY+x}" ]]; then
+  	echo venc ${VENC_ABILITY}
+  	./loadhi3516cv610 -i -sensor0 $SENSOR -sensor1 $SENSOR1 -mmz_start $mmz_start -mmz_size $mmz_size -chip $chip -venc $VENC_ABILITY
+  else
+  	./loadhi3516cv610 -i -sensor0 $SENSOR -sensor1 $SENSOR1 -mmz_start $mmz_start -mmz_size $mmz_size -chip $chip
+  fi
+  bspmm 0x11091400 0x00
+  insmod /home/ipc_drv/ot_adc.ko
+  
+  #############NET WORK###########
+  
+  #echo "256000" > /proc/sys/net/core/wmem_default	#500KBĬ�ϻ���
+  #echo "512000" > /proc/sys/net/core/wmem_max	#1000KB��󻺴�
+  #echo "512000" > /proc/sys/net/core/rmem_default	#500KBĬ�ϻ���
+  #echo "1024000" > /proc/sys/net/core/rmem_max	#1000KB��󻺴�
+  
+  if [[ $PART && $PART == 16 ]];then
+  	source /home/lswifi
+  	if [ -f "/tmp/wificfg" ]; then
+  		source /tmp/wificfg
+  		echo $WIFI
+  	fi
+  fi
+  if [[ $NET_STAT != 1 && $WIFI != "none" ]];then
+  	echo "insmod wifi ko"
+  	
+  	insmod /home/wifi/cfg80211.ko
+  	insmod /home/wifi/libarc4.ko
+  	insmod /home/wifi/mac80211.ko
+  	if [[ $WIFI == "rtl8188" ]]; then
+  		[ ! -f /home/wifi/rtl8188f.ko ] || insmod /home/wifi/rtl8188f.ko
+  	elif [[ $WIFI == "rtl8733bu" ]]; then
+  		[ ! -f /home/wifi/rtl8733bu.ko ] || insmod /home/wifi/rtl8733bu.ko
+  	elif [[ $WIFI == "rtl8733bs" ]]; then
+  		[ ! -f /home/wifi/rtl8733bs.ko ] || insmod /home/wifi/rtl8733bs.ko
+  	elif [[ $WIFI == "ws73v100" ]]; then
+  		echo "insmod $WIFI"
+  		[ ! -f /home/wifi/ws73v100/plat_soc.ko ] || insmod /home/wifi/ws73v100/plat_soc.ko
+  		[ ! -f /home/wifi/ws73v100/wifi_soc.ko ] || insmod /home/wifi/ws73v100/wifi_soc.ko
+  
+  		[ ! -f /home/ble/crc16.ko ] || insmod /home/ble/crc16.ko
+  		[ ! -f /home/ble/bluetooth.ko ] || insmod /home/ble/bluetooth.ko
+  		[ ! -f /home/ble/ble_soc.ko ] || insmod /home/ble/ble_soc.ko
+  		[ ! -f /home/ble/bin/bluetoothd ] || /home/ble/bin/bluetoothd -n &
+  
+  	elif [[ $WIFI == "atbm6x3x" ]]; then
+  		[ ! -f /home/wifi/atbm6x3x_wifi_usb.ko ] || insmod /home/wifi/atbm6x3x_wifi_usb.ko wifi_bt_comb=1
+  	elif [[ $WIFI == "atbm6x6x" ]]; then
+  		[ ! -f /home/wifi/ATBM6x6x_wifi_usb.ko ] || insmod /home/wifi/ATBM6x6x_wifi_usb.ko wifi_bt_comb=1
+  	elif [[ $WIFI == "hi3881" ]]; then
+  		[ ! -f /home/wifi/hi3881.ko ] || insmod /home/wifi/hi3881.ko; 
+  	elif [[ $WIFI == "aic8800_dual" || $WIFI == "aic8800_single" ]]; then
+  		[ ! -f /home/wifi/aic8800_bsp.ko ] || insmod /home/wifi/aic8800_bsp.ko
+  		[ ! -f /home/wifi/aic8800/aic8800_fdrv.ko ] || insmod /home/wifi/aic8800/aic8800_fdrv.ko	
+  	fi
+  fi
+  
+  #setMAC
+  cp /etc/conf.d/fixed/mac.cfg /etc/conf.d/syscfg/network/mac.cfg
+  if [ -f /etc/conf.d/syscfg/network/mac.cfg ] ; then
+  	. /etc/conf.d/syscfg/network/mac.cfg
+  fi
+  
+  #udevstart
+  
+  #/usr/sbin/setMAC
+  
+  #�����������
+  /progs/networkcfg.sh
+  #telnetd&
+  #hwclock -s -u
+  
+  if [[ ${MCU_SUPPORT:-0} -eq 1 ]]; then
+  	echo "quick mux pin uart2 and disable eth and fephy reset clock"
+  	bspmm 0x1113004c 0x1105	 #uart tx
+  	bspmm 0x11130048 0x1105  #uart rx
+  	bspmm 0x110137cc 0x9	 #disable eth and fephy reset
+  fi
+  #######################APP##################
+  #cd /progs
+  #cp /progs/bin/mySystem /tmp/
+  #/tmp/mySystem &
+  echo "3 4 1 7" > /proc/sys/kernel/printk
+  echo "/tmp/core_$(echo $RANDOM).%e.%s.%p.%t" >/proc/sys/kernel/core_pattern
+  /tmp/appfs/progs/bin/mySystem &
+  #./startup.sh &
+  /progs/startup.sh &
+  
+
+--- home\nc-demo.sh ---
+  #!/bin/sh
+  
+  IPCID=234
+  SERVERIP=192.168.11.35
+  SERVERMAC=8C:89:A5:6D:9D:94
+  
+  cd /home/
+  insmod netconsole.ko netconsole=${IPCID}@/,514@$SERVERIP/$SERVERMAC
+  syslogd -L -R $SERVERIP:514
+  cd /progs
+  ./bin/sctrl log=$IPCID&
+
+--- progs\networkcfg.sh ---
+  #!/bin/sh
+  
+  source /home/variable
+  STORAGE_PATH=/etc/conf.d/syscfg/network
+  default_interface()
+  {
+  	echo "No interface.cfg, build it now"
+  	echo "#iface is the name of the dev, such as interface0/ppp0/ra0">>/etc/network/interface.cfg
+  	echo "iface=eth0">>/etc/network/interface.cfg
+  	echo "#inet=static/dhcp/ppp/wifi">>/etc/network/interface.cfg
+  	if [ $NET_DHCP == 1 ];then
+  		echo "inet=dhcp">>/etc/network/interface.cfg
+  	else
+  		echo "inet=static">>/etc/network/interface.cfg
+  	fi
+  	echo "">>/etc/network/interface.cfg
+  	echo "ip=192.168.1.123">>/etc/network/interface.cfg
+      	echo "netmask=255.255.255.0">>/etc/network/interface.cfg
+  	echo "gateway=192.168.1.1">>/etc/network/interface.cfg
+  	echo "dns=8.8.8.8">>/etc/network/interface.cfg
+  }
+  
+  [ -d $STORAGE_PATH ] || mkdir -p $STORAGE_PATH
+  [ -d /etc/network ] && rm -rf /etc/network
+  [ -d /etc/ppp ] && rm -rf /etc/ppp
+  ln -s $STORAGE_PATH/ /etc/network
+  ln -s $STORAGE_PATH/ /etc/ppp
+  [ -f $STORAGE_PATH/pppoe.conf ] || cp /etc/ppp/* $STORAGE_PATH
+  [ -d /var/run ] || mkdir /var/run
+  [ -f /etc/network/interface.cfg ] || default_interface
+  
+  ##################################################
+  # interface setting now
+  
+  ifconfig eth0 up
+  ifconfig lo up
+  
+  #ɾ��Ĭ��·�ɣ���������IPʱ��������ܶ�Ĭ��·��
+  route del default
+  route del 255.255.255.255
+  
+  . /etc/network/interface.cfg
+  echo interface info here...
+  echo iface   = $iface
+  echo inet    = $inet
+  echo ip      = $ip
+  echo netmask = $netmask
+  echo gateway = $gateway
+  echo dns     = $dns
+  
+  #���ӹ㲥·��
+  add_broadcast_route()
+  {
+  	route add -net 255.255.255.255 netmask 255.255.255.255 dev $iface
+  	route add -net 224.0.0.0 netmask 240.0.0.0 dev $iface
+  }
+  
+  killall udhcpc
+  killall wpa_supplicant
+  
+  #ifconfig eth0:0 169.254.0.1
+  #set interface ip
+  case $inet in
+  	dhcp)
+  		echo iface $iface udhcpc 
+  		udhcpc -i $iface -q && add_broadcast_route &
+  		ifconfig $iface mtu 1460
+  		;;
+  	static)
+  		echo iface $iface static 
+  		ifconfig $iface $ip netmask $netmask
+  		route add default gw $gateway
+  		echo "nameserver $dns">/etc/resolv.conf
+  		echo "`ifconfig eth0`" > /var/run/jvnetstatus
+  		echo "interface, static ip..."
+  		add_broadcast_route
+  		ifconfig $iface mtu 1460
+  		;;
+  	ppp)
+  		echo iface $iface pppoe
+  		#ifconfig eth0 $ip netmask $netmask
+  		#For hisi 3507, �������һ��eth0 down, eth0 up�Ķ���������PPPOE���£��������Եȣ��ù���ȥ��
+  		sleep 1
+  		pppoe-start
+  		add_broadcast_route
+  		;;
+  	wifi)
+  		echo iface $iface wifi
+  	#	ifconfig eth0 down
+  		ifconfig $iface up
+  		sleep 1
+  		#/wifi/wpa_supplicant -B -i$iface -c /etc/network/wpa_supplicant.conf -Dwext
+  		/home/wifi/wpa_supplicant -Dnl80211 -i$iface -c /etc/network/wpa_supplicant.conf &
+  		udhcpc -i $iface -q &
+  		sleep 2
+  		add_broadcast_route
+  		;;
+  	*)
+  		echo inet error: $inet
+  		default_interface
+  		add_broadcast_route
+  		;;
+  esac
+
+--- progs\startup.sh ---
+  #!/bin/sh
+  
+  export LD_LIBRARY_PATH=/progs/lib/:$LD_LIBRARY_PATH
+  #Here the mount cmd, It is because the fs is readonly, So for display of snapshot pic, mount another directory here.
+  export PATH=/progs/bin/:$PATH
+  #./bin/thttpd -d /progs/html/ -c /cgi-bin/\* -u root
+  #./bin/rtspServerForJovision /etc/conf.d/jovision/pipe/ live%d.264 3&
+  
+  ###################################################
+  #Here These commond, is working for the thttpd bug.
+  #
+  # The thtpd bug :
+  # When thttpd running, If set time year add 1, thttpd
+  # will do sth. and ipcam work bad.
+  #
+  #date -s 071309151991.00
+  #wget -P /tmp/ http://127.0.0.1/index.html
+  #rm /tmp/index.html
+  #hwclock -s -u
+  
+  #if ! mountpoint /progs/html/cgi-bin/snapshot
+  #then
+  #	mount /tmp /progs/html/cgi-bin/snapshot
+  #fi
+  
+  #���������÷���Ϊ18EP
+  #if [ ! -e /dev/mtdblock5 ];then
+  #	if [ -f /etc/init.d/rcS_old ] && [ -f /home/bashrc.sh ]; then
+  #		echo mySystem has been running
+  #	else
+  #		cp /progs/bin/mySystem /tmp/
+  #		/tmp/mySystem &
+  #	fi
+  #fi
+  
+  #gkmm 0x112c0058  0x2 
+  #gkmm 0x112c005c  0x2
+  
+  #cp ./bin/superb /tmp/
+  
+  ulimit -s unlimited
+  
+  if [ -f /etc/conf.d/debug.sh ]; then
+  	echo "./corefile/core.%e.%s.%p.%t" >/proc/sys/kernel/core_pattern
+  	/etc/conf.d/debug.sh &
+  else
+  	#insmod /home/ipc_drv/xm_wdt.ko  default_margin=60 nodeamon=1
+  
+  	echo startup
+  	/tmp/appfs/progs/bin/superb &
+  	sleep 15
+  	cd /progs/rec/00/PQtool && ./PQTools.sh -c
+  	#cd /progs/PQtool && ./PQTools.sh -c
+    	
+  	#telnetd & 
+  	#sleep 10 
+  	#fwdate=`date +%Y-%m-%d-%H%M%S`
+  	#mkdir /progs/rec/11/
+  	#mount -t vfat /dev/mmcblk0p1 /progs/rec/11/
+  	#/tmp/appfs/progs/bin/superb > /progs/rec/11/${fwdate}_$(echo $RANDOM).log 2>&1 &
+  	#cat /proc/umap/* > /progs/rec/00/${fwdate}_$(echo $RANDOM)_uamp.log 2>&1 &
+  	#cat /dev/logmpp > /progs/rec/00/${fwdate}_$(echo $RANDOM)_logmmp.log 2>&1 &
+  	#/tmp/superb 
+  	#reboot
+  fi
+  
+  #superb�˳���Ҫ����thttpd��udhcpc
+  #killall thttpd udhcpc
+
+--- progs\updateID.sh ---
+  #!/bin/sh
+  
+  [ -d /var/udisk ] && umount /var/udisk
+  if [ -b /dev/mmcblk0p1 ];then
+  	[ -d /var/udisk ] || mkdir /var/udisk
+  	mount -t vfat /dev/mmcblk0p1 /var/udisk
+  	
+  	if [ -d /var/udisk/seculinkIdRecycle ]; then
+  		echo recycling id
+  		if [ -f /var/udisk/seculinkIdRecycle/recycle_ali.sh ]; then
+  			echo recycling aliyun lic
+  			chmod 777 /var/udisk/seculinkIdRecycle/recycle_ali.sh
+  			source /var/udisk/seculinkIdRecycle/recycle_ali.sh
+  		fi
+  	fi
+  	
+  	if [ -f /var/udisk/seculinkMac/seculinkMAC.txt ]; then
+  		echo upate mac config
+  		cd /var/udisk/seculinkMac/
+  		if grep -q 'A6:88:E0' seculinkMAC.txt  
+  		then
+  			mac=$(awk 'NR==1 {printf $1}' seculinkMAC.txt)
+  			echo $mac
+  			sed -i '1d' seculinkMAC.txt
+  			echo "$mac" >/etc/conf.d/fixed/mac.cfg
+  			echo USED$mac >>usedmac.txt
+  			echo "set mac" >>/etc/conf.d/seted_mac
+  		else
+  			echo no mac
+  			[ -f /etc/conf.d/seted_mac ] && rm -f /etc/conf.d/seted_mac
+  		fi
+  	else
+  		echo no mac config
+  		[ -f /etc/conf.d/seted_mac ] && rm -f /etc/conf.d/seted_mac
+  	fi
+  	if [ -d /var/udisk/seculinkDanaleUid/danaleUid/ ]; then
+  		echo update danale config file
+  		cd /var/udisk/seculinkDanaleUid/danaleUid/
+  		if  find *.conf > /dev/null  
+  		then
+  			find ./ -type f ! -name '*.conf' -exec rm -f {} \;
+  			filename=$(find *.conf|head -1)
+  			echo $filename
+  			if [ -f  ../alreadyUsedUid/"$filename.used" ];
+  			then
+  				echo danaleID file used
+  				rm -f $filename
+  			else
+  				cp $filename /etc/conf.d/danale.conf
+  				echo "set danale id">>/etc/conf.d/seted_id 
+  				mv $filename ../alreadyUsedUid/ || ( rm -f /etc/conf.d/danale.conf;rm -f /etc/conf.d/seted_id )
+  				find ../alreadyUsedUid/*.conf -exec mv {} {}.used \;
+  			fi
+  		else
+  			[ -f /etc/conf.d/seted_id ] && rm -f /etc/conf.d/seted_id
+  			echo no danale conf file
+  		fi
+  	else
+  		echo no danale config
+  		[ -f /etc/conf.d/seted_id ] && rm -f /etc/conf.d/seted_id
+  	fi
+  	
+  	if [ -d /var/udisk/seculinkAliyunUid/aliyunUid/ ]; then
+  		echo update aliyun config file
+  		cd /var/udisk/seculinkAliyunUid/aliyunUid/
+  		if  find *.conf > /dev/null  
+  		then
+  			find ./ -type f ! -name '*.conf' -exec rm -f {} \;
+  			filename=$(find *.conf|head -1)
+  			echo $filename
+  			if [ -f  ../alreadyUsedUid/"$filename.used" ];
+  			then
+  				echo aliyunUid file used
+  				rm -f $filename
+  			else
+  				cp $filename /etc/conf.d/aliyun.conf
+  				echo "set aliyun id">>/etc/conf.d/seted_id 
+  				mv $filename ../alreadyUsedUid/ || ( rm -f /etc/conf.d/aliyun.conf;rm -f /etc/conf.d/seted_id )
+  				find ../alreadyUsedUid/*.conf -exec mv {} {}.used \;
+  			fi
+  		else
+  			if find *.txt > /dev/null
+  			then
+  				find ./ -type f ! -name '*.txt' -exec rm -f {} \;
+  				filename=$(find *.txt|head -1)
+  				echo $filename
+  				if [ -f  ../alreadyUsedUid/"$filename.used" ];
+  				then
+  					echo aliyunUid file used
+  					rm -f $filename
+  				else
+  					cp $filename /etc/conf.d/lic.bin
+  					echo "set aliyun id">>/etc/conf.d/seted_id 
+  					mv $filename ../alreadyUsedUid/ || ( rm -f /etc/conf.d/lic.bin;rm -f /etc/conf.d/seted_id )
+  					find ../alreadyUsedUid/*.txt -exec mv {} {}.used \;
+  				fi
+  			else
+  				[ -f /etc/conf.d/seted_id ] && rm -f /etc/conf.d/seted_id
+  				echo no aliyun conf file
+  			fi
+  		fi
+  	else
+  		echo no aliyun config
+  		[ -f /etc/conf.d/seted_id ] && rm -f /etc/conf.d/seted_id
+  	fi
+  	
+  	if [ -d /var/udisk/seculinkVoice ]; then
+  		echo modify voice file
+  		cd /var/udisk/seculinkVoice
+  		if find language/*.711 > /dev/null ;
+  		then
+  			mkdir tmp
+  			langpath=/etc/conf.d/fixed/voice/language
+  			mv $langpath/* ./tmp/
+  			cp language/*.711 $langpath/ || ( rm $langpath/*; cp ./tmp/*.711 $langpath/ )
+  			rm -rf ./tmp 
+  			echo modify voice done
+  		else
+  			echo no voice file
+  		fi
+  		if find common/*.711 > /dev/null ;
+  		then
+  			mkdir tmp2
+  			langpath2=/etc/conf.d/fixed/voice/common
+  			mv $langpath2/* ./tmp2/
+  			cp common/*.711 $langpath2/ || ( rm $langpath2/*; cp ./tmp2/*.711 $langpath2/ )
+  			rm -rf ./tmp2 
+  			echo modify voice done
+  		else
+  			echo no voice file
+  		fi
+  	fi
+  	
+  	if [ -d /var/udisk/seculinkHardware ]; then
+  		echo modify hwconfig file
+  		cd /var/udisk/seculinkHardware
+  		if find hwconfig.cfg /dev/null ;
+  		then
+  			cp hwconfig.cfg /etc/conf.d/fixed/
+  			echo modify hwconfig done
+  		else
+  			echo no hwconfig file
+  		fi
+  	fi
+  	if [ -d /var/udisk/wifi ]; then
+  		echo modify wifi password file
+  		cd /var/udisk/wifi
+  		if find wpa_supplicant.conf /dev/null ;
+  		then
+  			cp wpa_supplicant.conf /etc/conf.d/syscfg/network/
+  			echo modify wificonfig done
+  		else
+  			echo no wificonfig file
+  		fi
+  	else
+  		if [ -f /var/udisk/secu_wifi_test.txt ]; then
+  			echo Update test wifi
+  			cd /var/udisk/
+  			cp secu_wifi_test.txt /etc/conf.d/syscfg/network/
+  		fi
+  	fi
+  
+  	if [ -f /var/udisk/UserMallCfg.txt ]; then
+  		echo upate user mall 
+  		FILE="/var/udisk/UserMallCfg.txt"
+  		KV_IFS="="
+  		SPCL_CMNT="#"
+  		while read LINE
+  		do
+  			LINE=`echo $LINE | sed 's/[ \r]*$//g'`
+  			result1=$(echo $LINE | grep "${KV_IFS}")
+  			result2=$(echo $LINE | grep "${SPCL_CMNT}")
+  			if [[ "$result1" != "" ]] && [[ "$result2" == "" ]];then
+  				K=${LINE%%$KV_IFS*}
+  				V=${LINE##*$KV_IFS}
+  				if [[ $K == "url" ]];then
+  					jstr=$(printf "{\"%s\":\"%s\"}" ${K} ${V})
+  					echo $jstr
+  					echo $jstr > /etc/conf.d/UserMallCfg.json
+  					echo "set user mall url">>/etc/conf.d/seted_id
+  					break;
+  				fi
+  			fi
+  			
+  		done < $FILE
+  	fi
+  	
+  	for filename in `find /var/udisk/ -maxdepth 1 -type f -name '*.json'`
+  	do
+  		echo upate hwinfo
+  		cp $filename /etc/conf.d/hwinfo.json
+  		break;
+  	done
+  	
+  else
+  	echo no sd device
+  	[ -f /etc/conf.d/seted_id ] && rm -f /etc/conf.d/seted_id
+  	[ -f /etc/conf.d/seted_mac ] && rm -f /etc/conf.d/seted_mac
+  fi
+  cd /
+  [ -d /var/udisk ] && umount /var/udisk
+
+===========================================================================
+KERNEL MODULES (.ko files)
+===========================================================================
+
+  home\ipc_drv\extdrv\hi_gpio.ko  (4,888 bytes)
+  home\ipc_drv\extdrv\motor_advance.ko  (14,024 bytes)
+  home\ipc_drv\extdrv\ot_piris.ko  (9,960 bytes)
+  home\ipc_drv\extdrv\ot_pwm.ko  (4,720 bytes)
+  home\ipc_drv\extdrv\ot_sample_ist.ko  (5,868 bytes)
+  home\ipc_drv\extdrv\ot_sensor_i2c.ko  (5,088 bytes)
+  home\ipc_drv\extdrv\ot_sensor_spi.ko  (6,596 bytes)
+  home\ipc_drv\ot_acodec.ko  (27,268 bytes)
+  home\ipc_drv\ot_adc.ko  (8,464 bytes)
+  home\ipc_drv\ot_adec.ko  (9,488 bytes)
+  home\ipc_drv\ot_aenc.ko  (26,920 bytes)
+  home\ipc_drv\ot_ai.ko  (90,192 bytes)
+  home\ipc_drv\ot_aiisp.ko  (32,576 bytes)
+  home\ipc_drv\ot_aio.ko  (56,232 bytes)
+  home\ipc_drv\ot_ao.ko  (59,424 bytes)
+  home\ipc_drv\ot_base.ko  (19,224 bytes)
+  home\ipc_drv\ot_chnl.ko  (27,628 bytes)
+  home\ipc_drv\ot_cipher.ko  (165,948 bytes)
+  home\ipc_drv\ot_devstat.ko  (7,080 bytes)
+  home\ipc_drv\ot_h264e.ko  (144,040 bytes)
+  home\ipc_drv\ot_h265e.ko  (163,832 bytes)
+  home\ipc_drv\ot_hardware_cryptodev.ko  (28,900 bytes)
+  home\ipc_drv\ot_isp.ko  (195,432 bytes)
+  home\ipc_drv\ot_ive.ko  (409,268 bytes)
+  home\ipc_drv\ot_jpege.ko  (63,272 bytes)
+  home\ipc_drv\ot_km.ko  (28,612 bytes)
+  home\ipc_drv\ot_mipi_rx.ko  (53,712 bytes)
+  home\ipc_drv\ot_mmz.ko  (36,356 bytes)
+  home\ipc_drv\ot_osal.ko  (84,308 bytes)
+  home\ipc_drv\ot_otp.ko  (9,868 bytes)
+  home\ipc_drv\ot_pm.ko  (22,316 bytes)
+  home\ipc_drv\ot_rc.ko  (135,156 bytes)
+  home\ipc_drv\ot_rgn.ko  (74,656 bytes)
+  home\ipc_drv\ot_spi_dma_transfer.ko  (12,416 bytes)
+  home\ipc_drv\ot_svac3e.ko  (169,580 bytes)
+  home\ipc_drv\ot_svp_npu.ko  (112,624 bytes)
+  home\ipc_drv\ot_sys.ko  (82,000 bytes)
+  home\ipc_drv\ot_user.ko  (2,848 bytes)
+  home\ipc_drv\ot_user_proc.ko  (8,788 bytes)
+  home\ipc_drv\ot_uvc.ko  (26,444 bytes)
+  home\ipc_drv\ot_vb.ko  (67,016 bytes)
+  home\ipc_drv\ot_vca.ko  (120,636 bytes)
+  home\ipc_drv\ot_venc.ko  (431,416 bytes)
+  home\ipc_drv\ot_vgs.ko  (127,732 bytes)
+  home\ipc_drv\ot_vi.ko  (428,532 bytes)
+  home\ipc_drv\ot_vpp.ko  (75,080 bytes)
+  home\ipc_drv\ot_vpss.ko  (268,352 bytes)
+  home\ipc_drv\ot_wdt.ko  (12,420 bytes)
+  home\ipc_drv\sys_config.ko  (13,500 bytes)
+  --- Total: 3,990,700 bytes (3.8MB) ---

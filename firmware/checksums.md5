@@ -1,0 +1,8 @@
+29db41a77f2cc88d5be2ef5aef1e5441  mtd0_boot.bin
+10e3bc84a77a944c53f900694c3eda12  mtd1_bootargs.bin
+c9e2a956af28368e8797caaccbc4f14f  mtd2_kernel.bin
+b351f36d2c762f553a44fc2fcbbb1218  mtd3_rootfs.bin
+b31a1ef13b3a9229e56f6363aa34b230  mtd4_appfs.bin
+1bf274961f7ff3921497c0bfb326c036  mtd5_configfs.bin
+913d8b75cf21cd7e8a7b922e90ed8549  mtd6_resfs.bin
+404459966f8ce2de3d4f979c6c19d1c9  full_flash.bin
