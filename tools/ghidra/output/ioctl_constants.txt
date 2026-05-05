@@ -1,0 +1,228 @@
+IOCTL CONSTANTS FOUND IN ISP FUNCTIONS
+======================================================================
+
+IOT_Ioctl: int IOT_Ioctl(int param_1,ushort *param_2,undefined4 param_3)
+IOT_OTA_Ioctl: uint IOT_OTA_Ioctl(int param_1,undefined4 param_2,uint *param_3,size_t param_4)
+aiv_ioctl_check_chipid: undefined4 aiv_ioctl_check_chipid(uint param_1,uint param_2)
+aiv_ioctl_check_chipid: iVar2 = ioctl(*(int *)(DAT_00498150 + 0x49810c + (param_1 * 6 + param_2) * 4),0x6920);
+aiv_ioctl_close_fd: int aiv_ioctl_close_fd(int param_1,int param_2,undefined4 param_3)
+aiv_ioctl_fq_sink_create: undefined4 aiv_ioctl_fq_sink_create(uint param_1,uint param_2)
+aiv_ioctl_fq_sink_create: iVar2 = ioctl(*(int *)(DAT_004974f8 + 0x4974b4 + (param_1 * 6 + param_2) * 4),0x6912);
+aiv_ioctl_fq_sink_destroy: undefined4 aiv_ioctl_fq_sink_destroy(uint param_1,uint param_2)
+aiv_ioctl_fq_sink_destroy: iVar2 = ioctl(*(int *)(DAT_004975bc + 0x497578 + (param_1 * 6 + param_2) * 4),0x6913);
+aiv_ioctl_fq_sink_get_frame: void aiv_ioctl_fq_sink_get_frame(uint param_1,uint param_2,undefined4 param_3,undefined4 param_4)
+aiv_ioctl_fq_sink_get_frame: iVar2 = ioctl(*(int *)(DAT_004978fc + 0x49788a + (param_1 * 6 + param_2) * 4),DAT_004978cc,
+aiv_ioctl_fq_sink_release_frame: undefined4 aiv_ioctl_fq_sink_release_frame(uint param_1,uint param_2,undefined4 param_3)
+aiv_ioctl_fq_sink_release_frame: iVar2 = ioctl(*(int *)(DAT_004979c8 + 0x49797e + (param_1 * 6 + param_2) * 4),DAT_004979a4,
+aiv_ioctl_fq_sink_send_frame: void aiv_ioctl_fq_sink_send_frame(uint param_1,uint param_2,undefined4 param_3)
+aiv_ioctl_fq_sink_send_frame: iVar2 = ioctl(*(int *)(DAT_004977cc + 0x49776a + (param_1 * 6 + param_2) * 4),DAT_00497794,
+aiv_ioctl_fq_sink_set_depth: undefined4 aiv_ioctl_fq_sink_set_depth(uint param_1,uint param_2,undefined4 param_3)
+aiv_ioctl_fq_sink_set_depth: iVar2 = ioctl(*(int *)(DAT_00497688 + 0x49763e + (param_1 * 6 + param_2) * 4),DAT_00497664,
+aiv_ioctl_fq_source_create: undefined4 aiv_ioctl_fq_source_create(uint param_1,uint param_2)
+aiv_ioctl_fq_source_create: iVar2 = ioctl(*(int *)(DAT_00496f60 + 0x496f1c + (param_1 * 6 + param_2) * 4),0x690c);
+aiv_ioctl_fq_source_destroy: undefined4 aiv_ioctl_fq_source_destroy(uint param_1,uint param_2)
+aiv_ioctl_fq_source_destroy: iVar2 = ioctl(*(int *)(DAT_00497024 + 0x496fe0 + (param_1 * 6 + param_2) * 4),0x690d);
+aiv_ioctl_fq_source_get_frame: void aiv_ioctl_fq_source_get_frame(uint param_1,uint param_2,undefined4 param_3,undefined4 param_4)
+aiv_ioctl_fq_source_get_frame: iVar2 = ioctl(*(int *)(DAT_00497368 + 0x4972f6 + (param_1 * 6 + param_2) * 4),DAT_00497338,
+aiv_ioctl_fq_source_release_frame: undefined4 aiv_ioctl_fq_source_release_frame(uint param_1,uint param_2,undefined4 param_3)
+aiv_ioctl_fq_source_release_frame: iVar2 = ioctl(*(int *)(DAT_00497434 + 0x4973ea + (param_1 * 6 + param_2) * 4),DAT_00497410,
+aiv_ioctl_fq_source_send_frame: void aiv_ioctl_fq_source_send_frame(uint param_1,uint param_2,undefined4 param_3,undefined4 param_4)
+aiv_ioctl_fq_source_send_frame: iVar2 = ioctl(*(int *)(DAT_00497238 + 0x4971d6 + (param_1 * 6 + param_2) * 4),DAT_00497200,
+aiv_ioctl_fq_source_set_depth: undefined4 aiv_ioctl_fq_source_set_depth(uint param_1,uint param_2,undefined4 param_3)
+aiv_ioctl_fq_source_set_depth: iVar2 = ioctl(*(int *)(DAT_004970f0 + 0x4970a6 + (param_1 * 6 + param_2) * 4),DAT_004970cc,
+aiv_ioctl_proc_end_write: undefined4 aiv_ioctl_proc_end_write(uint param_1,uint param_2)
+aiv_ioctl_proc_end_write: iVar2 = ioctl(*(int *)(DAT_00496870 + 0x49682e + (param_1 * 6 + param_2) * 4),0x6904);
+aiv_ioctl_proc_exit: undefined4 aiv_ioctl_proc_exit(uint param_1,uint param_2)
+aiv_ioctl_proc_exit: iVar2 = ioctl(*(int *)(DAT_004966f8 + 0x4966b6 + (param_1 * 6 + param_2) * 4),0x6902);
+aiv_ioctl_proc_init: undefined4 aiv_ioctl_proc_init(uint param_1,uint param_2,int param_3)
+aiv_ioctl_proc_init: iVar2 = ioctl(*(int *)(DAT_0049663c + 0x4965e8 + (param_1 * 6 + param_2) * 4),DAT_0049660c
+aiv_ioctl_proc_writing: undefined4 aiv_ioctl_proc_writing(uint param_1,uint param_2)
+aiv_ioctl_proc_writing: iVar2 = ioctl(*(int *)(DAT_004967b4 + 0x496772 + (param_1 * 6 + param_2) * 4),0x6903);
+aiv_ioctl_sink_disable: undefined4 aiv_ioctl_sink_disable(uint param_1,uint param_2)
+aiv_ioctl_sink_disable: iVar2 = ioctl(*(int *)(DAT_00497ea0 + 0x497e5c + (param_1 * 6 + param_2) * 4),0x691d);
+aiv_ioctl_sink_enable: undefined4 aiv_ioctl_sink_enable(uint param_1,uint param_2)
+aiv_ioctl_sink_enable: iVar2 = ioctl(*(int *)(DAT_00497ddc + 0x497d98 + (param_1 * 6 + param_2) * 4),0x691c);
+aiv_ioctl_sink_get_frame: undefined4 aiv_ioctl_sink_get_frame(uint param_1,uint param_2,int param_3)
+aiv_ioctl_sink_get_frame: iVar2 = ioctl(*(int *)(DAT_00497f98 + 0x497f3c + (param_1 * 6 + param_2) * 4),DAT_00497f68,
+aiv_ioctl_sink_send_frame: undefined4 aiv_ioctl_sink_send_frame(uint param_1,uint param_2,int param_3)
+aiv_ioctl_sink_send_frame: iVar2 = ioctl(*(int *)(DAT_0049808c + 0x498038 + (param_1 * 6 + param_2) * 4),DAT_0049805c
+aiv_ioctl_source_disable: undefined4 aiv_ioctl_source_disable(uint param_1,uint param_2)
+aiv_ioctl_source_disable: iVar2 = ioctl(*(int *)(DAT_00497b50 + 0x497b0c + (param_1 * 6 + param_2) * 4),0x6919);
+aiv_ioctl_source_enable: undefined4 aiv_ioctl_source_enable(uint param_1,uint param_2)
+aiv_ioctl_source_enable: iVar2 = ioctl(*(int *)(DAT_00497a8c + 0x497a48 + (param_1 * 6 + param_2) * 4),0x6918);
+aiv_ioctl_source_get_frame: int aiv_ioctl_source_get_frame(uint param_1,uint param_2,int param_3)
+aiv_ioctl_source_get_frame: iVar4 = ioctl(*(int *)(DAT_00497c30 + 0x497bec + (param_1 * 6 + param_2) * 4),DAT_00497c00,
+aiv_ioctl_source_release_frame: undefined4 aiv_ioctl_source_release_frame(uint param_1,uint param_2,int param_3)
+aiv_ioctl_source_release_frame: iVar2 = ioctl(*(int *)(DAT_00497d18 + 0x497cc4 + (param_1 * 6 + param_2) * 4),DAT_00497ce8
+aiv_ioctl_vb_add: undefined4 aiv_ioctl_vb_add(uint param_1,uint param_2,int param_3)
+aiv_ioctl_vb_add: iVar2 = ioctl(*(int *)(DAT_00496ccc + 0x496c78 + (param_1 * 6 + param_2) * 4),DAT_00496c9c
+aiv_ioctl_vb_copy_supp: undefined4 aiv_ioctl_vb_copy_supp(uint param_1,uint param_2,int param_3)
+aiv_ioctl_vb_copy_supp: iVar2 = ioctl(*(int *)(DAT_00496e9c + 0x496e48 + (param_1 * 6 + param_2) * 4),DAT_00496e6c
+aiv_ioctl_vb_sub: undefined4 aiv_ioctl_vb_sub(uint param_1,uint param_2,int param_3)
+aiv_ioctl_vb_sub: iVar2 = ioctl(*(int *)(DAT_00496db4 + 0x496d60 + (param_1 * 6 + param_2) * 4),DAT_00496d84
+aiv_ioctl_vdb_exit: undefined4 aiv_ioctl_vdb_exit(uint param_1,uint param_2,int param_3)
+aiv_ioctl_vdb_exit: iVar2 = ioctl(*(int *)(DAT_00496a28 + 0x4969d8 + (param_1 * 6 + param_2) * 4),DAT_004969f8
+aiv_ioctl_vdb_get_value: undefined4 aiv_ioctl_vdb_get_value(uint param_1,uint param_2,int param_3)
+aiv_ioctl_vdb_get_value: iVar2 = ioctl(*(int *)(DAT_00496be4 + 0x496b92 + (param_1 * 6 + param_2) * 4),DAT_00496bb4
+aiv_ioctl_vdb_init: undefined4 aiv_ioctl_vdb_init(uint param_1,uint param_2,int param_3)
+aiv_ioctl_vdb_init: iVar2 = ioctl(*(int *)(DAT_0049694c + 0x4968fc + (param_1 * 6 + param_2) * 4),DAT_0049691c
+aiv_ioctl_vdb_set_value: undefined4 aiv_ioctl_vdb_set_value(uint param_1,uint param_2,int param_3)
+aiv_ioctl_vdb_set_value: iVar2 = ioctl(*(int *)(DAT_00496b04 + 0x496ab4 + (param_1 * 6 + param_2) * 4),DAT_00496ad4
+atbm_ioctl_ble_smt_event_async: void atbm_ioctl_ble_smt_event_async(void)
+ble_ioctl_tx: void ble_ioctl_tx(undefined4 param_1)
+ble_ioctl_tx: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_00338f04 + 0x338efa),DAT_00338f00,param_1);
+crypto_cipher_ioctl: void crypto_cipher_ioctl(undefined4 param_1,undefined4 param_2)
+crypto_cipher_ioctl: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_004aad00 + 0x4aacfa),param_1,param_2);
+hi_mpi_sys_bind: (iVar1 = ioctl(*(int *)(DAT_003a636c + 0x3a6320),DAT_003a635c,&iStack_34), iVar1 != 0))
+hi_mpi_sys_exit: iVar1 = ioctl(*(int *)(DAT_0039c344 + 0x39c32e),0x5901,extraout_r2,
+hi_mpi_sys_flush_cache: iVar3 = ioctl(*(int *)(DAT_003a77ac + 0x3a7752),DAT_003a7784,auStack_80);
+hi_mpi_sys_get_bind_by_dst: (iVar1 = ioctl(*(int *)(DAT_003a64f8 + 0x3a64d2),DAT_003a64e4,&iStack_34), iVar1 == 0))))
+hi_mpi_sys_get_bind_by_src: (iVar1 = ioctl(*(int *)(DAT_003a65a4 + 0x3a654a),DAT_003a6594,&iStack_54), iVar1 != 0)) ||
+hi_mpi_sys_get_cfg: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c39c + 0x39c38e),DAT_0039c398,param_1);
+hi_mpi_sys_get_chip_id: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c990 + 0x39c982),DAT_0039c98c,param_1);
+hi_mpi_sys_get_cur_pts: iVar1 = (*(code *)PTR_ioctl_007681e8)
+hi_mpi_sys_get_custom_code: (iVar2 = ioctl(*(int *)(DAT_0039c9e0 + 0x39c9b2),DAT_0039c9d4,param_1,
+hi_mpi_sys_get_gps_info: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c844 + 0x39c836),DAT_0039c840,param_1);
+hi_mpi_sys_get_mem_cfg: (iVar1 = ioctl(*(int *)(DAT_0039c664 + 0x39c614),DAT_0039c654,auStack_48), iVar1 != 0)) ||
+hi_mpi_sys_get_mem_info_by_handle: iVar1 = ioctl(*(int *)(DAT_003a8408 + 0x3a839c),DAT_003a83e8,&uStack_30);
+hi_mpi_sys_get_mem_info_by_phys: iVar1 = ioctl(*(int *)(DAT_003a8314 + 0x3a82a8),DAT_003a82f4,&uStack_30);
+hi_mpi_sys_get_mem_info_by_virt: iVar1 = ioctl(*(int *)(DAT_003a8224 + 0x3a81b8),DAT_003a8204,&lStack_30);
+hi_mpi_sys_get_raw_frame_compress_param: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039ca70 + 0x39ca62),DAT_0039ca6c,param_1);
+hi_mpi_sys_get_scale_coef_level: (iVar1 = ioctl(*(int *)(DAT_0039c794 + 0x39c74c),DAT_0039c784,auStack_34), iVar1 == 0)) &&
+hi_mpi_sys_get_schedule_mode: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039cb1c + 0x39cb0e),DAT_0039cb18,param_1);
+hi_mpi_sys_get_time_zone: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c7ec + 0x39c7de),DAT_0039c7e8,param_1);
+hi_mpi_sys_get_tuning_connect: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039cac4 + 0x39cab6),DAT_0039cac0,param_1);
+hi_mpi_sys_get_unique_id: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039ca18 + 0x39ca0a),DAT_0039ca14,param_1);
+hi_mpi_sys_get_vi_aiisp_mode: (iVar1 = ioctl(*(int *)(DAT_0039c960 + 0x39c92e),DAT_0039c954,&uStack_14,
+hi_mpi_sys_get_vi_vpss_mode: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c89c + 0x39c88e),DAT_0039c898,param_1);
+hi_mpi_sys_get_vi_wrap_buffer_line: ((iVar1 = ioctl(*(int *)(DAT_0039cd80 + 0x39cd3e),DAT_0039cd70,auStack_84), iVar1 == 0 &&
+hi_mpi_sys_get_virt_mem_info: iVar2 = ioctl(*(int *)(DAT_003a78a0 + 0x3a7830),DAT_003a787c,auStack_80);
+hi_mpi_sys_get_vpss_venc_wrap_buf_line: iVar1 = ioctl(*(int *)(DAT_0039ccf0 + 0x39ccae),DAT_0039cce0,auStack_34);
+hi_mpi_sys_init: iVar2 = ioctl(*(int *)(DAT_0039c2f8 + 0x39c2ae),0x5900);
+hi_mpi_sys_init_pts_base: ioctl(*(int *)(DAT_0039c42c + 0x39c41e),DAT_0039c428,&uStack_10);
+hi_mpi_sys_mmz_free: iVar1 = ioctl(*piVar4,DAT_003a7680,auStack_80);
+hi_mpi_sys_mmz_free: iVar1 = ioctl(*piVar4,DAT_003a7688,auStack_80);
+hi_mpi_sys_query_mmz_status: iVar1 = ioctl(*(int *)(DAT_003a84e4 + 0x3a8480),DAT_003a84c4,&uStack_24);
+hi_mpi_sys_set_cfg: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c370 + 0x39c362),DAT_0039c36c,param_1);
+hi_mpi_sys_set_gps_info: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c818 + 0x39c80a),DAT_0039c814,param_1);
+hi_mpi_sys_set_mem_cfg: iVar1 = ioctl(*(int *)(DAT_0039c5c0 + 0x39c588),DAT_0039c598,auStack_48);
+hi_mpi_sys_set_raw_frame_compress_param: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039ca44 + 0x39ca36),DAT_0039ca40,param_1);
+hi_mpi_sys_set_scale_coef_level: iVar1 = ioctl(*(int *)(DAT_0039c6fc + 0x39c6de),DAT_0039c6ec,auStack_2c);
+hi_mpi_sys_set_schedule_mode: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039caf0 + 0x39cae2),DAT_0039caec,param_1);
+hi_mpi_sys_set_time_zone: ioctl(*(int *)(DAT_0039c7c0 + 0x39c7b0),DAT_0039c7bc,&uStack_c,(int *)(DAT_0039c7c0 + 0x39c7b0),
+hi_mpi_sys_set_tuning_connect: ioctl(*(int *)(DAT_0039ca98 + 0x39ca88),DAT_0039ca94,&uStack_c,(int *)(DAT_0039ca98 + 0x39ca88),
+hi_mpi_sys_set_vi_aiisp_mode: ioctl(*(int *)(DAT_0039c8f4 + 0x39c8c6),DAT_0039c8e8,&uStack_14,(int *)(DAT_0039c8f4 + 0x39c8c6)
+hi_mpi_sys_set_vi_vpss_mode: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c870 + 0x39c862),DAT_0039c86c,param_1);
+hi_mpi_sys_start_sync_frame_rate_ctrl: iVar1 = ioctl(*(int *)(DAT_0039cbd0 + 0x39cbb2),DAT_0039cbc0,auStack_2c);
+hi_mpi_sys_stop_sync_frame_rate_ctrl: iVar1 = ioctl(*(int *)(DAT_0039cc64 + 0x39cc46),DAT_0039cc54,auStack_2c);
+hi_mpi_sys_sync_pts: ioctl(*(int *)(DAT_0039c454 + 0x39c446),DAT_0039c450,&uStack_10);
+hi_mpi_sys_unbind: iVar1 = ioctl(*(int *)(DAT_003a6428 + 0x3a63f2),DAT_003a6418,&iStack_34);
+hif_ioctl_init: void hif_ioctl_init(void)
+hif_ioctl_init: open_atbm_ioctl();
+hif_ioctl_loop: undefined4 hif_ioctl_loop(void)
+ioctl: int ioctl(int __fd,ulong __request,...)
+ioctl_msg_func: void ioctl_msg_func(void)
+isp_ioctl: undefined4 isp_ioctl(void)
+open_atbm_ioctl: undefined4 open_atbm_ioctl(void)
+osal_ioctldev: undefined4 osal_ioctldev(int param_1,uint param_2,undefined4 param_3)
+ot_mpi_sys_bind: (iVar1 = ioctl(*(int *)(DAT_003a636c + 0x3a6320),DAT_003a635c,&local_34), iVar1 != 0)))
+ot_mpi_sys_exit: iVar1 = ioctl(*(int *)(DAT_0039c344 + 0x39c32e),0x5901,extraout_r2,
+ot_mpi_sys_flush_cache: iVar3 = ioctl(*(int *)(DAT_003a77ac + 0x3a7752),DAT_003a7784,local_80);
+ot_mpi_sys_get_bind_by_dst: (iVar1 = ioctl(*(int *)(DAT_003a64f8 + 0x3a64d2),DAT_003a64e4,&local_34), iVar1 == 0))))
+ot_mpi_sys_get_bind_by_src: (iVar1 = ioctl(*(int *)(DAT_003a65a4 + 0x3a654a),DAT_003a6594,&local_54), iVar1 != 0)) ||
+ot_mpi_sys_get_cfg: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c39c + 0x39c38e),DAT_0039c398,param_1);
+ot_mpi_sys_get_chip_id: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c990 + 0x39c982),DAT_0039c98c,param_1);
+ot_mpi_sys_get_cur_pts: iVar1 = (*(code *)PTR_ioctl_007681e8)
+ot_mpi_sys_get_custom_code: (iVar2 = ioctl(*(int *)(DAT_0039c9e0 + 0x39c9b2),DAT_0039c9d4,param_1,
+ot_mpi_sys_get_gps_info: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c844 + 0x39c836),DAT_0039c840,param_1);
+ot_mpi_sys_get_mem_cfg: (iVar1 = ioctl(*(int *)(DAT_0039c664 + 0x39c614),DAT_0039c654,auStack_48), iVar1 != 0)) ||
+ot_mpi_sys_get_mem_info_by_handle: iVar1 = ioctl(*(int *)(DAT_003a8408 + 0x3a839c),DAT_003a83e8,&local_30);
+ot_mpi_sys_get_mem_info_by_phys: iVar1 = ioctl(*(int *)(DAT_003a8314 + 0x3a82a8),DAT_003a82f4,&local_30);
+ot_mpi_sys_get_mem_info_by_virt: iVar1 = ioctl(*(int *)(DAT_003a8224 + 0x3a81b8),DAT_003a8204,&local_30);
+ot_mpi_sys_get_raw_frame_compress_param: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039ca70 + 0x39ca62),DAT_0039ca6c,param_1);
+ot_mpi_sys_get_scale_coef_level: (iVar1 = ioctl(*(int *)(DAT_0039c794 + 0x39c74c),DAT_0039c784,auStack_34), iVar1 == 0)) &&
+ot_mpi_sys_get_schedule_mode: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039cb1c + 0x39cb0e),DAT_0039cb18,param_1);
+ot_mpi_sys_get_time_zone: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c7ec + 0x39c7de),DAT_0039c7e8,param_1);
+ot_mpi_sys_get_tuning_connect: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039cac4 + 0x39cab6),DAT_0039cac0,param_1);
+ot_mpi_sys_get_unique_id: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039ca18 + 0x39ca0a),DAT_0039ca14,param_1);
+ot_mpi_sys_get_vi_aiisp_mode: (iVar1 = ioctl(*(int *)(DAT_0039c960 + 0x39c92e),DAT_0039c954,&local_14,
+ot_mpi_sys_get_vi_vpss_mode: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c89c + 0x39c88e),DAT_0039c898,param_1);
+ot_mpi_sys_get_vi_wrap_buffer_line: ((iVar1 = ioctl(*(int *)(DAT_0039cd80 + 0x39cd3e),DAT_0039cd70,auStack_84), iVar1 == 0 &&
+ot_mpi_sys_get_virt_mem_info: iVar2 = ioctl(*(int *)(DAT_003a78a0 + 0x3a7830),DAT_003a787c,local_80);
+ot_mpi_sys_get_vpss_venc_wrap_buf_line: iVar1 = ioctl(*(int *)(DAT_0039ccf0 + 0x39ccae),DAT_0039cce0,auStack_34);
+ot_mpi_sys_init: iVar2 = ioctl(*(int *)(DAT_0039c2f8 + 0x39c2ae),0x5900);
+ot_mpi_sys_init_pts_base: ioctl(*(int *)(DAT_0039c42c + 0x39c41e),DAT_0039c428,&local_10);
+ot_mpi_sys_mmz_alloc_only: iVar1 = ioctl(*(int *)(DAT_003a7ab8 + 0x3a7a48),DAT_003a7a84,local_88);
+ot_mpi_sys_mmz_check_phy_addr: iVar3 = ioctl(*(int *)(DAT_003a7964 + 0x3a791e),DAT_003a7944,local_80);
+ot_mpi_sys_mmz_free: iVar1 = ioctl(*piVar4,DAT_003a7680,local_80);
+ot_mpi_sys_mmz_free: iVar1 = ioctl(*piVar4,DAT_003a7688,local_80);
+ot_mpi_sys_mmz_free_only: (iVar2 = ioctl(*(int *)(DAT_003a7bac + 0x3a7b14),DAT_003a7b90,local_88), iVar2 == 0)) {
+ot_mpi_sys_mmz_free_only: (iVar2 = ioctl(*(int *)(DAT_003a7bc0 + 0x3a7b5c),DAT_003a7b98,local_88), iVar2 == 0)) {
+ot_mpi_sys_mmz_remap_cached: iVar1 = ioctl(*(int *)(DAT_003a7db0 + 0x3a7d50),DAT_003a7d9c,local_80);
+ot_mpi_sys_mmz_remap_nocache: iVar1 = ioctl(*(int *)(DAT_003a7c8c + 0x3a7c2c),DAT_003a7c78,local_80);
+ot_mpi_sys_mmz_unmap: iVar1 = ioctl(*piVar4,DAT_003a7ee8,auStack_80);
+ot_mpi_sys_mmz_unmap: iVar1 = ioctl(*piVar4,DAT_003a7ef0,auStack_80);
+ot_mpi_sys_query_mmz_status: iVar1 = ioctl(*(int *)(DAT_003a84e4 + 0x3a8480),DAT_003a84c4,&local_24);
+ot_mpi_sys_set_cfg: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c370 + 0x39c362),DAT_0039c36c,param_1);
+ot_mpi_sys_set_gps_info: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c818 + 0x39c80a),DAT_0039c814,param_1);
+ot_mpi_sys_set_mem_cfg: iVar1 = ioctl(*(int *)(DAT_0039c5c0 + 0x39c588),DAT_0039c598,auStack_48);
+ot_mpi_sys_set_raw_frame_compress_param: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039ca44 + 0x39ca36),DAT_0039ca40,param_1);
+ot_mpi_sys_set_scale_coef_level: iVar1 = ioctl(*(int *)(DAT_0039c6fc + 0x39c6de),DAT_0039c6ec,auStack_2c);
+ot_mpi_sys_set_schedule_mode: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039caf0 + 0x39cae2),DAT_0039caec,param_1);
+ot_mpi_sys_set_time_zone: ioctl(*(int *)(DAT_0039c7c0 + 0x39c7b0),DAT_0039c7bc,&local_c,(int *)(DAT_0039c7c0 + 0x39c7b0),
+ot_mpi_sys_set_tuning_connect: ioctl(*(int *)(DAT_0039ca98 + 0x39ca88),DAT_0039ca94,&local_c,(int *)(DAT_0039ca98 + 0x39ca88),
+ot_mpi_sys_set_vi_aiisp_mode: ioctl(*(int *)(DAT_0039c8f4 + 0x39c8c6),DAT_0039c8e8,&local_14,(int *)(DAT_0039c8f4 + 0x39c8c6),
+ot_mpi_sys_set_vi_vpss_mode: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c870 + 0x39c862),DAT_0039c86c,param_1);
+ot_mpi_sys_start_sync_frame_rate_ctrl: iVar1 = ioctl(*(int *)(DAT_0039cbd0 + 0x39cbb2),DAT_0039cbc0,auStack_2c);
+ot_mpi_sys_stop_sync_frame_rate_ctrl: iVar1 = ioctl(*(int *)(DAT_0039cc64 + 0x39cc46),DAT_0039cc54,auStack_2c);
+ot_mpi_sys_sync_pts: ioctl(*(int *)(DAT_0039c454 + 0x39c446),DAT_0039c450,&local_10);
+ot_mpi_sys_unbind: iVar1 = ioctl(*(int *)(DAT_003a6428 + 0x3a63f2),DAT_003a6418,&local_34);
+secu_sensor_brightness: isp_ioctl(0,0x80040015,param_2,param_2,param_2,param_1);
+secu_sensor_contrast: isp_ioctl(0,0x80040012,param_2,param_2,param_2,param_1);
+secu_sensor_nocolour: isp_ioctl(0,0x80040019,uVar1,uVar1,param_2,param_1);
+secu_sensor_saturation: isp_ioctl(0,0x80040016,param_2,param_2,param_2,param_1);
+secu_sensor_sharpness: isp_ioctl(0,0x80040024,param_2);
+ss_mpi_sys_bind: (iVar1 = ioctl(*(int *)(DAT_003a636c + 0x3a6320),DAT_003a635c,&iStack_34), iVar1 != 0))
+ss_mpi_sys_exit: iVar1 = ioctl(*(int *)(DAT_0039c344 + 0x39c32e),0x5901,extraout_r2,
+ss_mpi_sys_flush_cache: iVar3 = ioctl(*(int *)(DAT_003a77ac + 0x3a7752),DAT_003a7784,auStack_80);
+ss_mpi_sys_get_bind_by_dst: (iVar1 = ioctl(*(int *)(DAT_003a64f8 + 0x3a64d2),DAT_003a64e4,&iStack_34), iVar1 == 0))))
+ss_mpi_sys_get_bind_by_src: (iVar1 = ioctl(*(int *)(DAT_003a65a4 + 0x3a654a),DAT_003a6594,&iStack_54), iVar1 != 0)) ||
+ss_mpi_sys_get_cfg: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c39c + 0x39c38e),DAT_0039c398,param_1);
+ss_mpi_sys_get_chip_id: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c990 + 0x39c982),DAT_0039c98c,param_1);
+ss_mpi_sys_get_cur_pts: iVar1 = (*(code *)PTR_ioctl_007681e8)
+ss_mpi_sys_get_custom_code: (iVar2 = ioctl(*(int *)(DAT_0039c9e0 + 0x39c9b2),DAT_0039c9d4,param_1,
+ss_mpi_sys_get_gps_info: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c844 + 0x39c836),DAT_0039c840,param_1);
+ss_mpi_sys_get_mem_cfg: (iVar1 = ioctl(*(int *)(DAT_0039c664 + 0x39c614),DAT_0039c654,auStack_48), iVar1 != 0)) ||
+ss_mpi_sys_get_mem_info_by_handle: iVar1 = ioctl(*(int *)(DAT_003a8408 + 0x3a839c),DAT_003a83e8,&uStack_30);
+ss_mpi_sys_get_mem_info_by_phys: iVar1 = ioctl(*(int *)(DAT_003a8314 + 0x3a82a8),DAT_003a82f4,&uStack_30);
+ss_mpi_sys_get_mem_info_by_virt: iVar1 = ioctl(*(int *)(DAT_003a8224 + 0x3a81b8),DAT_003a8204,&lStack_30);
+ss_mpi_sys_get_raw_frame_compress_param: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039ca70 + 0x39ca62),DAT_0039ca6c,param_1);
+ss_mpi_sys_get_scale_coef_level: (iVar1 = ioctl(*(int *)(DAT_0039c794 + 0x39c74c),DAT_0039c784,auStack_34), iVar1 == 0)) &&
+ss_mpi_sys_get_schedule_mode: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039cb1c + 0x39cb0e),DAT_0039cb18,param_1);
+ss_mpi_sys_get_time_zone: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c7ec + 0x39c7de),DAT_0039c7e8,param_1);
+ss_mpi_sys_get_tuning_connect: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039cac4 + 0x39cab6),DAT_0039cac0,param_1);
+ss_mpi_sys_get_unique_id: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039ca18 + 0x39ca0a),DAT_0039ca14,param_1);
+ss_mpi_sys_get_vi_aiisp_mode: (iVar1 = ioctl(*(int *)(DAT_0039c960 + 0x39c92e),DAT_0039c954,&uStack_14,
+ss_mpi_sys_get_vi_vpss_mode: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c89c + 0x39c88e),DAT_0039c898,param_1);
+ss_mpi_sys_get_vi_wrap_buffer_line: ((iVar1 = ioctl(*(int *)(DAT_0039cd80 + 0x39cd3e),DAT_0039cd70,auStack_84), iVar1 == 0 &&
+ss_mpi_sys_get_virt_mem_info: iVar2 = ioctl(*(int *)(DAT_003a78a0 + 0x3a7830),DAT_003a787c,auStack_80);
+ss_mpi_sys_get_vpss_venc_wrap_buf_line: iVar1 = ioctl(*(int *)(DAT_0039ccf0 + 0x39ccae),DAT_0039cce0,auStack_34);
+ss_mpi_sys_init: iVar2 = ioctl(*(int *)(DAT_0039c2f8 + 0x39c2ae),0x5900);
+ss_mpi_sys_init_pts_base: ioctl(*(int *)(DAT_0039c42c + 0x39c41e),DAT_0039c428,&uStack_10);
+ss_mpi_sys_mmz_free: iVar1 = ioctl(*piVar4,DAT_003a7680,auStack_80);
+ss_mpi_sys_mmz_free: iVar1 = ioctl(*piVar4,DAT_003a7688,auStack_80);
+ss_mpi_sys_query_mmz_status: iVar1 = ioctl(*(int *)(DAT_003a84e4 + 0x3a8480),DAT_003a84c4,&uStack_24);
+ss_mpi_sys_set_cfg: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c370 + 0x39c362),DAT_0039c36c,param_1);
+ss_mpi_sys_set_gps_info: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c818 + 0x39c80a),DAT_0039c814,param_1);
+ss_mpi_sys_set_mem_cfg: iVar1 = ioctl(*(int *)(DAT_0039c5c0 + 0x39c588),DAT_0039c598,auStack_48);
+ss_mpi_sys_set_raw_frame_compress_param: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039ca44 + 0x39ca36),DAT_0039ca40,param_1);
+ss_mpi_sys_set_scale_coef_level: iVar1 = ioctl(*(int *)(DAT_0039c6fc + 0x39c6de),DAT_0039c6ec,auStack_2c);
+ss_mpi_sys_set_schedule_mode: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039caf0 + 0x39cae2),DAT_0039caec,param_1);
+ss_mpi_sys_set_time_zone: ioctl(*(int *)(DAT_0039c7c0 + 0x39c7b0),DAT_0039c7bc,&uStack_c,(int *)(DAT_0039c7c0 + 0x39c7b0),
+ss_mpi_sys_set_tuning_connect: ioctl(*(int *)(DAT_0039ca98 + 0x39ca88),DAT_0039ca94,&uStack_c,(int *)(DAT_0039ca98 + 0x39ca88),
+ss_mpi_sys_set_vi_aiisp_mode: ioctl(*(int *)(DAT_0039c8f4 + 0x39c8c6),DAT_0039c8e8,&uStack_14,(int *)(DAT_0039c8f4 + 0x39c8c6)
+ss_mpi_sys_set_vi_vpss_mode: (*(code *)PTR_ioctl_007681e8)(*(undefined4 *)(DAT_0039c870 + 0x39c862),DAT_0039c86c,param_1);
+ss_mpi_sys_start_sync_frame_rate_ctrl: iVar1 = ioctl(*(int *)(DAT_0039cbd0 + 0x39cbb2),DAT_0039cbc0,auStack_2c);
+ss_mpi_sys_stop_sync_frame_rate_ctrl: iVar1 = ioctl(*(int *)(DAT_0039cc64 + 0x39cc46),DAT_0039cc54,auStack_2c);
+ss_mpi_sys_sync_pts: ioctl(*(int *)(DAT_0039c454 + 0x39c446),DAT_0039c450,&uStack_10);
+ss_mpi_sys_unbind: iVar1 = ioctl(*(int *)(DAT_003a6428 + 0x3a63f2),DAT_003a6418,&iStack_34);

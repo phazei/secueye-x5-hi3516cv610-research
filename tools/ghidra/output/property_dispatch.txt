@@ -1,0 +1,26 @@
+PROPERTY/XUID DISPATCH REFERENCES
+======================================================================
+
+IOT_Linkkit_Report: param_3 = (void *)iotx_dm_post_property(param_1,param_3);
+IOT_Linkkit_Report_Ext: uVar2 = iotx_dm_post_property_to(param_1,param_3,param_4,param_5,iVar3);
+dm_client_thing_service_property_set: void dm_client_thing_service_property_set
+dm_client_thing_service_property_set: iVar1 = dm_msg_proc_thing_service_property_set(&local_ec,&local_f4,auStack_98,auStack_dc);
+dm_mgr_upstream_thing_property_get_response: dm_mgr_upstream_thing_property_get_response
+dm_msg_proc_thing_service_property_get: int dm_msg_proc_thing_service_property_get
+dm_msg_proc_thing_service_property_get: (iVar3 = dm_msg_property_get(local_60,param_3,param_1[3]), iVar3 != 0)) {
+dm_msg_proc_thing_service_property_post: dm_msg_proc_thing_service_property_post
+dm_msg_proc_thing_service_property_set: int dm_msg_proc_thing_service_property_set
+dm_msg_proc_thing_service_property_set: iVar3 = dm_msg_property_set(local_68,param_3);
+dm_msg_property_get: undefined4 dm_msg_property_get(undefined4 param_1,int param_2,undefined4 param_3)
+dm_msg_property_set: undefined4 dm_msg_property_set(undefined4 param_1,int param_2)
+iotx_dm_send_property_get_response: iotx_dm_send_property_get_response
+iotx_dm_send_property_get_response: uVar1 = dm_mgr_upstream_thing_property_get_response
+linkkit_client_start: iVar8 = linkkit_post_dynamic_property();
+linkkit_client_start: iVar8 = linkkit_post_dynamic_property(0);
+linkkit_client_start: linkkit_post_common_property();
+linkkit_post_common_property: undefined4 linkkit_post_common_property(uint param_1)
+linkkit_post_dynamic_property: undefined4 linkkit_post_dynamic_property(uint param_1)
+linkkit_post_nvr_property: undefined4 linkkit_post_nvr_property(undefined4 param_1,undefined4 param_2,undefined4 param_3)
+linkkit_post_rtmp_property: undefined4 linkkit_post_rtmp_property(void)
+linkkit_set_property_handler: undefined4 linkkit_set_property_handler(uint param_1,undefined4 param_2,undefined4 param_3)
+sub_ipc_slave_property_set: undefined4 sub_ipc_slave_property_set(int param_1,undefined4 param_2)

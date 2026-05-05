@@ -1,0 +1,232 @@
+[prt] dns server: 114.114.114.114
+^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[(none) login: ^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[(none) login: ^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[[prt] dns server: 223.5.5.5
+^C
+
+ ^[^C
+
+ ^[(none) login: ^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[(none) login: ^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[(none) login: ^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[[prt] dns server: 223.6.6.6
+^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[(none) login: ^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[^C
+
+ ^[(none) login: ^C
+
+ ^[
+
+flash
+boot table board switch:0x00000000
+boot table version     :V0.2
+boot table build time  :2025/06/06 12:17:04
+boot table file name   :Hi3516CV610-DMEB_4L_DDR3_2133M_128MB_16bit-A7_950M_QFN.xlsm
+DDR size: 0x00000080
+
+System startup
+
+Uncompress Ok!
+
+U-Boot 2022.07 (Jun 06 2025 - 12:17:08 +0000)hi3516cv610-debug
+
+DRAM:  Relocation Offset is: 0277a000
+Relocating to 43f7a000, new gd at 43b69ed0, sp at 43b69eb0
+Core:  1 devices, 1 uclasses
+SPI Nor:  fmc_ip_ver_check(32): Check Flash Memory Controller v100 ...fmc_ip_ver_check(38):  Found
+fmc_spi_nor_probe(1562): SPI Nor ID Table Version 1.0
+match_chip_id(1529): SPI Nor(cs 0) ID: 0xc8 0x40 0x18
+fmc_init_print(1413): Block:64KB fmc_init_print(1414): Chip:16MB fmc_init_print(1415): Name:"GD25Q128XX"
+fmc100_spi_nor_probe(126): SPI Nor total size: 16MB
+NAND:  0 MiB
+MMC:   Card did not respond to voltage select! : -110
+No eMMC/SD device found ! -95
+No SD device found !
+soc-sdhci: 0
+Loading Environment from SPIFlash... OK
+In:    serial
+Out:   serial
+Err:   serial
+*No SD card found!
+mmc storage device not found!
+
+Net:   eth0
+Hit any key to stop autoboot:  1  0 
+# 
+# printenv
+arch=arm
+baudrate=115200
+board=hi3516cv610
+board_name=hi3516cv610
+bootargs=mem=40m earlycon=pl011,0x11040000 console=ttyAMA0,115200 clk_ignore_unused initcall_debug rw root=/dev/mtdblock3 rootfstype=squashfs mtdparts=sfc:320K(boot),64K(bootargs),2M(kernel),1280K(rootfs),5M(appfs),1M(configfs),6528K(resfs)
+bootcmd=sf probe 0; sf read 0x41000000 0x60000 0x200000; bootm 0x41000000
+bootdelay=1
+cpu=armv7
+ethact=eth0
+ethaddr=00:11:22:33:44:55
+fdt_high=0xffffffff
+gatewayip=192.168.1.1
+ipaddr=192.168.1.88
+netmask=255.255.255.0
+serverip=192.168.1.2
+soc=hi3516cv610
+stderr=serial
+stdin=serial
+stdout=serial
+vendor=hisilicon
+verify=n
+
+Environment size: 630/65532 bytes
+# 
+# help
+?         - alias for 'help'
+base      - print or set address offset
+bdinfo    - print Board Info structure
+boot      - boot default, i.e., run 'bootcmd'
+bootd     - boot default, i.e., run 'bootcmd'
+bootm     - boot application image from memory
+bootp     - boot image via network using BOOTP/TFTP protocol
+cmp       - memory compare
+coninfo   - print console devices and information
+cp        - memory copy
+crc32     - checksum calculation
+dcache    - enable or disable data cache
+ddr       - ddr training function
+dhcp      - boot image via network using DHCP/TFTP protocol
+dog_reset - watchdog reset system
+editenv   - edit environment variable
+env       - environment handling commands
+exit      - exit script
+false     - do nothing, unsuccessfully
+fatinfo   - print information about filesystem
+fatload   - load binary file from a dos filesystem
+fatls     - list files in a directory (default /)
+fatmkdir  - create a directory
+fatrm     - delete a file
+fatsize   - determine a file's size
+fatwrite  - write file into a dos filesystem
+getinfo   - print hardware information
+go        - start application at address 'addr'
+help      - print command description/usage
+icache    - enable or disable instruction cache
+loadb     - load binary file over serial line (kermit mode)
+loads     - load S-Record file over serial line
+loadx     - load binary file over serial line (xmodem mode)
+loady     - load binary file over serial line (ymodem mode)
+loop      - infinite loop on address range
+md        - memory display
+mii       - MII utility commands
+mm        - memory modify (auto-incrementing address)
+mmc       - MMC sub system
+mmcinfo   - display MMC info
+mmcut     - mmc user tools
+mw        - memory write (fill)
+nand      - NAND sub-system
+nboot     - boot from NAND device
+nfs       - boot image via network using NFS protocol
+nm        - memory modify (constant address)
+panic     - Panic with optional message
+ping      - send ICMP ECHO_REQUEST to network host
+printenv  - print environment variables
+random    - fill memory with random pattern
+reset     - Perform RESET of the CPU
+run       - run commands in an environment variable
+saveenv   - save environment variables to persistent storage
+setenv    - set environment variables
+sf        - SPI flash sub-system
+showvar   - print local hushshell variables
+sleep     - delay execution for some time
+smc       - Issue a Secure Monitor Call
+test      - minimal test like /bin/sh
+tftpboot  - boot image via network using TFTP protocol
+true      - do nothing, successfully
+usb       - USB sub-system
+usbboot   - boot from USB device
+version   - print monitor, compiler and linker version
+# 

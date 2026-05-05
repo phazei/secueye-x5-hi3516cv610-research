@@ -1,0 +1,179 @@
+2026-05-04 15:31:26 INFO  (LoggingInitialization) Using log config file: jar:file:/E:/Projects/ipc_XMeye_camera/tools/ghidra/ghidra_12.0.4_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-05-04 15:31:26 INFO  (LoggingInitialization) Using log file: E:\Projects\ipc_XMeye_camera\tools\ghidra\output\import_log.txt  
+2026-05-04 15:31:26 INFO  (Preferences) Loading user preferences: C:\Users\HomeStar\AppData\Roaming\ghidra\ghidra_12.0.4_PUBLIC\preferences  
+2026-05-04 15:31:26 INFO  (ClassSearcher) Searching for classes...  
+2026-05-04 15:31:27 INFO  (ClassSearcher) Class search complete (695 ms)  
+2026-05-04 15:31:27 INFO  (DefaultSSLContextInitializer) Initializing SSL Context  
+2026-05-04 15:31:27 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-05-04 15:31:27 INFO  (SecureRandomFactory) Random Number Generator initialization complete: SHA1PRNG  
+2026-05-04 15:31:27 INFO  (DefaultTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-05-04 15:31:27 INFO  (FileCacheMaintenanceDaemon) Starting cache cleanup: C:\Users\HomeStar\AppData\Local\ghidra\fscache2  
+2026-05-04 15:31:27 INFO  (FileCacheMaintenanceDaemon) Finished cache cleanup, estimated storage used: 0  
+2026-05-04 15:31:28 INFO  (AnalyzeHeadless) Headless startup complete (5646 ms)  
+2026-05-04 15:31:28 INFO  (ClassSearcher) Class searcher loaded 176 extension points (86 false positives)  
+2026-05-04 15:31:28 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\BSim\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\PDB\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Processors\DATA\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Debug\Debugger-rmi-trace\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\VersionTracking\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\DecompilerDependent\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\WildcardAssembler\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\SwiftDemangler\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Processors\8051\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\FileFormats\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\BytePatterns\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Processors\Atmel\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Processors\JVM\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\Decompiler\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\GnuDemangler\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\PyGhidra\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Processors\PIC\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\Jython\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\FunctionID\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Debug\Debugger\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\MicrosoftCodeAnalyzer\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\Base\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\SystemEmulation\ghidra_scripts  
+2026-05-04 15:31:28 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-05-04 15:31:28 INFO  (HeadlessAnalyzer) Creating project: E:\Projects\ipc_XMeye_camera\tools\ghidra\project\superb_project  
+2026-05-04 15:31:28 DEBUG (DefaultProjectManager) No tools found; Installing default tools  
+2026-05-04 15:31:28 DEBUG (DefaultProjectManager) 	no recent project directories found  
+2026-05-04 15:31:29 INFO  (DefaultProject) Creating project: E:\Projects\ipc_XMeye_camera\tools\ghidra\project\superb_project  
+2026-05-04 15:31:29 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-05-04 15:31:29 INFO  (HeadlessAnalyzer)      project: E:\Projects\ipc_XMeye_camera\tools\ghidra\project\superb_project  
+2026-05-04 15:31:29 INFO  (HeadlessAnalyzer) IMPORTING: file:///E:/Projects/ipc_XMeye_camera/firmware/extracted/appfs/progs/bin/superb  
+2026-05-04 15:31:29 WARN  (LcsHintLoadSpecChooser) Using unknown opinion: Executable and Linking Format (ELF), ARM:LE:32:v7:default  
+2026-05-04 15:31:29 DEBUG (ElfHeader) Elf symbol table section .dynsym linked to string table section .dynstr  
+2026-05-04 15:31:29 DEBUG (ElfHeader) Elf relocation table section .rel.dyn linked to symbol table section .dynsym affecting PT_LOAD  
+2026-05-04 15:31:29 DEBUG (ElfHeader) Elf relocation table section .rel.plt linked to symbol table section .dynsym affecting .got  
+2026-05-04 15:31:29 INFO  (ProgramLoader) Using Loader: Executable and Linking Format (ELF)  
+2026-05-04 15:31:29 INFO  (ProgramLoader) Using Language/Compiler: ARM:LE:32:v7:default  
+2026-05-04 15:31:29 INFO  (ProgramLoader) Using Library Search Path: [., C:\Windows\SysWOW64, C:\Program Files\Microsoft\jdk-21.0.10.7-hotspot\bin, C:\Windows\Sun\Java\bin, C:\Windows\system32, C:\Windows, C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot\bin, C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0\bin\x64, C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0\bin, C:\Windows\System32\Wbem, C:\Windows\System32\WindowsPowerShell\v1.0\, C:\Windows\System32\OpenSSH\, C:\Program Files\Git\cmd, C:\ProgramData\chocolatey\bin, C:\Program Files\NVIDIA Corporation\NVIDIA App\NvDLISR, C:\Program Files\dotnet\, C:\Program Files\gsudo\Current, C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common, C:\Program Files\NVIDIA Corporation\Nsight Compute 2025.3.0\, C:\Program Files\PowerShell\7\, C:\Program Files\PuTTY\, C:\Users\HomeStar\AppData\Local\Programs\Python\Python312\Scripts\, C:\Users\HomeStar\AppData\Local\Programs\Python\Python312\, C:\Users\HomeStar\AppData\Local\Microsoft\WindowsApps, c:\users\homestar\.local\bin, C:\ffmpeg\bin, C:\Users\HomeStar\AppData\Local\Programs\Microsoft VS Code\bin, C:\Users\HomeStar\AppData\Local\Microsoft\WinGet\Packages\Schniz.fnm_Microsoft.Winget.Source_8wekyb3d8bbwe, C:\Users\HomeStar\AppData\Local\Yarn\bin, C:\Program Files\Sublime Text\, C:\Users\HomeStar\.cache\lm-studio\bin, c:\users\homestar\appdata\roaming\python\python310\scripts, C:\Users\HomeStar\AppData\Roaming\npm, C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.41.34120\bin\Hostx64\x64, C:\Program Files (x86)\sox-14-4-2, C:\Users\HomeStar\AppData\Local\Microsoft\WinGet\Packages\Anthropic.ClaudeCode_Microsoft.Winget.Source_8wekyb3d8bbwe, C:\Program Files\7-Zip, E:\Projects\ipc_XMeye_camera\hashcat-7.1.2]  
+2026-05-04 15:31:29 DEBUG (ElfHeader) Elf symbol table section .dynsym linked to string table section .dynstr  
+2026-05-04 15:31:29 DEBUG (ElfHeader) Elf relocation table section .rel.dyn linked to symbol table section .dynsym affecting PT_LOAD  
+2026-05-04 15:31:29 DEBUG (ElfHeader) Elf relocation table section .rel.plt linked to symbol table section .dynsym affecting .got  
+2026-05-04 15:31:29 DEBUG (ElfProgramBuilder) Discarding 4-byte alignment/filler segment_4.6 at 00768fac  
+2026-05-04 15:31:29 DEBUG (ElfProgramBuilder) Discarding 2-byte alignment/filler segment_3.3 at 0001016a  
+2026-05-04 15:31:29 DEBUG (ElfProgramBuilder) Discarding 6-byte alignment/filler segment_3.16 at 0054d85a  
+2026-05-04 15:31:33 INFO  (ProgramLoader) Additional info:
+Loading file:///E:/Projects/ipc_XMeye_camera/firmware/extracted/appfs/progs/bin/superb?MD5=9aaa50daf1195149da4ff30bd5dfec6a...
+Unsupported Thread-Local Symbol not loaded: g_runtime_current_ctx
+Unsupported Thread-Local Symbol not loaded: g_runtime_primary_ctx
+ELF Relocation Warning: Type = 17 (0x11) at 007687b0 (Symbol = g_runtime_primary_ctx) - Relocation for TLS Symbol not supported
+ELF Relocation Warning: Type = 18 (0x12) at 007687b4 (Symbol = g_runtime_primary_ctx) - Relocation for TLS Symbol not supported
+ELF Relocation Warning: Type = 17 (0x11) at 00768870 (Symbol = g_runtime_current_ctx) - Relocation for TLS Symbol not supported
+ELF Relocation Warning: Type = 18 (0x12) at 00768874 (Symbol = g_runtime_current_ctx) - Relocation for TLS Symbol not supported
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766948 (Symbol = _ZTVSt9basic_iosIcSt11char_traitsIcEE) - Runtime copy not supported (16-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766958 (Symbol = _ZSt7nothrow) - Runtime copy not supported (1-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 0076695c (Symbol = _ZTTSt19basic_istringstreamIcSt11char_traitsIcESaIcEE) - Runtime copy not supported (16-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 0076696c (Symbol = _ZTVSt18basic_stringstreamIcSt11char_traitsIcESaIcEE) - Runtime copy not supported (60-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 007669a8 (Symbol = _ZTTSt19basic_ostringstreamIcSt11char_traitsIcESaIcEE) - Runtime copy not supported (16-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 007669b8 (Symbol = __c_dot_utf8_locale) - Runtime copy not supported (24-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 007669d0 (Symbol = _ZTVSt15basic_streambufIcSt11char_traitsIcEE) - Runtime copy not supported (64-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766a10 (Symbol = _ZTVN10__cxxabiv117__class_type_infoE) - Runtime copy not supported (44-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766a3c (Symbol = in6addr_loopback) - Runtime copy not supported (16-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766a4c (Symbol = stdin) - Runtime copy not supported (4-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766a50 (Symbol = _ZTVSt19basic_ostringstreamIcSt11char_traitsIcESaIcEE) - Runtime copy not supported (40-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766a78 (Symbol = _ZTVN10__cxxabiv119__pointer_type_infoE) - Runtime copy not supported (36-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766a9c (Symbol = _ZTVSt19basic_istringstreamIcSt11char_traitsIcESaIcEE) - Runtime copy not supported (40-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766ac4 (Symbol = stdout) - Runtime copy not supported (4-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766ac8 (Symbol = _ZTVN10__cxxabiv120__si_class_type_infoE) - Runtime copy not supported (44-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766af4 (Symbol = in6addr_any) - Runtime copy not supported (16-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766b04 (Symbol = stderr) - Runtime copy not supported (4-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766b08 (Symbol = _ZTVSt15basic_stringbufIcSt11char_traitsIcESaIcEE) - Runtime copy not supported (64-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766b48 (Symbol = _ZTVN10__cxxabiv120__function_type_infoE) - Runtime copy not supported (32-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766b68 (Symbol = _ZTTSt18basic_stringstreamIcSt11char_traitsIcESaIcEE) - Runtime copy not supported (40-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 00766b90 (Symbol = _ZTVN10__cxxabiv121__vmi_class_type_infoE) - Runtime copy not supported (44-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 0078c4c0 (Symbol = _ZNSs4_Rep20_S_empty_rep_storageE) - Runtime copy not supported (16-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 0078c4d0 (Symbol = __stack_chk_guard) - Runtime copy not supported (4-bytes)
+ELF Relocation Failure: R_ARM_COPY (20, 0x14) at 0078c4a0 (Symbol = __timezone) - Runtime copy not supported (4-bytes)
+Function address is two bit aligned (reserved per ARM manual): 0054d852
+Setting block .init_array to read-only
+Setting block .fini_array to read-only
+Setting block .data.rel.ro to read-only
+Setting block .dynamic to read-only
+------------------------------------------------
+
+Linking the External Programs of 'superb' to imported libraries...
+  [libstdc++.so.6] -> not found in project
+  [libgcc_s.so.1] -> not found in project
+  [libc.so] -> not found in project
+------------------------------------------------
+
+Resolving External Symbols of [/superb] - 474 unresolved symbols, no external libraries configured - skipping
+  
+2026-05-04 15:31:33 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-05-04 15:31:34 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///E:/Projects/ipc_XMeye_camera/firmware/extracted/appfs/progs/bin/superb  
+2026-05-04 15:31:39 DEBUG (InstructionError) Instruction conflict details at 004ae31c
+  New Instruction: strd.ls r2,r3,[sp,#0x30]
+     cond_mask(10,13)    == 0xe
+     cond_shft(09,13)    == 0x1e
+     condit(05,13)       == 0x19e
+     cond_true(09,09)    == 0x1
+     cond_full(06,09)    == 0x9
+     cond_base(06,08)    == 0x4
+     itmode(05,05)       == 0x1
+     LRset(01,01)        == 0x0
+     TMode(00,00)        == 0x1
+  Existing Instruction: strd r2,r3,[sp,#0x30]
+     LRset(01,01)        == 0x0
+     TMode(00,00)        == 0x1  
+2026-05-04 15:32:10 WARN  (ClearFlowAndRepairCmd) WARNING! Repairing body of function at 0044f4ec  
+2026-05-04 15:32:10 WARN  (ClearFlowAndRepairCmd) WARNING! Repairing body of function at 0047a41c  
+2026-05-04 15:32:10 WARN  (ClearFlowAndRepairCmd) WARNING! Removing function with bad body at 004863b0  
+2026-05-04 15:32:10 WARN  (ClearFlowAndRepairCmd) WARNING! Removing function with bad body at 0048ac40  
+2026-05-04 15:32:10 WARN  (ClearFlowAndRepairCmd) WARNING! Removing function with bad body at 0048ad90  
+2026-05-04 15:32:10 WARN  (ClearFlowAndRepairCmd) WARNING! Repairing body of function at 004c1284  
+2026-05-04 15:32:10 WARN  (ClearFlowAndRepairCmd) WARNING! Repairing body of function at 0046f5f4  
+2026-05-04 15:34:00 DEBUG (FidAnalyzer) No FID Libraries apply for language ARM:LE:32:v7  
+2026-05-04 15:34:00 INFO  (PackedDatabaseCache) Packed database cache: C:\Users\HomeStar\AppData\Local\ghidra\packed-db-cache  
+2026-05-04 15:34:00 DEBUG (PackedDatabaseCache) Caching packed database: E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\Base\data\typeinfo\generic\generic_clib.gdt  
+2026-05-04 15:34:00 DEBUG (PackedDatabase) Unpacking database E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\Base\data\typeinfo\generic\generic_clib.gdt -> C:\Users\HomeStar\AppData\Local\ghidra\packed-db-cache\pdb76D11B7E\db.1.gbf  
+2026-05-04 15:34:00 DEBUG (PackedDatabaseCache) Cache update completed: E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\Base\data\typeinfo\generic\generic_clib.gdt  
+2026-05-04 15:34:01 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: generic_clib  
+2026-05-04 15:34:05 WARN  (DemangledAddressTable) Unable to fully apply external demangled Address Table at 009cc008: std::bad_alloc::vtable  
+2026-05-04 15:34:05 WARN  (DemangledAddressTable) Unable to fully apply external demangled Address Table at 009cc00c: std::ifstream::vtable  
+2026-05-04 15:34:05 WARN  (DemangledAddressTable) Unable to fully apply external demangled Address Table at 009cc010: std::bad_alloc::typeinfo  
+2026-05-04 15:34:05 WARN  (DemangledAddressTable) Unable to fully apply external demangled Address Table at 009cc018: std::filebuf::vtable  
+2026-05-04 15:34:05 WARN  (DemangledAddressTable) Unable to fully apply external demangled Address Table at 009cc028: std::exception::typeinfo  
+2026-05-04 15:34:05 WARN  (DemangledAddressTable) Unable to fully apply external demangled Address Table at 009cc030: std::ifstream::VTT  
+2026-05-04 15:34:46 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ARM Constant Reference Analyzer           23.662 secs
+    ARM Symbol                                 0.025 secs
+    ASCII Strings                              0.887 secs
+    Apply Data Archives                        0.570 secs
+    Call Convention ID                         9.475 secs
+    Call-Fixup Installer                       0.144 secs
+    Create Address Tables                      0.810 secs
+    Create Address Tables - One Time           1.367 secs
+    Create Function                            0.729 secs
+    Data Reference                             2.074 secs
+    Decompiler Switch Analysis                78.186 secs
+    Demangler GNU                              3.021 secs
+    Disassemble                                0.759 secs
+    Disassemble Entry Points                  32.387 secs
+    Embedded Media                             0.057 secs
+    External Entry References                  0.165 secs
+    Function ID                                0.073 secs
+    Function Start Pre Search                  0.119 secs
+    Function Start Search                      0.821 secs
+    Function Start Search After Code           1.367 secs
+    Function Start Search After Data           1.032 secs
+    Function Start Search delayed - One Time   0.076 secs
+    GCC Exception Handlers                     0.009 secs
+    Non-Returning Functions - Discovered       3.458 secs
+    Non-Returning Functions - Known            0.036 secs
+    Reference                                  2.811 secs
+    Shared Return Calls                        1.126 secs
+    Stack                                     24.043 secs
+    Subroutine References                      2.943 secs
+    Subroutine References - One Time           0.006 secs
+-----------------------------------------------------
+     Total Time   192 secs
+-----------------------------------------------------
+  
+2026-05-04 15:34:46 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///E:/Projects/ipc_XMeye_camera/firmware/extracted/appfs/progs/bin/superb  
+2026-05-04 15:34:48 INFO  (LocalFileSystem) /superb: file created (HomeStar)  
+2026-05-04 15:34:48 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /superb (superb_project:/superb)  
+2026-05-04 15:34:48 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  

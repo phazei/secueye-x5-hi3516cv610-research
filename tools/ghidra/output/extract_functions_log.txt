@@ -1,0 +1,54 @@
+2026-05-04 15:36:16 INFO  (LoggingInitialization) Using log config file: jar:file:/E:/Projects/ipc_XMeye_camera/tools/ghidra/ghidra_12.0.4_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-05-04 15:36:16 INFO  (LoggingInitialization) Using log file: E:\Projects\ipc_XMeye_camera\tools\ghidra\output\extract_functions_log.txt  
+2026-05-04 15:36:16 INFO  (Preferences) Loading user preferences: C:\Users\HomeStar\AppData\Roaming\ghidra\ghidra_12.0.4_PUBLIC\preferences  
+2026-05-04 15:36:16 INFO  (ClassSearcher) Searching for classes...  
+2026-05-04 15:36:17 INFO  (ClassSearcher) Class search complete (712 ms)  
+2026-05-04 15:36:17 INFO  (DefaultSSLContextInitializer) Initializing SSL Context  
+2026-05-04 15:36:17 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-05-04 15:36:17 INFO  (SecureRandomFactory) Random Number Generator initialization complete: SHA1PRNG  
+2026-05-04 15:36:17 INFO  (DefaultTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-05-04 15:36:17 INFO  (AnalyzeHeadless) Headless startup complete (1642 ms)  
+2026-05-04 15:36:17 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-05-04 15:36:17 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\PDB\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Debug\Debugger-rmi-trace\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\VersionTracking\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\DecompilerDependent\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Processors\8051\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\FileFormats\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\BytePatterns\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\GnuDemangler\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Debug\Debugger\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\MicrosoftCodeAnalyzer\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\BSim\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Processors\DATA\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\WildcardAssembler\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\SwiftDemangler\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Processors\Atmel\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Processors\JVM\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\Decompiler\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\PyGhidra\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Processors\PIC\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\Jython\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\FunctionID\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\Base\ghidra_scripts
+    E:\Projects\ipc_XMeye_camera\tools\ghidra\ghidra_12.0.4_PUBLIC\Ghidra\Features\SystemEmulation\ghidra_scripts  
+2026-05-04 15:36:17 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-05-04 15:36:17 INFO  (HeadlessAnalyzer) Opening existing project: E:\Projects\ipc_XMeye_camera\tools\ghidra\project\superb_project  
+2026-05-04 15:36:17 INFO  (HeadlessProject) Opening project: E:\Projects\ipc_XMeye_camera\tools\ghidra\project\superb_project  
+2026-05-04 15:36:19 INFO  (HeadlessAnalyzer) REPORT: Processing project file: /superb  
+2026-05-04 15:36:19 INFO  (HeadlessAnalyzer) REPORT: Execute script: extract_functions.py 'E:\Projects\ipc_XMeye_camera\tools\ghidra\output'   
+2026-05-04 15:36:19 ERROR (HeadlessAnalyzer) REPORT SCRIPT ERROR: extract_functions.py : Ghidra was not started with PyGhidra. Python is not available ghidra.app.script.GhidraScriptLoadException: Ghidra was not started with PyGhidra. Python is not available
+	at ghidra.pyghidra.PyGhidraScriptProvider.getScriptInstance(PyGhidraScriptProvider.java:75)
+	at ghidra.app.util.headless.HeadlessAnalyzer.runScriptsList(HeadlessAnalyzer.java:924)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1086)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileNoImport(HeadlessAnalyzer.java:1184)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFolderNoImport(HeadlessAnalyzer.java:1356)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processNoImport(HeadlessAnalyzer.java:1385)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:459)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+ 
+2026-05-04 15:36:21 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for processed file: /superb  

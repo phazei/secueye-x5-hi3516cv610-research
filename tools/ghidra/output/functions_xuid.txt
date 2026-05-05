@@ -1,0 +1,4 @@
+# Internal IPC (XUID) handlers
+# Address	Size	Name
+# Extracted from: superb
+

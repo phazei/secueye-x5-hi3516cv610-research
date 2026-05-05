@@ -1,0 +1,974 @@
+RESOLVED STRING ADDRESSES AND ISP STRUCT ANALYSIS
+======================================================================
+
+PART 1: linkkit_set_property_handler STRING REFERENCES
+----------------------------------------------------------------------
+
+  00175da1 -> [0x1bb181b5]
+  00176bfc -> "StreamVideoQuality" (via ptr at 0x00551cf4)
+  00176c00 -> "$"~" (direct)
+  00176c04 -> "CMCC" (via ptr at 0x00551cec)
+  00176c08 -> [0x0097cb24]
+  00176c0c -> "MZ0165X_4G" (via ptr at 0x0054e099)
+  00176c10 -> "("~" (direct)
+  00176c14 -> "MZ0177X_4G" (via ptr at 0x0054e0a4)
+  00176c18 -> "/etc/conf.d/fixed/aliyn_cfg" (via ptr at 0x005512fd)
+  00176c1c -> [0x0078e198]
+  00176c20 -> "MZ0165X" (via ptr at 0x0054e0af)
+  00176c24 -> [0x0078e150]
+  00176c28 -> [0x0097c824]
+  00176ee0 -> "MZ0165K_TRIPLET" (via ptr at 0x0054e0b7)
+  00176ee4 -> "("~" (direct)
+  00176ee8 -> "MZ0192B_TRIPLET" (via ptr at 0x0054e0c7)
+  00176eec -> "MZ0192_TRIPLET" (via ptr at 0x0054e0d7)
+  00176ef0 -> "MZ0200CV200" (via ptr at 0x0054e0e6)
+  00176ef4 -> "MX1200CV200" (via ptr at 0x0054e0f2)
+  00176ef8 -> "CMCC" (via ptr at 0x00551cec)
+  00176efc -> [0x0097cb24]
+  00176f00 -> "SubStreamVideoQuality" (via ptr at 0x00551cf1)
+  00176f04 -> "StorageRecordQuality" (via ptr at 0x00551d07)
+  00176f08 -> [0x0076a11c]
+  00176f0c -> "StorageRecordMode" (via ptr at 0x00551d1c)
+  00176f10 -> "MotionDetectSensitivity" (via ptr at 0x00551d2e)
+  00176f14 -> "FaceDetectSensitivity" (via ptr at 0x00551d46)
+  00176f18 -> "$"~" (direct)
+  00176f1c -> "/home/ivp/ivp.oms" (via ptr at 0x0054dc9c)
+  00176f20 -> "/etc/conf.d/fixed/ivp/ivp.oms" (via ptr at 0x0054dcae)
+  00176f24 -> "/progs/rec/00/ivp.oms" (via ptr at 0x00552bba)
+  00176f28 -> "/home/ivp/det_hvf_normal.bin" (via ptr at 0x0054dc7f)
+  00176f2c -> "/home/ivp/det_hv_hor.bin" (via ptr at 0x0054dccc)
+  001771c4 -> "IvpAbility" (via ptr at 0x00551d5c)
+  001771c8 -> "%d" (via ptr at 0x00564eff)
+  001771cc -> "ivp_ability" (via ptr at 0x00551d67)
+  001771d0 -> "/etc/conf.d/ivp_ability.cfg" (via ptr at 0x00551d73)
+  001771d4 -> "IvpExSwitch" (via ptr at 0x00551d8f)
+  001771d8 -> "$"~" (direct)
+  001771dc -> [0x00768fc0]
+  001771e0 -> [0x0078e150]
+  001771e4 -> [0x00175da1]
+  001771e8 -> "preset_queueing_timer" (via ptr at 0x00551d9b)
+  001771ec -> "IntelligentTracking" (via ptr at 0x0054f486)
+  001771f0 -> "CrossLineDetect" (via ptr at 0x00551db1)
+  001771f4 -> "Enable" (via ptr at 0x0054eb4f)
+  001771f8 -> "StartX" (via ptr at 0x0054f4f2)
+  001771fc -> "StartY" (via ptr at 0x0054f502)
+  00177200 -> "EndX" (via ptr at 0x00551635)
+  00177204 -> "EndY" (via ptr at 0x00551641)
+  00177208 -> "Direction" (via ptr at 0x0054f52e)
+  0017720c -> "RegionDetect" (via ptr at 0x00551dc1)
+  00177210 -> "LeftTop_X" (via ptr at 0x00551dce)
+  00177214 -> "LeftTop_Y" (via ptr at 0x00551dd8)
+  00177218 -> "RightTop_X" (via ptr at 0x00551de2)
+  0017721c -> "RightTop_Y" (via ptr at 0x00551ded)
+  00177220 -> "LeftBottom_X" (via ptr at 0x00551df8)
+  00177224 -> "LeftBottom_Y" (via ptr at 0x00551e05)
+  00177228 -> "RightBottom_X" (via ptr at 0x00551e12)
+  0017722c -> "RightBottom_Y" (via ptr at 0x00551e20)
+  00177230 -> "NightVisionMode" (via ptr at 0x00551e2e)
+  00177234 -> [0x007d7704]
+  00177238 -> [0x007d7710]
+  0017723c -> [0x007d7708]
+  00177510 -> [0x007d7700]
+  00177514 -> "DualSensor" (via ptr at 0x00551e3e)
+  00177518 -> "MipiChn" (via ptr at 0x00551e49)
+  0017751c -> "AlarmFrequencyLevel" (via ptr at 0x00551e51)
+  00177520 -> "DeviceOwner" (via ptr at 0x00551e65)
+  00177524 -> [0x0078e198]
+  00177528 -> "/etc/conf.d/fixed/aliyn_cfg" (via ptr at 0x005512fd)
+  0017752c -> "ImageFlipState" (via ptr at 0x00551e71)
+  00177530 -> "AlarmNotifyPlan" (via ptr at 0x00551e80)
+  00177534 -> "AlarmSchedule" (via ptr at 0x00551eac)
+  00177538 -> "BeginTime" (via ptr at 0x00551e9a)
+  0017753c -> "EndTime" (via ptr at 0x00551ea4)
+  00177540 -> "AlarmMode" (via ptr at 0x0054e8e3)
+  00177544 -> "AlarmSwitch" (via ptr at 0x00551ec6)
+  00177548 -> "DayOfWeek" (via ptr at 0x00551e90)
+  0017754c -> "Enable" (via ptr at 0x0054eb4f)
+  00177550 -> "IsAcrossDay" (via ptr at 0x00551eba)
+  00177554 -> "WeekMask" (via ptr at 0x0054f86b)
+  00177814 -> "DeviceTime" (via ptr at 0x00551ed2)
+  00177818 -> "Time" (via ptr at 0x0054f39e)
+  0017781c -> "TZ" (via ptr at 0x00584bf6)
+  00177820 -> "RegionTZ" (via ptr at 0x00551edd)
+  00177824 -> "PosixTZ" (via ptr at 0x00551ee6)
+  00177828 -> "-0000" (via ptr at 0x00584c0d)
+  0017782c -> "%04d" (via ptr at 0x00584bfd)
+  00177830 -> "GMT+%c%c:%c%c" (via ptr at 0x00551eee)
+  00177834 -> "GMT-00:00" (via ptr at 0x00551f0a)
+  00177838 -> "GMT-%c%c:%c%c" (via ptr at 0x00551efc)
+  0017783c -> "DSTSwitch" (via ptr at 0x00551f14)
+  00177840 -> [0x0078e150]
+  00177844 -> "StatusLightSwitch" (via ptr at 0x00551f1e)
+  00177848 -> "AlarmPromptSwitch" (via ptr at 0x00551f30)
+  0017784c -> "VoicePromptType" (via ptr at 0x00551f42)
+  00177850 -> "AlarmAudioRecord" (via ptr at 0x0054f3da)
+  00177854 -> "FileType" (via ptr at 0x00551f52)
+  00177858 -> "FileName" (via ptr at 0x00551f5b)
+  0017785c -> "AlarmType" (via ptr at 0x00551f64)
+  00177860 -> "AlarmName" (via ptr at 0x00551f6e)
+  00177864 -> "prompt_type" (via ptr at 0x00551f78)
+  00177868 -> "prompt_type%d" (via ptr at 0x00551f84)
+  0017786c -> "alarming" (via ptr at 0x0054e179)
+  00177870 -> "AOVolumeSize" (via ptr at 0x00551f92)
+  00177b2c -> "PushSwitch" (via ptr at 0x0054e897)
+  00177b30 -> [0x0078e150]
+  00177b34 -> "/etc/conf.d/fixed/aliyn_cfg" (via ptr at 0x005512fd)
+  00177b38 -> "StrongReminderSwitch" (via ptr at 0x00551f9f)
+  00177b3c -> "PreviewSwitch" (via ptr at 0x00551fb4)
+  00177b40 -> "$"~" (direct)
+  00177b44 -> [0x007d7710]
+  00177b48 -> [0x007ae1f0]
+  00177b4c -> "CustomIPCOSDName" (via ptr at 0x00551fc2)
+  00177b50 -> "RebootSchedule" (via ptr at 0x00551fd3)
+  00177b54 -> "Enable" (via ptr at 0x0054eb4f)
+  00177b58 -> "WeekMask" (via ptr at 0x0054f86b)
+  00177b5c -> "Time" (via ptr at 0x0054f39e)
+  00177b60 -> "AlarmLightSwitch" (via ptr at 0x0054f351)
+  00177b64 -> "Net4GEnableSwitch" (via ptr at 0x00551fe2)
+  00177b68 -> [0x0097d88c]
+  00177b6c -> "eth0" (via ptr at 0x00588820)
+  00177b70 -> [0x0097d9d8]
+  00177b74 -> "Net4GMode" (via ptr at 0x00551ff4)
+  00177b78 -> "DualSimMode" (via ptr at 0x00551ffe)
+  00177b7c -> "0" (via ptr at 0x005819f9)
+  00177b80 -> "dualsim_mode" (via ptr at 0x0055200a)
+  00177b84 -> "/etc/conf.d/net4g.conf" (via ptr at 0x005513ef)
+  00177b88 -> "1" (via ptr at 0x005b8bea)
+  00177b8c -> "2" (via ptr at 0x0058938c)
+  00177b90 -> [0x007ae060]
+  00177e84 -> "WhiteLightBrightness" (via ptr at 0x00552017)
+  00177e88 -> [0x00768fc0]
+  00177e8c -> "IRLightBrightness" (via ptr at 0x0055202c)
+  00177e90 -> "DeviceHardwareInfo" (via ptr at 0x0055203e)
+  00177e94 -> "APNConfig" (via ptr at 0x00552051)
+  00177e98 -> "setIspFrame" (via ptr at 0x0055205b)
+  00177e9c -> "4w}" (direct)
+  00177ea0 -> [0x0076a164]
+  00177ea4 -> "$"~" (direct)
+  00177ea8 -> "g U" (direct)
+  00177eac -> "setFlicker" (via ptr at 0x00552077)
+  00177eb0 -> "Enable" (via ptr at 0x0054eb4f)
+  00177eb4 -> "Auto" (via ptr at 0x0057031c)
+  00177eb8 -> "Frequency" (via ptr at 0x0054f6bc)
+  00177ebc -> "2" (via ptr at 0x0076a160)
+  00177ec0 -> [0x00552082]
+  00177ec4 -> "Net4GPlans" (via ptr at 0x00551528)
+  00177ec8 -> "VendorID" (via ptr at 0x005520ac)
+  00177ecc -> "VendorIDSlave" (via ptr at 0x005520b5)
+  00177ed0 -> "URL" (via ptr at 0x0058f6cc)
+  00177ed4 -> "URLSlave" (via ptr at 0x005520c3)
+  00177ed8 -> [0x0097c824]
+  00177edc -> [0x005520cc]
+  00177ee0 -> "sim" (via ptr at 0x00551783)
+  00177ee4 -> "/etc/conf.d/fixed/hwconfig.cfg" (via ptr at 0x0054df8c)
+  00177ee8 -> "sim_vid" (via ptr at 0x00551787)
+  00177eec -> "sim_vid_slave" (via ptr at 0x0055178f)
+  00177ef0 -> "FloodlightSwitch" (via ptr at 0x00552116)
+  00177ef4 -> [0x007ae0e8]
+  00177ef8 -> "FloodlightSchedule" (via ptr at 0x00552127)
+  00177efc -> "0w}" (direct)
+  00177f00 -> "IsAcrossDay" (via ptr at 0x00551eba)
+  00177f04 -> "WeekMask" (via ptr at 0x0054f86b)
+  001781ec -> "BeginTime" (via ptr at 0x00551e9a)
+  001781f0 -> "EndTime" (via ptr at 0x00551ea4)
+  001781f4 -> "FloodlightScheduleEnable" (via ptr at 0x0055213a)
+  001781f8 -> "FakeDualEnable" (via ptr at 0x00552153)
+  001781fc -> [0x0078dda0]
+  00178200 -> "stream_enabled" (via ptr at 0x00552162)
+  00178204 -> "MENGMASpecial" (via ptr at 0x00552171)
+  00178208 -> "hwinfo" (via ptr at 0x0055217f)
+  0017820c -> "/home/voice/common/startok.711" (via ptr at 0x0054dc42)
+  00178210 -> [0x0078e150]
+  00178214 -> "PowerMode" (via ptr at 0x00552186)
+  00178218 -> "ExpHighLight" (via ptr at 0x00552190)
+  0017821c -> "Enable" (via ptr at 0x0054eb4f)
+  00178220 -> "Level" (via ptr at 0x0056f30c)
+  00178224 -> "IvpZoomEnable" (via ptr at 0x0055219d)
+  00178228 -> "$"~" (direct)
+  0017822c -> "TimeFormat" (via ptr at 0x0054df68)
+  00178230 -> "HoursFormat" (via ptr at 0x005521ab)
+  00178234 -> "AlarmFloodLightSwitch" (via ptr at 0x005521b7)
+  00178238 -> [0x007ae294]
+  0017823c -> "PTZScheduleEnable" (via ptr at 0x005521cd)
+  001782c4 -> "PTZSchedule" (via ptr at 0x005521df)
+  001782c8 -> "WeekMask" (via ptr at 0x0054f86b)
+  001782cc -> "ActionTime" (via ptr at 0x0054f895)
+  0054dc42 -> "/home/voice/common/startok.711" (direct)
+  0054dc7f -> "/home/ivp/det_hvf_normal.bin" (direct)
+  0054dc9c -> "/home/ivp/ivp.oms" (direct)
+  0054dcae -> "/etc/conf.d/fixed/ivp/ivp.oms" (direct)
+  0054dccc -> "/home/ivp/det_hv_hor.bin" (direct)
+  0054df68 -> "TimeFormat" (direct)
+  0054df8c -> "/etc/conf.d/fixed/hwconfig.cfg" (direct)
+  0054e099 -> "MZ0165X_4G" (direct)
+  0054e0a4 -> "MZ0177X_4G" (direct)
+  0054e0af -> "MZ0165X" (direct)
+  0054e0b7 -> "MZ0165K_TRIPLET" (direct)
+  0054e0c7 -> "MZ0192B_TRIPLET" (direct)
+  0054e0d7 -> "MZ0192_TRIPLET" (direct)
+  0054e0e6 -> "MZ0200CV200" (direct)
+  0054e0f2 -> "MX1200CV200" (direct)
+  0054e179 -> "alarming" (direct)
+  0054e897 -> "PushSwitch" (direct)
+  0054e8e3 -> "AlarmMode" (direct)
+  0054eb4f -> "Enable" (direct)
+  0054f351 -> "AlarmLightSwitch" (direct)
+  0054f39e -> "Time" (direct)
+  0054f3da -> "AlarmAudioRecord" (direct)
+  0054f486 -> "IntelligentTracking" (direct)
+  0054f4f2 -> "StartX" (direct)
+  0054f502 -> "StartY" (direct)
+  0054f52e -> "Direction" (direct)
+  0054f6bc -> "Frequency" (direct)
+  0054f86b -> "WeekMask" (direct)
+  0054f895 -> "ActionTime" (direct)
+  005512fd -> "/etc/conf.d/fixed/aliyn_cfg" (direct)
+  005513ef -> "/etc/conf.d/net4g.conf" (direct)
+  00551528 -> "Net4GPlans" (direct)
+  00551635 -> "EndX" (direct)
+  00551641 -> "EndY" (direct)
+  00551783 -> "?" (via ptr at 0x006d6973)
+  00551787 -> "sim_vid" (direct)
+  0055178f -> "sim_vid_slave" (direct)
+  00551cec -> "CMCC" (direct)
+  00551cf1 -> "SubStreamVideoQuality" (direct)
+  00551cf4 -> "StreamVideoQuality" (direct)
+  00551d07 -> "StorageRecordQuality" (direct)
+  00551d1c -> "StorageRecordMode" (direct)
+  00551d2e -> "MotionDetectSensitivity" (direct)
+  00551d46 -> "FaceDetectSensitivity" (direct)
+  00551d5c -> "IvpAbility" (direct)
+  00551d67 -> "ivp_ability" (direct)
+  00551d73 -> "/etc/conf.d/ivp_ability.cfg" (direct)
+  00551d8f -> "IvpExSwitch" (direct)
+  00551d9b -> "preset_queueing_timer" (direct)
+  00551db1 -> "CrossLineDetect" (direct)
+  00551dc1 -> "RegionDetect" (direct)
+  00551dce -> "LeftTop_X" (direct)
+  00551dd8 -> "LeftTop_Y" (direct)
+  00551de2 -> "RightTop_X" (direct)
+  00551ded -> "RightTop_Y" (direct)
+  00551df8 -> "LeftBottom_X" (direct)
+  00551e05 -> "LeftBottom_Y" (direct)
+  00551e12 -> "RightBottom_X" (direct)
+  00551e20 -> "RightBottom_Y" (direct)
+  00551e2e -> "NightVisionMode" (direct)
+  00551e3e -> "DualSensor" (direct)
+  00551e49 -> "MipiChn" (direct)
+  00551e51 -> "AlarmFrequencyLevel" (direct)
+  00551e65 -> "DeviceOwner" (direct)
+  00551e71 -> "ImageFlipState" (direct)
+  00551e80 -> "AlarmNotifyPlan" (direct)
+  00551e90 -> "DayOfWeek" (direct)
+  00551e9a -> "BeginTime" (direct)
+  00551ea4 -> "EndTime" (direct)
+  00551eac -> "AlarmSchedule" (direct)
+  00551eba -> "IsAcrossDay" (direct)
+  00551ec6 -> "AlarmSwitch" (direct)
+  00551ed2 -> "DeviceTime" (direct)
+  00551edd -> "RegionTZ" (direct)
+  00551ee6 -> "PosixTZ" (direct)
+  00551eee -> "GMT+%c%c:%c%c" (direct)
+  00551efc -> "GMT-%c%c:%c%c" (direct)
+  00551f0a -> "GMT-00:00" (direct)
+  00551f0e -> "00:00" (direct)
+  00551f12 -> [0x53440030]
+  00551f14 -> "DSTSwitch" (direct)
+  00551f1e -> "StatusLightSwitch" (direct)
+  00551f30 -> "AlarmPromptSwitch" (direct)
+  00551f42 -> "VoicePromptType" (direct)
+  00551f52 -> "FileType" (direct)
+  00551f5b -> "FileName" (direct)
+  00551f64 -> "AlarmType" (direct)
+  00551f6e -> "AlarmName" (direct)
+  00551f78 -> "prompt_type" (direct)
+  00551f84 -> "prompt_type%d" (direct)
+  00551f92 -> "AOVolumeSize" (direct)
+  00551f9f -> "StrongReminderSwitch" (direct)
+  00551fb4 -> "PreviewSwitch" (direct)
+  00551fc2 -> "CustomIPCOSDName" (direct)
+  00551fd3 -> "RebootSchedule" (direct)
+  00551fe2 -> "Net4GEnableSwitch" (direct)
+  00551ff4 -> "Net4GMode" (direct)
+  00551ffe -> "DualSimMode" (direct)
+  0055200a -> "dualsim_mode" (direct)
+  00552017 -> "WhiteLightBrightness" (direct)
+  0055202c -> "IRLightBrightness" (direct)
+  0055203e -> "DeviceHardwareInfo" (direct)
+  00552051 -> "APNConfig" (direct)
+  0055205b -> "setIspFrame" (direct)
+  00552067 -> [0x5f707369]
+  00552077 -> "setFlicker" (direct)
+  00552082 -> [0x616e4562]
+  005520ac -> "VendorID" (direct)
+  005520b5 -> "VendorIDSlave" (direct)
+  005520c3 -> "URLSlave" (direct)
+  005520cc -> [0x6e616c50]
+  00552116 -> "FloodlightSwitch" (direct)
+  00552127 -> "FloodlightSchedule" (direct)
+  0055213a -> "FloodlightScheduleEnable" (direct)
+  00552153 -> "FakeDualEnable" (direct)
+  00552162 -> "stream_enabled" (direct)
+  00552171 -> "MENGMASpecial" (direct)
+  0055217f -> "hwinfo" (direct)
+  00552186 -> "PowerMode" (direct)
+  00552190 -> "ExpHighLight" (direct)
+  0055219d -> "IvpZoomEnable" (direct)
+  005521ab -> "HoursFormat" (direct)
+  005521b7 -> "AlarmFloodLightSwitch" (direct)
+  005521cd -> "PTZScheduleEnable" (direct)
+  005521df -> "PTZSchedule" (direct)
+  00552bba -> "/progs/rec/00/ivp.oms" (direct)
+  00564eff -> "%d" (direct)
+  0056f30c -> "Level" (direct)
+  0057031c -> "Auto" (direct)
+  005819f9 -> [0x6f630030]
+  00584bf6 -> "TZ" (direct)
+  00584bfd -> "%04d" (direct)
+  00584c0d -> "-0000" (direct)
+  00588820 -> "eth0" (direct)
+  0058938c -> [0x54410032]
+  0058f6cc -> "URL" (direct)
+  005b8bea -> [0x6d740031]
+  00768fc0 -> [0xffffffffffffffff]
+  00768fc8 -> [0x00000001]
+  00768fcc -> [0xffffffffffffffff]
+  0076901c -> [0x00000005]
+  00769020 -> [0x00000005]
+  0076a11c -> [0x00000001]
+  0076a160 -> [0x00000032]
+  0076a164 -> [0x41a00000]
+  0078dda0 -> [0x00000000]
+  0078e150 -> [0x00000000]
+  0078e15c -> [0x00000000]
+  0078e180 -> [0x00000000]
+  0078e198 -> [0x00000000]
+  0078e1b8 -> [0x00000000]
+  0078e1bc -> [0x00000000]
+  0078e1c0 -> [0x00000000]
+  0078e1e0 -> [0x00000000]
+  0078e1e4 -> [0x00000000]
+  0078e1e8 -> [0x00000000]
+  0078e1ec -> [0x00000000]
+  007ae060 -> [0x00000000]
+  007ae0e8 -> [0x00000000]
+  007ae1f0 -> [0x00000000]
+  007ae1f4 -> [0x00000000]
+  007ae294 -> [0x00000000]
+  007d7700 -> [0x00000000]
+  007d7704 -> [0x00000000]
+  007d7708 -> [0x00000000]
+  007d7710 -> [0x00000000]
+  007d7730 -> [0x00000000]
+  007d7734 -> [0x00000000]
+  007e2224 -> [0x00000000]
+  007e2228 -> [0x00000000]
+  007e22c4 -> [0x00000000]
+  007e2364 -> [0x00000000]
+  007e2368 -> [0x00000000]
+  007e2384 -> [0x00000000]
+  007e23d0 -> [0x00000000]
+  007e23d8 -> [0x00000000]
+  007e2410 -> [0x00000000]
+  007e2450 -> [0x00000000]
+  007e245c -> [0x00000000]
+  007e2468 -> [0x00000000]
+  007e2469 -> [0x00000000]
+  007e2478 -> [0x00000000]
+  007e247c -> [0x00000000]
+  007e24a0 -> [0x00000000]
+  007e24a8 -> [0x00000000]
+  0097c82c -> [0x00000000]
+  0097c874 -> [0x00000000]
+  0097c978 -> [0x00000000]
+  0097ca7c -> [0x00000000]
+  0097cb24 -> [0x00000000]
+  0097d88c -> [0x00000000]
+  0097d9d8 -> [0x00000000]
+
+Total resolved: 381
+
+
+PART 2: ISP CSC IOCTL CHAIN
+----------------------------------------------------------------------
+
+FUNCTION: mpi_isp_set_csc_attr @ 003eb220
+SIZE: 580 bytes
+--- ASM ---
+  003eb220: push {r0,r1,r4,r5,r6,r7,r8,r9,r10,lr}
+  003eb224: mov r7,r0
+  003eb226: ldr r6,[0x003eb46c]
+  003eb228: mov r4,r1
+  003eb22a: ldr r0,[r1,#0x0]
+  003eb22c: add r6,pc
+  003eb22e: bl 0x003d80a4
+  003eb232: cbz r0,0x003eb238
+  003eb234: ldr r5,[0x003eb464]
+  003eb236: b 0x003eb314
+  003eb238: ldr r0,[r4,#0xc]
+  003eb23a: bl 0x003d80a4
+  003eb23e: cmp r0,#0x0
+  003eb240: bne 0x003eb234
+  003eb242: ldr r0,[r4,#0x14]
+  003eb244: bl 0x003d80a4
+  003eb248: cmp r0,#0x0
+  003eb24a: bne 0x003eb234
+  003eb24c: ldr r0,[r4,#0x10]
+  003eb24e: bl 0x003d80a4
+  003eb252: cmp r0,#0x0
+  003eb254: bne 0x003eb234
+  003eb256: mov r0,r7
+  003eb258: bl 0x003d80e4
+  003eb25c: mov r5,r0
+  003eb25e: cmp r0,#0x0
+  003eb260: bne 0x003eb314
+  003eb262: mov r0,r7
+  003eb264: bl 0x003d8198
+  003eb268: mov r5,r0
+  003eb26a: cmp r0,#0x0
+  003eb26c: bne 0x003eb314
+  003eb26e: mov r0,r7
+  003eb270: bl 0x003d8230
+  003eb274: mov r5,r0
+  003eb276: cmp r0,#0x0
+  003eb278: bne 0x003eb314
+  003eb27a: ldrb r3,[r4,#0x9]
+  003eb27c: cmp r3,#0x64
+  003eb27e: bls 0x003eb298
+  003eb280: ldr r3,[0x003eb470]
+  003eb282: ldr r2,[0x003eb474]
+  003eb284: ldr r1,[0x003eb478]
+  003eb286: ldr r0,[r6,r3]
+  003eb288: movw r3,#0xa15
+  003eb28c: add r2,pc
+  003eb28e: add r1,pc
+  003eb290: ldr r0,[r0,#0x0]
+  003eb292: blx 0x00161568
+  003eb296: b 0x003eb234
+  003eb298: ldrb r3,[r4,#0xa]
+  003eb29a: cmp r3,#0x64
+  003eb29c: bls 0x003eb2b0
+  003eb29e: ldr r3,[0x003eb470]
+  003eb2a0: ldr r2,[0x003eb47c]
+  003eb2a2: ldr r1,[0x003eb480]
+  003eb2a4: ldr r0,[r6,r3]
+  003eb2a6: movw r3,#0xa1a
+  003eb2aa: add r2,pc
+  003eb2ac: add r1,pc
+--- C ---
+
+int mpi_isp_set_csc_attr(int param_1,uint *param_2)
+
+{
+  int iVar1;
+  int iVar2;
+  undefined4 *puVar3;
+  char *pcVar4;
+  uint *puVar5;
+  undefined4 uVar6;
+  int iVar7;
+  uint *puVar8;
+  
+  iVar7 = DAT_003eb46c + 0x3eb230;
+  iVar1 = isp_check_bool(*param_2);
+  iVar2 = DAT_003eb464;
+  if ((((iVar1 == 0) && (iVar1 = isp_check_bool(param_2[3]), iVar2 = DAT_003eb464, iVar1 == 0)) &&
+      (iVar1 = isp_check_bool(param_2[5]), iVar2 = DAT_003eb464, iVar1 == 0)) &&
+     (((iVar1 = isp_check_bool(param_2[4]), iVar2 = DAT_003eb464, iVar1 == 0 &&
+       (iVar2 = isp_check_dev_open(param_1), iVar2 == 0)) &&
+      ((iVar2 = isp_check_mem_init_func(param_1), iVar2 == 0 &&
+       (iVar2 = isp_check_vreg_permission(param_1), iVar1 = DAT_003eb468, iVar2 == 0)))))) {
+    if (*(byte *)((int)param_2 + 9) < 0x65) {
+      if (*(byte *)((int)param_2 + 10) < 0x65) {
+        if (*(byte *)((int)param_2 + 0xb) < 0x65) {
+          if ((byte)param_2[2] < 0x65) {
+            if (param_2[1] < 4) {
+              if (param_2[1] == 2) {
+                fprintf((FILE *)**(undefined4 **)(iVar7 + DAT_003eb470),
+                        (char *)(DAT_003eb4a0 + 0x3eb30e),DAT_003eb49c + 0x3eb30c,0xa2e);
+                return iVar1;
+              }
+              iVar2 = 0;
+              puVar5 = param_2 + 6;
+              while( true ) {
+                if (0x7ff < (ushort)((short)*puVar5 + 0x400U)) {
+                  puVar3 = *(undefined4 **)(iVar7 + DAT_003eb470);
+                  uVar6 = 0xa35;
+                  iVar1 = DAT_003eb4a8 + 0x3eb346;
+                  pcVar4 = (char *)(DAT_003eb4a4 + 0x3eb348);
+                  goto LAB_003eb346;
+                }
+                if (0x7ff < (ushort)(*(short *)((int)puVar5 + 6) + 0x400U)) break;
+                iVar2 = iVar2 + 1;
+                puVar5 = (uint *)((int)puVar5 + 2);
+                if (iVar2 == 3) {
+                  iVar2 = 0;
+                  puVar5 = param_2 + 9;
+                  while ((ushort)((short)*puVar5 + 0x1000U) < 0x2000) {
+                    iVar2 = iVar2 + 1;
+                    puVar5 = (uint *)((int)puVar5 + 2);
+                    if (iVar2 == 9) {
+                      iVar2 = (param_1 + 8) * 0x20000;
+                      iVar1 = iVar2 + 0x12c0;
+                      io_write8((param_1 + 8) * 0x20000 + 0x12f0,*param_2 & 1);
+                      io_write8(iVar2 + 0x12e0,(char)param_2[1]);
+                      io_write8(iVar2 + 0x12f4,*(undefined1 *)((int)param_2 + 9));
+                      io_write8(iVar2 + 0x12f1,*(undefined1 *)((int)param_2 + 10));
+                      io_write8(iVar2 + 0x12f2,(char)param_2[2]);
+                      io_write8(iVar2 + 0x12f3,*(undefined1 *)((int)param_2 + 0xb));
+                      io_write8(iVar2 + 0x12f5,(char)param_2[3]);
+                      io_write8(iVar2 + 0x12f6,(char)param_2[4]);
+                      io_write8(iVar2 + 0x12f7,(char)param_2[5]);
+                      puVar5 = param_2 + 6;
+                      do {
+                        io_write16(iVar1,(short)*puVar5);
+                        iVar7 = iVar1 + 0x10;
+                        iVar1 = iVar1 + 2;
+                        io_write16(iVar7,*(short *)((int)puVar5 + 6));
+                        puVar5 = (uint *)((int)puVar5 + 2);
+                      } while (iVar1 != iVar2 + 0x12c6);
+                      iVar1 = iVar2 + 0x12a0;
+                      puVar5 = param_2 + 9;
+                      do {
+                        puVar8 = (uint *)((int)puVar5 + 2);
+                        io_write16(iVar1,(short)*puVar5);
+                        iVar1 = iVar1 + 2;
+                        puVar5 = puVar8;
+                      } while ((uint *)((int)param_2 + 0x36) != puVar8);
+                      io_write8(iVar2 + 0x12f8,1);
+                      return 0;
+                    }
+                  }
+                  puVar3 = *(undefined4 **)(iVar7 + DAT_003eb470);
+                  uVar6 = 0xa43;
+                  pcVar4 = (char *)(DAT_003eb4b4 + 0x3eb3a0);
+                  iVar1 = DAT_003eb4b8 + 0x3eb3a2;
+LAB_003eb346:
+                  fprintf((FILE *)*puVar3,pcVar4,iVar1,uVar6,iVar2);
+                  return DAT_003eb464;
+                }
+              }
+              puVar3 = *(undefined4 **)(iVar7 + DAT_003eb470);
+              uVar6 = 0xa3b;
+              iVar1 = DAT_003eb4b0 + 0x3eb36e;
+              pcVar4 = (char *)(DAT_003eb4ac + 0x3eb370);
+              goto LAB_003eb346;
+            }
+            puVar3 = *(undefined4 **)(iVar7 + DAT_003eb470);
+            uVar6 = 0xa29;
+            iVar2 = DAT_003eb494 + 0x3eb2f6;
+            pcVar4 = (char *)(DAT_003eb498 + 0x3eb2f8);
+          }
+          else {
+            puVar3 = *(undefined4 **)(iVar7 + DAT_003eb470);
+            uVar6 = 0xa24;
+            iVar2 = DAT_003eb48c + 0x3eb2de;
+            pcVar4 = (char *)(DAT_003eb490 + 0x3eb2e0);
+          }
+        }
+        else {
+          puVar3 = *(undefined4 **)(iVar7 + DAT_003eb470);
+          uVar6 = 0xa1f;
+          iVar2 = DAT_003eb484 + 0x3eb2c6;
+          pcVar4 = (char *)(DAT_003eb488 + 0x3eb2c8);
+        }
+      }
+      else {
+        puVar3 = *(undefined4 **)(iVar7 + DAT_003eb470);
+        uVar6 = 0xa1a;
+        iVar2 = DAT_003eb47c + 0x3eb2ae;
+        pcVar4 = (char *)(DAT_003eb480 + 0x3eb2b0);
+      }
+    }
+    else {
+      puVar3 = *(undefined4 **)(iVar7 + DAT_003eb470);
+      uVar6 = 0xa15;
+      iVar2 = DAT_003eb474 + 0x3eb290;
+      pcVar4 = (char *)(DAT_003eb478 + 0x3eb292);
+    }
+    fprintf((FILE *)*puVar3,pcVar4,iVar2,uVar6);
+    iVar2 = DAT_003eb464;
+  }
+  return iVar2;
+}
+
+
+
+FUNCTION: mpi_isp_get_csc_attr @ 003eb4bc
+SIZE: 232 bytes
+--- ASM ---
+  003eb4bc: push {r3,r4,r5,r6,r7,r8,r9,lr}
+  003eb4c0: mov r5,r0
+  003eb4c2: mov r4,r1
+  003eb4c4: bl 0x003d80e4
+  003eb4c8: mov r6,r0
+  003eb4ca: cmp r0,#0x0
+  003eb4cc: bne 0x003eb59e
+  003eb4ce: mov r0,r5
+  003eb4d0: bl 0x003d8198
+  003eb4d4: mov r6,r0
+  003eb4d6: cmp r0,#0x0
+  003eb4d8: bne 0x003eb59e
+  003eb4da: mov r0,r5
+  003eb4dc: bl 0x003d8230
+  003eb4e0: mov r6,r0
+  003eb4e2: cmp r0,#0x0
+  003eb4e4: bne 0x003eb59e
+  003eb4e6: add.w r0,r5,#0x8
+  003eb4ea: movw r3,#0x12f0
+  003eb4ee: add.w r9,r4,#0x18
+  003eb4f2: lsls r5,r0,#0x11
+  003eb4f4: add.w r0,r3,r0, lsl #0x11
+  003eb4f8: add.w r7,r5,#0x12c0
+  003eb4fc: add.w r8,r7,#0x6
+  003eb500: bl 0x003d43e0
+  003eb504: and r0,r0,#0x1
+  003eb508: str r0,[r4,#0x0]
+  003eb50a: add.w r0,r5,#0x12e0
+  003eb50e: bl 0x003d43e0
+  003eb512: str r0,[r4,#0x4]
+  003eb514: add.w r0,r5,#0x12e0
+  003eb518: adds r0,#0x12
+  003eb51a: bl 0x003d43e0
+  003eb51e: strb r0,[r4,#0x8]
+  003eb520: add.w r0,r5,#0x12e0
+  003eb524: adds r0,#0x14
+  003eb526: bl 0x003d43e0
+  003eb52a: strb r0,[r4,#0x9]
+  003eb52c: add.w r0,r5,#0x12e0
+  003eb530: adds r0,#0x11
+  003eb532: bl 0x003d43e0
+  003eb536: strb r0,[r4,#0xa]
+  003eb538: add.w r0,r5,#0x12e0
+  003eb53c: adds r0,#0x13
+  003eb53e: bl 0x003d43e0
+  003eb542: strb r0,[r4,#0xb]
+  003eb544: add.w r0,r5,#0x12e0
+  003eb548: adds r0,#0x15
+  003eb54a: bl 0x003d43e0
+  003eb54e: str r0,[r4,#0xc]
+  003eb550: add.w r0,r5,#0x12e0
+  003eb554: adds r0,#0x16
+  003eb556: bl 0x003d43e0
+  003eb55a: str r0,[r4,#0x10]
+  003eb55c: add.w r0,r5,#0x12e0
+  003eb560: adds r0,#0x17
+  003eb562: bl 0x003d43e0
+  003eb566: str r0,[r4,#0x14]
+  003eb568: mov r0,r7
+  003eb56a: bl 0x003d4422
+--- C ---
+
+int mpi_isp_get_csc_attr(int param_1,uint *param_2)
+
+{
+  undefined1 uVar1;
+  undefined2 uVar2;
+  int iVar3;
+  uint uVar4;
+  int iVar5;
+  int iVar6;
+  int iVar7;
+  uint *puVar8;
+  uint *puVar9;
+  
+  iVar3 = isp_check_dev_open();
+  if (((iVar3 == 0) && (iVar3 = isp_check_mem_init_func(param_1), iVar3 == 0)) &&
+     (iVar3 = isp_check_vreg_permission(param_1), iVar3 == 0)) {
+    iVar6 = (param_1 + 8) * 0x20000;
+    iVar7 = iVar6 + 0x12c0;
+    uVar4 = io_read8((param_1 + 8) * 0x20000 + 0x12f0);
+    *param_2 = uVar4 & 1;
+    uVar4 = io_read8(iVar6 + 0x12e0);
+    param_2[1] = uVar4;
+    uVar1 = io_read8(iVar6 + 0x12f2);
+    *(undefined1 *)(param_2 + 2) = uVar1;
+    uVar1 = io_read8(iVar6 + 0x12f4);
+    *(undefined1 *)((int)param_2 + 9) = uVar1;
+    uVar1 = io_read8(iVar6 + 0x12f1);
+    *(undefined1 *)((int)param_2 + 10) = uVar1;
+    uVar1 = io_read8(iVar6 + 0x12f3);
+    *(undefined1 *)((int)param_2 + 0xb) = uVar1;
+    uVar4 = io_read8(iVar6 + 0x12f5);
+    param_2[3] = uVar4;
+    uVar4 = io_read8(iVar6 + 0x12f6);
+    param_2[4] = uVar4;
+    uVar4 = io_read8(iVar6 + 0x12f7);
+    param_2[5] = uVar4;
+    puVar8 = param_2 + 6;
+    do {
+      uVar2 = io_read16(iVar7);
+      *(undefined2 *)puVar8 = uVar2;
+      iVar5 = iVar7 + 0x10;
+      iVar7 = iVar7 + 2;
+      uVar2 = io_read16(iVar5);
+      *(undefined2 *)((int)puVar8 + 6) = uVar2;
+      puVar8 = (uint *)((int)puVar8 + 2);
+    } while (iVar7 != iVar6 + 0x12c6);
+    iVar6 = iVar6 + 0x12a0;
+    puVar8 = param_2 + 9;
+    do {
+      uVar2 = io_read16(iVar6);
+      puVar9 = (uint *)((int)puVar8 + 2);
+      *(undefined2 *)puVar8 = uVar2;
+      iVar6 = iVar6 + 2;
+      puVar8 = puVar9;
+    } while ((uint *)((int)param_2 + 0x36) != puVar9);
+  }
+  return iVar3;
+}
+
+
+
+FUNCTION: hi_mpi_isp_set_csc_attr @ 003c72d4
+SIZE: 4 bytes
+--- ASM ---
+  003c72d4: b.w 0x003c74dc
+--- C ---
+
+undefined4 hi_mpi_isp_set_csc_attr(undefined4 param_1,undefined4 param_2)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  
+  iVar1 = isp_check_pipe();
+  uVar2 = DAT_003dacd4;
+  if ((iVar1 == 0) && (iVar1 = isp_check_pointer(param_2), uVar2 = DAT_003dacd8, iVar1 == 0)) {
+    isp_mutex_lock(param_1);
+    uVar2 = mpi_isp_set_csc_attr(param_1,param_2);
+    isp_mutex_unlock(param_1);
+  }
+  return uVar2;
+}
+
+
+
+FUNCTION: hi_mpi_isp_get_csc_attr @ 003c72d8
+SIZE: 4 bytes
+--- ASM ---
+  003c72d8: b.w 0x003c74e0
+--- C ---
+
+undefined4 hi_mpi_isp_get_csc_attr(undefined4 param_1,undefined4 param_2)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  
+  iVar1 = isp_check_pipe();
+  uVar2 = DAT_003dad14;
+  if ((iVar1 == 0) && (iVar1 = isp_check_pointer(param_2), uVar2 = DAT_003dad18, iVar1 == 0)) {
+    isp_mutex_lock(param_1);
+    uVar2 = mpi_isp_get_csc_attr(param_1,param_2);
+    isp_mutex_unlock(param_1);
+  }
+  return uVar2;
+}
+
+
+
+FUNCTION: ot_mpi_isp_set_csc_attr @ 003dac9c
+SIZE: 54 bytes
+--- ASM ---
+  003dac9c: push {r3,r4,r5,lr}
+  003dac9e: mov r5,r0
+  003daca0: mov r4,r1
+  003daca2: bl 0x003d802c
+  003daca6: cbnz r0,0x003dacca
+  003daca8: mov r0,r4
+  003dacaa: bl 0x003d806c
+  003dacae: cbnz r0,0x003dacce
+  003dacb0: mov r0,r5
+  003dacb2: bl 0x003d7e54
+  003dacb6: mov r1,r4
+  003dacb8: mov r0,r5
+  003dacba: bl 0x003eb220
+  003dacbe: mov r4,r0
+  003dacc0: mov r0,r5
+  003dacc2: bl 0x003d7e98
+  003dacc6: mov r0,r4
+  003dacc8: pop {r3,r4,r5,pc}
+  003dacca: ldr r4,[0x003dacd4]
+  003daccc: b 0x003dacc6
+  003dacce: ldr r4,[0x003dacd8]
+  003dacd0: b 0x003dacc6
+--- C ---
+
+undefined4 ot_mpi_isp_set_csc_attr(undefined4 param_1,undefined4 param_2)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  
+  iVar1 = isp_check_pipe();
+  uVar2 = DAT_003dacd4;
+  if ((iVar1 == 0) && (iVar1 = isp_check_pointer(param_2), uVar2 = DAT_003dacd8, iVar1 == 0)) {
+    isp_mutex_lock(param_1);
+    uVar2 = mpi_isp_set_csc_attr(param_1,param_2);
+    isp_mutex_unlock(param_1);
+  }
+  return uVar2;
+}
+
+
+
+FUNCTION: ot_mpi_isp_get_csc_attr @ 003dacdc
+SIZE: 54 bytes
+--- ASM ---
+  003dacdc: push {r3,r4,r5,lr}
+  003dacde: mov r5,r0
+  003dace0: mov r4,r1
+  003dace2: bl 0x003d802c
+  003dace6: cbnz r0,0x003dad0a
+  003dace8: mov r0,r4
+  003dacea: bl 0x003d806c
+  003dacee: cbnz r0,0x003dad0e
+  003dacf0: mov r0,r5
+  003dacf2: bl 0x003d7e54
+  003dacf6: mov r1,r4
+  003dacf8: mov r0,r5
+  003dacfa: bl 0x003eb4bc
+  003dacfe: mov r4,r0
+  003dad00: mov r0,r5
+  003dad02: bl 0x003d7e98
+  003dad06: mov r0,r4
+  003dad08: pop {r3,r4,r5,pc}
+  003dad0a: ldr r4,[0x003dad14]
+  003dad0c: b 0x003dad06
+  003dad0e: ldr r4,[0x003dad18]
+  003dad10: b 0x003dad06
+--- C ---
+
+undefined4 ot_mpi_isp_get_csc_attr(undefined4 param_1,undefined4 param_2)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  
+  iVar1 = isp_check_pipe();
+  uVar2 = DAT_003dad14;
+  if ((iVar1 == 0) && (iVar1 = isp_check_pointer(param_2), uVar2 = DAT_003dad18, iVar1 == 0)) {
+    isp_mutex_lock(param_1);
+    uVar2 = mpi_isp_get_csc_attr(param_1,param_2);
+    isp_mutex_unlock(param_1);
+  }
+  return uVar2;
+}
+
+
+
+FUNCTION: isp_check_pipe @ 003d802c
+SIZE: 42 bytes
+--- ASM ---
+  003d802c: ldr r3,[0x003d805c]
+  003d802e: cmp r0,#0x3
+  003d8030: push {r0,r1,r4,lr}
+  003d8032: add r3,pc
+  003d8034: bls 0x003d8052
+  003d8036: ldr r2,[0x003d8060]
+  003d8038: ldr r1,[0x003d8064]
+  003d803a: ldr r4,[r3,r2]
+  003d803c: movs r3,#0x88
+  003d803e: ldr r2,[0x003d8068]
+  003d8040: str r0,[sp,#0x0]
+  003d8042: add r2,pc
+  003d8044: add r1,pc
+  003d8046: ldr r0,[r4,#0x0]
+  003d8048: blx 0x00161568
+  003d804c: ldr r0,[0x003d8058]
+  003d804e: add sp,#0x8
+  003d8050: pop {r4,pc}
+  003d8052: movs r0,#0x0
+  003d8054: b 0x003d804e
+--- C ---
+
+undefined4 isp_check_pipe(uint param_1,undefined4 param_2)
+
+{
+  undefined4 uVar1;
+  
+  if (param_1 < 4) {
+    uVar1 = 0;
+  }
+  else {
+    fprintf((FILE *)**(undefined4 **)(DAT_003d805c + 0x3d8036 + DAT_003d8060),
+            (char *)(DAT_003d8064 + 0x3d8048),DAT_003d8068 + 0x3d8046,0x88,param_1,param_2);
+    uVar1 = DAT_003d8058;
+  }
+  return uVar1;
+}
+
+
+
+FUNCTION: isp_mutex_lock @ 003d7e54
+SIZE: 48 bytes
+--- ASM ---
+  003d7e54: ldr r3,[0x003d7e84]
+  003d7e56: movs r2,#0x18
+  003d7e58: push {r4,lr}
+  003d7e5a: add r3,pc
+  003d7e5c: ldr r4,[0x003d7e88]
+  003d7e5e: mla r0,r2,r0,r3
+  003d7e62: add r4,pc
+  003d7e64: blx 0x00161ce8
+  003d7e68: cbz r0,0x003d7e82
+  003d7e6a: ldr r3,[0x003d7e8c]
+  003d7e6c: ldr r2,[0x003d7e90]
+  003d7e6e: ldr r0,[r4,r3]
+  003d7e70: movs r3,#0x36
+  003d7e72: ldr r1,[0x003d7e94]
+  003d7e74: pop.w {r4,lr}
+  003d7e78: add r2,pc
+  003d7e7a: add r1,pc
+  003d7e7c: ldr r0,[r0,#0x0]
+  003d7e7e: b.w 0x00161564
+  003d7e82: pop {r4,pc}
+--- C ---
+
+void isp_mutex_lock(int param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  
+  iVar2 = DAT_003d7e88 + 0x3d7e66;
+  iVar1 = pthread_mutex_lock((pthread_mutex_t *)(param_1 * 0x18 + DAT_003d7e84 + 0x3d7e5e));
+  if (iVar1 == 0) {
+    return;
+  }
+  (*(code *)PTR_fprintf_0076812c)
+            (**(undefined4 **)(iVar2 + DAT_003d7e8c),DAT_003d7e94 + 0x3d7e7e,DAT_003d7e90 + 0x3d7e7c
+             ,0x36);
+  return;
+}
+
+
+
+
+PART 3: CSC STRUCT LAYOUT from secu_sensor_saturate_set
+----------------------------------------------------------------------
+
+secu_sensor_saturate_set calls chain:
+  -> hi_mpi_isp_set_csc_attr @ 003c72d4
+  -> hi_mpi_isp_get_csc_attr @ 003c72d8
+  -> printf @ 00161350
+
+Callers:
+
+
+PART 4: WHO CALLS hi_mpi_isp_set_csc_attr?
+----------------------------------------------------------------------
+
+  <- ot_scene_set_dynamic_csc @ 002e43c2 (size: 938)
+  <- ot_scene_set_static_csc @ 002ddf4c (size: 398)
+  <- secu_sensor_saturate_set @ 0028f2ac (size: 226)
+
+
+PART 5: WHO CALLS hi_mpi_isp_get_csc_attr?
+----------------------------------------------------------------------
+
+  <- ot_scene_set_dynamic_csc @ 002e43c2 (size: 938)
+  <- ot_scene_set_static_csc @ 002ddf4c (size: 398)
+  <- secu_sensor_saturate_set @ 0028f2ac (size: 226)
+

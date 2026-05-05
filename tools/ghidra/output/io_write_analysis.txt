@@ -1,0 +1,586 @@
+IO_WRITE AND ISP MMAP ANALYSIS
+======================================================================
+
+==================================================
+FUNCTION: io_write8 @ 003d43f8
+SIZE: 42 bytes
+--- ASM ---
+  003d43f8: push {r4,r5,r6,lr}
+  003d43fa: uxtb r5,r1
+  003d43fc: bic r4,r0,#0x3
+  003d4400: lsls r6,r0,#0x3
+  003d4402: mov r0,r4
+  003d4404: and r6,r6,#0x18
+  003d4408: bl 0x003d437c
+  003d440c: movs r1,#0xff
+  003d440e: lsls r5,r6
+  003d4410: lsls r1,r6
+  003d4412: bic.w r1,r0,r1
+  003d4416: mov r0,r4
+  003d4418: orrs r1,r5
+  003d441a: pop.w {r4,r5,r6,lr}
+  003d441e: b.w 0x003d43cc
+--- C ---
+
+void io_write8(uint param_1,uint param_2)
+
+{
+  uint uVar1;
+  int iVar2;
+  
+  iVar2 = (param_1 & 3) << 3;
+  uVar1 = io_read32(param_1 & 0xfffffffc);
+  io_write32(param_1 & 0xfffffffc,uVar1 & ~(0xff << iVar2) | (param_2 & 0xff) << iVar2);
+  return;
+}
+
+
+--- Calls ---
+  -> io_write32 @ 003d43cc
+  -> io_read32 @ 003d437c
+
+
+==================================================
+FUNCTION: io_write16 @ 003d443a
+SIZE: 44 bytes
+--- ASM ---
+  003d443a: push {r4,r5,r6,lr}
+  003d443c: uxth r5,r1
+  003d443e: bic r4,r0,#0x3
+  003d4442: lsls r6,r0,#0x3
+  003d4444: mov r0,r4
+  003d4446: and r6,r6,#0x10
+  003d444a: bl 0x003d437c
+  003d444e: movw r1,#0xffff
+  003d4452: lsls r5,r6
+  003d4454: lsls r1,r6
+  003d4456: bic.w r1,r0,r1
+  003d445a: mov r0,r4
+  003d445c: orrs r1,r5
+  003d445e: pop.w {r4,r5,r6,lr}
+  003d4462: b.w 0x003d43cc
+--- C ---
+
+void io_write16(uint param_1,uint param_2)
+
+{
+  uint uVar1;
+  int iVar2;
+  
+  iVar2 = (param_1 & 2) << 3;
+  uVar1 = io_read32(param_1 & 0xfffffffc);
+  io_write32(param_1 & 0xfffffffc,uVar1 & ~(0xffff << iVar2) | (param_2 & 0xffff) << iVar2);
+  return;
+}
+
+
+--- Calls ---
+  -> io_write32 @ 003d43cc
+  -> io_read32 @ 003d437c
+
+
+==================================================
+FUNCTION: io_write32 @ 003d43cc
+SIZE: 20 bytes
+--- ASM ---
+  003d43cc: push {r4,lr}
+  003d43ce: mov r4,r1
+  003d43d0: bl 0x003d42e0
+  003d43d4: cbz r0,0x003d43dc
+  003d43d6: bic r0,r0,#0x3
+  003d43da: str r4,[r0,#0x0]
+  003d43dc: movs r0,#0x0
+  003d43de: pop {r4,pc}
+--- C ---
+
+undefined4 io_write32(undefined4 param_1,undefined4 param_2)
+
+{
+  uint uVar1;
+  
+  uVar1 = vreg_get_virt_addr();
+  if (uVar1 != 0) {
+    *(undefined4 *)(uVar1 & 0xfffffffc) = param_2;
+  }
+  return 0;
+}
+
+
+--- Calls ---
+  -> vreg_get_virt_addr @ 003d42e0
+
+
+==================================================
+FUNCTION: io_read8 @ 003d43e0
+SIZE: 24 bytes
+--- ASM ---
+  003d43e0: push {r4,lr}
+  003d43e2: mov r4,r0
+  003d43e4: bic r0,r0,#0x3
+  003d43e8: lsls r4,r4,#0x3
+  003d43ea: bl 0x003d437c
+  003d43ee: and r4,r4,#0x18
+  003d43f2: lsrs r0,r4
+  003d43f4: uxtb r0,r0
+  003d43f6: pop {r4,pc}
+--- C ---
+
+uint io_read8(uint param_1)
+
+{
+  uint uVar1;
+  
+  uVar1 = io_read32(param_1 & 0xfffffffc);
+  return uVar1 >> ((param_1 & 3) << 3) & 0xff;
+}
+
+
+--- Calls ---
+  -> io_read32 @ 003d437c
+
+
+==================================================
+FUNCTION: io_read16 @ 003d4422
+SIZE: 24 bytes
+--- ASM ---
+  003d4422: push {r4,lr}
+  003d4424: mov r4,r0
+  003d4426: bic r0,r0,#0x3
+  003d442a: lsls r4,r4,#0x3
+  003d442c: bl 0x003d437c
+  003d4430: and r4,r4,#0x10
+  003d4434: lsrs r0,r4
+  003d4436: uxth r0,r0
+  003d4438: pop {r4,pc}
+--- C ---
+
+uint io_read16(uint param_1)
+
+{
+  uint uVar1;
+  
+  uVar1 = io_read32(param_1 & 0xfffffffc);
+  return uVar1 >> ((param_1 & 2) << 3) & 0xffff;
+}
+
+
+--- Calls ---
+  -> io_read32 @ 003d437c
+
+
+==================================================
+FUNCTION: io_read32 @ 003d437c
+SIZE: 16 bytes
+--- ASM ---
+  003d437c: push {r3,lr}
+  003d437e: bl 0x003d42e0
+  003d4382: cbz r0,0x003d438a
+  003d4384: bic r0,r0,#0x3
+  003d4388: ldr r0,[r0,#0x0]
+  003d438a: pop {r3,pc}
+--- C ---
+
+undefined4 io_read32(void)
+
+{
+  uint uVar1;
+  undefined4 uVar2;
+  
+  uVar1 = vreg_get_virt_addr();
+  uVar2 = 0;
+  if (uVar1 != 0) {
+    uVar2 = *(undefined4 *)(uVar1 & 0xfffffffc);
+  }
+  return uVar2;
+}
+
+
+--- Calls ---
+  -> vreg_get_virt_addr @ 003d42e0
+
+
+==================================================
+FUNCTION: isp_check_dev_open @ 003d80e4
+SIZE: 142 bytes
+--- ASM ---
+  003d80e4: push {r0,r1,r2,r4,r5,lr}
+  003d80e6: mov r4,r0
+  003d80e8: ldr r2,[0x003d817c]
+  003d80ea: ldr r3,[0x003d8180]
+  003d80ec: add r2,pc
+  003d80ee: ldr r5,[0x003d8184]
+  003d80f0: ldr r3,[r2,r3]
+  003d80f2: add r5,pc
+  003d80f4: ldr r3,[r3,#0x0]
+  003d80f6: str r3,[sp,#0x4]
+  003d80f8: mov.w r3,#0x0
+  003d80fc: bl 0x003d7d70
+  003d8100: ldr r3,[0x003d8188]
+  003d8102: ldr r5,[r5,r3]
+  003d8104: ldr.w r3,[r5,r4,lsl #0x2]
+  003d8108: cmp r3,#0x0
+  003d810a: bge 0x003d8166
+  003d810c: ldr r0,[0x003d818c]
+  003d810e: mov.w r2,#0x100
+  003d8112: str r4,[sp,#0x0]
+  003d8114: movs r1,#0x0
+  003d8116: add r0,pc
+  003d8118: blx 0x001623cc
+  003d811c: str.w r0,[r5,r4,lsl #0x2]
+  003d8120: cmp r0,#0x0
+  003d8122: bge 0x003d814a
+  003d8124: ldr r0,[0x003d8190]
+  003d8126: add r0,pc
+  003d8128: blx 0x00161be8
+  003d812c: bl 0x003d7db0
+  003d8130: ldr r0,[0x003d8174]
+  003d8132: ldr r2,[0x003d8194]
+  003d8134: ldr r3,[0x003d8180]
+  003d8136: add r2,pc
+  003d8138: ldr r3,[r2,r3]
+  003d813a: ldr r2,[r3,#0x0]
+  003d813c: ldr r3,[sp,#0x4]
+  003d813e: eors r2,r3
+  003d8140: mov.w r3,#0x0
+  003d8144: beq 0x003d816e
+--- C ---
+
+void isp_check_dev_open(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  undefined4 extraout_r1;
+  undefined4 uVar3;
+  undefined4 extraout_r1_00;
+  uint uVar4;
+  int iVar5;
+  int local_18;
+  uint local_14;
+  undefined4 uStack_10;
+  
+  iVar5 = DAT_003d8184 + 0x3d80f6;
+  local_14 = **(uint **)(DAT_003d817c + 0x3d80f0 + DAT_003d8180);
+  local_18 = param_1;
+  uStack_10 = param_3;
+  FUN_003d7d70();
+  iVar5 = *(int *)(iVar5 + DAT_003d8188);
+  if (*(int *)(iVar5 + param_1 * 4) < 0) {
+    local_18 = param_1;
+    iVar1 = open((char *)(DAT_003d818c + 0x3d811a),0,0x100);
+    *(int *)(iVar5 + param_1 * 4) = iVar1;
+    if (iVar1 < 0) {
+      perror((char *)(DAT_003d8190 + 0x3d812a));
+    }
+    else {
+      iVar1 = ioctl(iVar1,DAT_003d8178,&local_18);
+      if (iVar1 == 0) goto LAB_003d8166;
+      close(*(int *)(iVar5 + param_1 * 4));
+      *(undefined4 *)(iVar5 + param_1 * 4) = 0xffffffff;
+    }
+    FUN_003d7db0();
+    uVar2 = DAT_003d8174;
+    uVar3 = extraout_r1;
+  }
+  else {
+LAB_003d8166:
+    FUN_003d7db0();
+    uVar2 = 0;
+    uVar3 = extraout_r1_00;
+  }
+  uVar4 = **(uint **)(DAT_003d8194 + 0x3d813a + DAT_003d8180) ^ local_14;
+  if (uVar4 != 0) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail(uVar2,uVar3,uVar4,0);
+  }
+  return;
+}
+
+
+--- Calls ---
+  -> __stack_chk_fail @ 00161978
+  -> ioctl @ 001617c4
+  -> FUN_003d7d70 @ 003d7d70
+  -> FUN_003d7db0 @ 003d7db0
+  -> close @ 00162604
+  -> open @ 001623cc
+  -> perror @ 00161be8
+
+
+==================================================
+FUNCTION: isp_check_mem_init_func @ 003d8198
+SIZE: 110 bytes
+--- ASM ---
+  003d8198: push {r0,r1,r2,r4,r5,r6,r7,lr}
+  003d819a: movw r6,#0x27e0
+  003d819e: ldr r5,[0x003d8210]
+  003d81a0: mov r4,r0
+  003d81a2: ldr r3,[0x003d8214]
+  003d81a4: add r5,pc
+  003d81a6: muls r6,r0
+  003d81a8: ldr r7,[r5,r3]
+  003d81aa: ldr r3,[r7,r6]
+  003d81ac: adds r2,r7,r6
+  003d81ae: cmp r3,#0x1
+  003d81b0: bne 0x003d81b8
+  003d81b2: movs r0,#0x0
+  003d81b4: add sp,#0xc
+  003d81b6: pop {r4,r5,r6,r7,pc}
+  003d81b8: ldr r3,[0x003d8218]
+  003d81ba: ldr r1,[0x003d8208]
+  003d81bc: ldr r3,[r5,r3]
+  003d81be: ldr.w r0,[r3,r0,lsl #0x2]
+  003d81c2: blx 0x001617c4
+  003d81c6: cbz r0,0x003d81e4
+  003d81c8: ldr r3,[0x003d821c]
+  003d81ca: ldr r2,[0x003d8220]
+  003d81cc: ldr r0,[r5,r3]
+  003d81ce: movw r3,#0x105
+  003d81d2: ldr r1,[0x003d8224]
+  003d81d4: add r2,pc
+  003d81d6: add r1,pc
+  003d81d8: ldr r0,[r0,#0x0]
+  003d81da: str r4,[sp,#0x0]
+  003d81dc: blx 0x00161568
+  003d81e0: ldr r0,[0x003d820c]
+  003d81e2: b 0x003d81b4
+  003d81e4: ldr r3,[r7,r6]
+  003d81e6: cmp r3,#0x1
+  003d81e8: beq 0x003d81b2
+  003d81ea: ldr r2,[0x003d821c]
+  003d81ec: ldr r1,[0x003d8228]
+  003d81ee: ldr r0,[r5,r2]
+  003d81f0: ldr r2,[0x003d822c]
+--- C ---
+
+undefined4 isp_check_mem_init_func(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  int iVar2;
+  int iVar3;
+  int iVar4;
+  
+  iVar2 = DAT_003d8210 + 0x3d81a8;
+  iVar3 = param_1 * 0x27e0;
+  iVar4 = *(int *)(iVar2 + DAT_003d8214);
+  if (*(int *)(iVar4 + iVar3) != 1) {
+    iVar1 = ioctl(*(int *)(*(int *)(iVar2 + DAT_003d8218) + param_1 * 4),DAT_003d8208,iVar4 + iVar3,
+                  *(int *)(iVar2 + DAT_003d8218),param_1,param_2,param_3);
+    if (iVar1 != 0) {
+      fprintf((FILE *)**(undefined4 **)(iVar2 + DAT_003d821c),(char *)(DAT_003d8224 + 0x3d81da),
+              DAT_003d8220 + 0x3d81d8,0x105,param_1);
+      return DAT_003d820c;
+    }
+    if (*(int *)(iVar4 + iVar3) != 1) {
+      fprintf((FILE *)**(undefined4 **)(iVar2 + DAT_003d821c),(char *)(DAT_003d8228 + 0x3d8200),
+              DAT_003d822c + 0x3d81fa,0x109,param_1,*(int *)(iVar4 + iVar3));
+      return DAT_003d820c;
+    }
+  }
+  return 0;
+}
+
+
+--- Calls ---
+  -> fprintf @ 00161568
+  -> ioctl @ 001617c4
+
+
+==================================================
+FUNCTION: isp_check_vreg_permission @ 003d8230
+SIZE: 72 bytes
+--- ASM ---
+  003d8230: push {r0,r1,r4,r5,r6,lr}
+  003d8232: mov r4,r0
+  003d8234: ldr r6,[0x003d827c]
+  003d8236: ldr r3,[0x003d8280]
+  003d8238: add r6,pc
+  003d823a: ldr r5,[r6,r3]
+  003d823c: movw r3,#0x27e0
+  003d8240: mla r5,r3,r0,r5
+  003d8244: ldr r3,[r5,#0xc]
+  003d8246: cmp r3,#0x1
+  003d8248: beq 0x003d8274
+  003d824a: bl 0x003d3c50
+  003d824e: cbnz r0,0x003d8258
+  003d8250: movs r3,#0x1
+  003d8252: str r3,[r5,#0xc]
+  003d8254: add sp,#0x8
+  003d8256: pop {r4,r5,r6,pc}
+  003d8258: ldr r3,[0x003d8284]
+  003d825a: ldr r2,[0x003d8288]
+  003d825c: ldr r0,[r6,r3]
+  003d825e: movw r3,#0x11d
+  003d8262: ldr r1,[0x003d828c]
+  003d8264: add r2,pc
+  003d8266: add r1,pc
+  003d8268: ldr r0,[r0,#0x0]
+  003d826a: str r4,[sp,#0x0]
+  003d826c: blx 0x00161568
+  003d8270: ldr r0,[0x003d8278]
+  003d8272: b 0x003d8254
+  003d8274: movs r0,#0x0
+  003d8276: b 0x003d8254
+--- C ---
+
+undefined4 isp_check_vreg_permission(int param_1,undefined4 param_2)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  int iVar3;
+  int iVar4;
+  
+  iVar4 = DAT_003d827c + 0x3d823c;
+  iVar3 = param_1 * 0x27e0 + *(int *)(iVar4 + DAT_003d8280);
+  if (*(int *)(iVar3 + 0xc) == 1) {
+    uVar2 = 0;
+  }
+  else {
+    iVar1 = vreg_check_permission();
+    if (iVar1 == 0) {
+      *(undefined4 *)(iVar3 + 0xc) = 1;
+      uVar2 = 0;
+    }
+    else {
+      fprintf((FILE *)**(undefined4 **)(iVar4 + DAT_003d8284),(char *)(DAT_003d828c + 0x3d826a),
+              DAT_003d8288 + 0x3d8268,0x11d,param_1,param_2);
+      uVar2 = DAT_003d8278;
+    }
+  }
+  return uVar2;
+}
+
+
+--- Calls ---
+  -> vreg_check_permission @ 003d3c50
+  -> fprintf @ 00161568
+
+
+==================================================
+FUNCTION: isp_mutex_lock @ 003d7e54
+SIZE: 48 bytes
+--- ASM ---
+  003d7e54: ldr r3,[0x003d7e84]
+  003d7e56: movs r2,#0x18
+  003d7e58: push {r4,lr}
+  003d7e5a: add r3,pc
+  003d7e5c: ldr r4,[0x003d7e88]
+  003d7e5e: mla r0,r2,r0,r3
+  003d7e62: add r4,pc
+  003d7e64: blx 0x00161ce8
+  003d7e68: cbz r0,0x003d7e82
+  003d7e6a: ldr r3,[0x003d7e8c]
+  003d7e6c: ldr r2,[0x003d7e90]
+  003d7e6e: ldr r0,[r4,r3]
+  003d7e70: movs r3,#0x36
+  003d7e72: ldr r1,[0x003d7e94]
+  003d7e74: pop.w {r4,lr}
+  003d7e78: add r2,pc
+  003d7e7a: add r1,pc
+  003d7e7c: ldr r0,[r0,#0x0]
+  003d7e7e: b.w 0x00161564
+  003d7e82: pop {r4,pc}
+--- C ---
+
+void isp_mutex_lock(int param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  
+  iVar2 = DAT_003d7e88 + 0x3d7e66;
+  iVar1 = pthread_mutex_lock((pthread_mutex_t *)(param_1 * 0x18 + DAT_003d7e84 + 0x3d7e5e));
+  if (iVar1 == 0) {
+    return;
+  }
+  (*(code *)PTR_fprintf_0076812c)
+            (**(undefined4 **)(iVar2 + DAT_003d7e8c),DAT_003d7e94 + 0x3d7e7e,DAT_003d7e90 + 0x3d7e7c
+             ,0x36);
+  return;
+}
+
+
+--- Calls ---
+  -> pthread_mutex_lock @ 00161ce8
+
+
+==================================================
+FUNCTION: isp_mutex_unlock @ 003d7e98
+SIZE: 48 bytes
+--- ASM ---
+  003d7e98: ldr r3,[0x003d7ec8]
+  003d7e9a: movs r2,#0x18
+  003d7e9c: push {r4,lr}
+  003d7e9e: add r3,pc
+  003d7ea0: ldr r4,[0x003d7ecc]
+  003d7ea2: mla r0,r2,r0,r3
+  003d7ea6: add r4,pc
+  003d7ea8: blx 0x00161a54
+  003d7eac: cbz r0,0x003d7ec6
+  003d7eae: ldr r3,[0x003d7ed0]
+  003d7eb0: ldr r2,[0x003d7ed4]
+  003d7eb2: ldr r0,[r4,r3]
+  003d7eb4: movs r3,#0x3d
+  003d7eb6: ldr r1,[0x003d7ed8]
+  003d7eb8: pop.w {r4,lr}
+  003d7ebc: add r2,pc
+  003d7ebe: add r1,pc
+  003d7ec0: ldr r0,[r0,#0x0]
+  003d7ec2: b.w 0x00161564
+  003d7ec6: pop {r4,pc}
+--- C ---
+
+void isp_mutex_unlock(int param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  
+  iVar2 = DAT_003d7ecc + 0x3d7eaa;
+  iVar1 = pthread_mutex_unlock((pthread_mutex_t *)(param_1 * 0x18 + DAT_003d7ec8 + 0x3d7ea2));
+  if (iVar1 == 0) {
+    return;
+  }
+  (*(code *)PTR_fprintf_0076812c)
+            (**(undefined4 **)(iVar2 + DAT_003d7ed0),DAT_003d7ed8 + 0x3d7ec2,DAT_003d7ed4 + 0x3d7ec0
+             ,0x3d);
+  return;
+}
+
+
+--- Calls ---
+  -> pthread_mutex_unlock @ 00161a54
+
+
+
+FUNCTIONS WITH 'vreg', 'mmap', 'devmem' IN NAME:
+--------------------------------------------------
+  mmap @ 00161a6c (12 bytes)
+  sample_sys_io_mmap @ 002c5268 (240 bytes)
+  hi_mpi_sys_mmap @ 003a72d4 (4 bytes)
+  hi_mpi_sys_mmap_cached @ 003a72d8 (4 bytes)
+  ot_mpi_sys_mmap @ 003a741c (128 bytes)
+  ot_mpi_sys_mmap_cached @ 003a74b4 (174 bytes)
+  ss_mpi_sys_mmap @ 003a84f4 (4 bytes)
+  ss_mpi_sys_mmap_cached @ 003a84f8 (4 bytes)
+  ae_check_vreg_permission @ 003a97d0 (42 bytes)
+  isp_be_vreg_addr_init @ 003ccdd0 (44 bytes)
+  vreg_check_close @ 003d3ba4 (134 bytes)
+  vreg_check_permission @ 003d3c50 (88 bytes)
+  vreg_init @ 003d3cc0 (220 bytes)
+  vreg_exit @ 003d3dc8 (218 bytes)
+  vreg_release_all @ 003d3ed0 (250 bytes)
+  vreg_get_virt_addr_base @ 003d41b8 (244 bytes)
+  vreg_get_virt_addr @ 003d42e0 (102 bytes)
+  isp_mem_share_vreg @ 003d4498 (288 bytes)
+  isp_mem_unshare_vreg @ 003d45f4 (288 bytes)
+  isp_mem_share_all_vreg @ 003d4750 (280 bytes)
+  isp_mem_unshare_all_vreg @ 003d48a4 (280 bytes)
+  isp_check_vreg_permission @ 003d8230 (72 bytes)
+  awb_check_vreg_permission @ 0040b0f8 (42 bytes)
+  HalSysMmap @ 00480e18 (6 bytes)
+  aiv_mem_mmap @ 00499aec (124 bytes)
+  aiv_mem_mmap_cached @ 00499b90 (124 bytes)
+  mmap @ 009cc6a4 (1 bytes)

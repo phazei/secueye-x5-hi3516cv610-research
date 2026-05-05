@@ -1,0 +1,16 @@
+SUPERB BINARY FUNCTION ANALYSIS SUMMARY
+============================================================
+
+Binary: superb
+Image base: 00010000
+Language: ARM:LE:32:v7
+Compiler: default
+
+Function counts:
+  Total named:     21972
+  ISP/MPP API:     1352
+  Sensor control:  56
+  Cloud/MQTT/IoT:  262
+  XUID IPC:        0
+  ioctl-related:   46
+  Interesting:     1933
