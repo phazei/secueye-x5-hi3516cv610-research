@@ -1,0 +1,16 @@
+# Third-party tool installations (large, re-downloadable)
+hashcat-7.1.2.7z
+hashcat-7.1.2/
+tools/ghidra/ghidra_12.0.4_PUBLIC/
+jadx/
+jadx-cli/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Monitoring output (generated at runtime)
+tools/uptime_monitor_output.txt
+tools/uptime_monitor_err.txt
+tools/uptime_log.txt
