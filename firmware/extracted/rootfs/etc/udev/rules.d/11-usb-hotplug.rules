@@ -1,0 +1,4 @@
+#
+
+#KERNEL=="sd*", SUBSYSTEM=="block", RUN+="/etc/udev/disk-hotplug.sh"
+KERNEL=="usbdev*", SUBSYSTEM=="usb_device", RUN+="/etc/udev/usbdev-hotplug.sh"

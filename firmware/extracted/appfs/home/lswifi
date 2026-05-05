@@ -1,0 +1,110 @@
+#!/bin/sh
+
+MMC=$1
+USB_WIFI_NAME="none"
+SDIO_WIFI_NAME="none"
+WIFI_NAME="none"
+NIC=0
+source /home/variable
+
+if [[ -z $MMC ]];then
+	MMC="mmc1"
+fi
+
+USB_HUB_VP1="1a40:0101"
+USB_HUB_VP2="067b:2586"
+
+USB_RTL8188_VP="0bda:f179"
+USB_RTL8733_VP="0bda:f72b"
+USB_atbm6x3x_VP="007a:8890"
+USB_ws73v100_VP="ffff:3733"
+USB_atbm6x6x_VP="007a:6162"
+
+SDIO_HI3881_VP="0296:5347"
+SDIO_AIC8188_DUAL_VP="5449:0145"
+SDIO_AIC8188_SINGLE_VP="C8A1:C08D"
+SDIO_RTL8733_VP="024C:B733"
+
+get_usb_wifi_name()
+{
+	name="none"
+	
+	lsusb_output=$(lsusb)
+	if [[ "${lsusb_output#*$USB_HUB_VP1}" != "$lsusb_output" || "${lsusb_output#*$USB_HUB_VP2}" != "$lsusb_output" ]]; then
+		sleep 2
+		lsusb_output=$(lsusb)
+	fi
+	
+	if [ "${lsusb_output#*$USB_RTL8188_VP}" != "$lsusb_output" ]; then
+		name="rtl8188"
+	elif [ "${lsusb_output#*$USB_RTL8733_VP}" != "$lsusb_output" ]; then
+		name="rtl8733bu"
+	elif [ "${lsusb_output#*$USB_atbm6x3x_VP}" != "$lsusb_output" ]; then
+		name="atbm6x3x"
+	elif [ "${lsusb_output#*$USB_ws73v100_VP}" != "$lsusb_output" ]; then
+		name="ws73v100"
+	elif [ "${lsusb_output#*$USB_atbm6x6x_VP}" != "$lsusb_output" ]; then
+		name="atbm6x6x"
+	else
+		echo "usb wifi no found"
+	fi
+	echo $name
+}
+
+get_sdio_wifi_name()
+{
+	name="none"
+	mmc_sdio_path="/sys/class/mmc_host/$1"
+	mmc_sdio_info=$(ls $mmc_sdio_path | awk -v mmc="$1" 'match($0, mmc":[0-9a-f]{4}"){ print substr($0, RSTART, RLENGTH)}')
+	
+	if [[ -n "$mmc_sdio_info" ]];then	
+		mmc_sdio_info_path="/sys/class/mmc_host/$1/$mmc_sdio_info/$mmc_sdio_info:1/uevent"
+		mmc_sdio_vid_pid=$(cat $mmc_sdio_info_path | awk -F"=" '/SDIO_ID/{print $2}')
+	
+		if [[ $mmc_sdio_vid_pid == $SDIO_HI3881_VP ]];then
+			name="hi3881"
+		elif [[ $mmc_sdio_vid_pid == $SDIO_AIC8188_DUAL_VP ]];then
+			name="aic8800_dual"
+		elif [[ $mmc_sdio_vid_pid == $SDIO_AIC8188_SINGLE_VP ]];then
+			name="aic8800_single"
+		elif [[ $mmc_sdio_vid_pid == $SDIO_RTL8733_VP ]];then
+			name="rtl8733bs"
+		else
+			echo "sdio wifi no found"
+		fi
+	fi	
+	echo $name
+}
+
+if [[ $((($NIC >> 1) & 0x1)) -eq 1 ]];then
+	
+	USB_WIFI_NAME=$(get_usb_wifi_name)
+
+	SDIO_WIFI_NAME=$(get_sdio_wifi_name "$MMC")
+
+	if [[ $USB_WIFI_NAME != "none" ]];then
+		echo "Current wifi interface : usb"
+		echo "Use $USB_WIFI_NAME driver"
+		WIFI_NAME=$USB_WIFI_NAME 
+	elif [[ $SDIO_WIFI_NAME != "none" ]];then
+		echo "Current wifi interface : sdio"
+		echo "Use $SDIO_WIFI_NAME driver"
+		WIFI_NAME=$SDIO_WIFI_NAME
+	else
+		echo "WIFI CHECK FAILED"
+	fi
+
+	if [[ $WIFI_NAME != "none" ]];then
+		echo "WIFI=$WIFI_NAME" > /tmp/wificfg 
+		chmod 777 /tmp/wificfg
+	fi
+else
+    echo "DEVICE NO SUPPORT WIFI"
+fi
+
+
+
+
+
+
+
