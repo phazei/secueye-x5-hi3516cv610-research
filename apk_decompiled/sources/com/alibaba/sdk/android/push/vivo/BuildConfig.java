@@ -1,0 +1,12 @@
+package com.alibaba.sdk.android.push.vivo;
+
+/* JADX INFO: loaded from: classes.dex */
+public final class BuildConfig {
+    public static final String APPLICATION_ID = "com.alibaba.sdk.android.push.vivo";
+    public static final String BUILD_TYPE = "debug";
+    public static final boolean DEBUG = Boolean.parseBoolean("true");
+    public static final String FLAVOR = "";
+    public static final int VERSION_CODE = 1;
+    public static final String VERSION_NAME = "-SNAPSHOT";
+    public static final String VIVO_VERSION = "3.0.0.4";
+}
