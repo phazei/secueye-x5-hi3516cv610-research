@@ -4,9 +4,21 @@ This directory contains third-party SDK materials, toolchains, and reference
 projects for the HiSilicon Hi3516CV610 SoC used in the SECUEYE X5 camera.
 
 > **Important:** Nothing in this directory is original project code. These are
-> external resources gathered during investigation. The HIVIEW folder is a full
-> Git checkout of the OpenHisilicon/HIVIEW project. The toolchain folder is a
-> separate Git checkout of a Hi3516CV610 cross-compiler repository.
+> external resources gathered during investigation.
+>
+> **Current contents (May 2026):**
+> - `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/` -- **V1.0.2.1 SDK** (headers, libs, samples) -- the canonical SDK for B051 kernel compatibility, used by our pipeline
+> - `HIVIEW/` -- OpenHisilicon/HIVIEW project (CV610 camera platform, B040 SDK -- now superseded by V1.0.2.1, kept for reference samples and sensor driver templates)
+> - `shumjj-3516cv610_app/` -- Ceanic demo app with B020 kernel modules and sensor driver source (reference only -- camera uses its own B051 kernel modules)
+> - `hi3516cv610_toolchain/` -- Hi3516CV610 cross-compiler (GCC 10.3.0, musl 1.2.3, SDK CS71.2.10.5.B002 -- exact camera match)
+> - `sc635hai_rockchip_v4l2.c` -- Rockchip V4L2 SC635HAI driver (gain model reference for our driver)
+> - `SC635HAI_SENSOR_ANALYSIS.md` -- our analysis notes on SC635HAI
+> - `PHASE3_CONTINUE.md` -- current pipeline bringup status
+> - `Hi3516CV610 超高清智慧视觉 SoC 产品简介.pdf` -- SoC product brief
+>
+> Removed repos (SensorSupportList, YJSNPI-Hi, sensors, kodo B030) are
+> documented briefly under "Removed Repos" below. All extracted knowledge
+> is in the driver source and SC635HAI_SENSOR_ANALYSIS.md.
 
 ---
 
@@ -173,12 +185,13 @@ the SDK (ISP pipeline, NPU, video encoder, audio) work identically.
 
 ---
 
-### `toolchain/` -- Hi3516CV610 Cross-Compiler
+### `hi3516cv610_toolchain/` -- Hi3516CV610 Cross-Compiler
 
-**Source:** Separate Git repository (single commit: "新建KODO-HI3516CV610编译工具链仓库")
-**Path:** `toolchain/gcc-20240318-arm-v01c02-linux-musleabi/`
+**Source:** Separate Git repository
+**Path:** `hi3516cv610_toolchain/gcc-20250305-arm-v01c02-linux-musleabi/`
 
-Complete cross-compilation toolchain for Hi3516CV610.
+Complete cross-compilation toolchain for Hi3516CV610. SDK version exactly matches
+the camera firmware (`CS71.2.10.5.B002`).
 
 | Component | Details |
 |-----------|---------|
@@ -186,8 +199,8 @@ Complete cross-compilation toolchain for Hi3516CV610.
 | musl libc | 1.2.3 |
 | Linux headers | 5.10 |
 | Target | `arm-linux-musleabi` (ARM 32-bit, musl C library) |
-| Build date | 2024-03-18 |
-| SDK version | V12CS61.005.010 |
+| Build date | 2025-03-05 |
+| SDK version | CS71.2.10.5.B002 |
 | Host | Linux x86_64 (requires WSL/VM on Windows) |
 
 #### Multilib Configurations
@@ -241,15 +254,102 @@ WSL (Windows Subsystem for Linux) to run them:
 
 ```bash
 # In WSL, the toolchain is accessible at the Windows path:
-export TC=/mnt/e/Projects/ipc_XMeye_camera/research/toolchain/gcc-20240318-arm-v01c02-linux-musleabi/arm-v01c02-linux-musleabi-gcc
+export TC=/mnt/e/Projects/ipc_XMeye_camera/research/hi3516cv610_toolchain/gcc-20250305-arm-v01c02-linux-musleabi/arm-v01c02-linux-musleabi-gcc
 export PATH=$TC/bin:$PATH
 
-# Compile a static ARM binary:
-arm-v01c02-linux-musleabi-gcc -mcpu=cortex-a7 -mfloat-abi=softfp -mfpu=neon-vfpv4 \
+# Compile a static ARM binary (use the REAL binary name, not the wrapper):
+arm-linux-musleabi-gcc -mcpu=cortex-a7 -mfloat-abi=softfp -mfpu=neon-vfpv4 \
   -static -o hello hello.c
 
 # Deploy to camera via SD card or root shell
 ```
+
+#### Toolchain Quirks (IMPORTANT)
+
+1. **Wrapper scripts vs real binaries**: Files named `arm-v01c02-linux-musleabi-*`
+   in `bin/` are **one-line text files** containing the real binary name
+   (e.g., the file `arm-v01c02-linux-musleabi-gcc` just contains
+   `arm-linux-musleabi-gcc`). The actual ELF binaries are named
+   `arm-linux-musleabi-*`. Always use `arm-linux-musleabi-gcc` directly.
+
+2. **Git LFS not fetched**: Some files (e.g., `liblto_plugin.so`) are text
+   pointers from Git LFS that were never pulled. This causes linker errors.
+   Fix: add `-fno-lto -fno-use-linker-plugin` to compiler/linker flags.
+   No impact on output quality -- LTO is an optional optimization.
+
+3. **WSL prerequisites**: `make` is not installed by default. Run:
+   `sudo apt-get install make` in WSL before building.
+
+---
+
+### `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/` -- V1.0.2.1 SDK (THE KEY SDK)
+
+**Source:** Gitee (searched for CV610 repos)
+**Version:** HI3516CV610_MPP_V1.0.2.1 B020 (May 29, 2025)
+
+This is the canonical SDK that matches our camera's B051 kernel. Contains:
+
+- **67 shared libraries** (.so) and **64 static archives** (.a) in `lib/hisilicon/`
+- **140 SDK headers** in `include/hisilicon/` (ot_*.h, ss_mpi_*.h)
+- **30 sample application directories** with source code in `src/`
+- Prebuilt sensor drivers: SC4336P, SC450AI, SC500AI, HY006_3814_0011
+
+Key facts:
+- ISP ioctl type = **0x70** (matches camera's B051 kernel)
+- API prefix = **ss_mpi_*** (not hi_mpi_* like B040)
+- Also exports **ot_mpi_*** symbol aliases (but not hi_mpi_*)
+- Struct layouts match B051 kernel ABI -- no shimming needed
+- `ot_isp_sns_obj` adds `pfn_set_fast_ae` (12th field vs B040's 11)
+- `ot_isp_sns_exp_func` adds `pfn_cmos_get_standby_cfg` (12th callback)
+- No kernel modules (.ko) -- camera's own (B051) work fine with V1.0.2.1 userspace
+- No SC635HAI sensor driver -- we built our own (`driver/src/sc635hai_cmos.c`)
+
+This SDK unblocked the entire pipeline init that was impossible with B040
+libraries. As of May 2026, the full VI/ISP/VPSS/VENC pipeline initializes
+end-to-end via this SDK. See `PHASE3_CONTINUE.md` for current status.
+
+---
+
+### `shumjj-3516cv610_app/` -- Ceanic Demo App + B020 Kernel Modules
+
+**Source:** https://gitee.com/shumjj/3516cv610_app
+**Version:** HI3516CV610_MPP_V1.0.2.1 B020 (May 29, 2025)
+**Company:** Shenzhen Ceanic Technology (深圳思尼克技术有限公司)
+
+Complete camera application with source for the Hi3516CV610. Key contents:
+
+- **47 kernel modules** (.ko) in `rootfs/opt/ceanic/ko/` (B020, ABI-compatible with B051)
+- **Load scripts** (`load3516cv610_*`) showing correct insmod order and MMZ params
+- **Sensor driver source code** for: SC4336P, SC431HAI, GC4023, GC8613, HY006_3814_0011
+- **ceanic_app** binary (3.5MB static, entire ISP/VI/VPSS/VENC statically linked)
+- Application source in C++ (RTSP, RTMP, GB28181, YOLO, OSD)
+
+Unique value (not in V1.0.2.1 SDK):
+- .ko kernel modules (SDK has zero)
+- Sensor driver C source code with register init tables (SDK only has prebuilt .so)
+- Load scripts with correct memory layout parameters
+- The `sensor_common.h/c` abstraction layer for sensor drivers
+
+The application must be compiled inside the SDK tree (`Hi3516CV610_SDK_V1.0.2.1/
+smp/a7_linux/source/mpp/sample/`). It links against the SDK's static .a libraries.
+
+---
+
+### Removed Repos (historical references only)
+
+The following repos were used during driver development and have since been
+removed. All extracted knowledge (gain tables, callback structs, registration
+patterns) is fully captured in `driver/src/` and `SC635HAI_SENSOR_ANALYSIS.md`.
+
+- **SensorSupportList** (github.com/sophgo/SensorSupportList) -- SC500AI gain
+  model, exposure encoding, DPC logic, and 289-entry analog gain table were
+  extracted and are now in `sc635hai_cmos.h` and `sc635hai_cmos.c`.
+- **YJSNPI-Hi** (github.com/libc0607/YJSNPI-Hi) -- HiSilicon IMX307 driver
+  provided the 2-file architecture (`_cmos.c` + `_sensor_ctl.c`), ISP/AE/AWB
+  triple-registration pattern, and `HI_` to `ot_` naming map. Now superseded
+  by shumjj sensor driver source (same SoC, same API generation).
+- **sensors** (github.com/OpenIPC/sensors) -- SC501AI confirmed SmartSens gain
+  register layout. No other value.
 
 ---
 
@@ -523,10 +623,9 @@ Linux 5.10.221 (arm-v01c02-linux-musleabi-gcc (musl-1.2.3 linux-5.10
 CS71.2.10.5.B002 2025-03-05) 10.3.0) #1 SMP Mon Jun 9 09:02:27 UTC 2025
 ```
 
-This confirms the toolchain in `research/toolchain/` is the correct family
-(same GCC 10.3.0, same musl 1.2.3, same linux-5.10 headers). The firmware
-SDK version is CS71.2.10.5.B002 vs the toolchain's V12CS61.005.010 -- slightly
-different SDK releases but same toolchain generation.
+This confirms the toolchain in `research/hi3516cv610_toolchain/` is an exact match
+(same GCC 10.3.0, same musl 1.2.3, same linux-5.10 headers, same SDK version
+CS71.2.10.5.B002).
 
 ---
 
@@ -567,73 +666,44 @@ the hardware pipeline successfully.
 
 ---
 
-## The SC635HAI Sensor Driver Problem
+## SC635HAI Sensor Driver -- SOLVED
 
-This is the **single biggest blocker** for replacing `superb` or running custom firmware.
+The SmartSens SC635HAI sensor driver was historically the single biggest
+blocker for custom firmware -- it was statically compiled into `superb`
+with no separate `libsns_sc635hai.so` available.
 
-### Current State
+**As of May 2026, we have built our own `libsns_sc635hai.so` from scratch.**
+Located at `driver/src/sc635hai_cmos.c` + `sc635hai_sensor_ctl.c`.
 
-The SmartSens SC635HAI sensor driver is **statically compiled into the `superb`
-binary**. There is no separate `libsns_sc635hai.so` file. Ghidra analysis found
-11 SC635HAI-specific functions embedded in superb:
+### Sources used to build the driver
 
-- `sc635hai_get_obj` (0x00432e9c)
-- `sc635hai_linear_6m30_10bit_init` (0x00432f80)
-- `sc635hai_vc_wdr_2t1_6m30_10bit_init`
-- `sc635hai_get_standby_cfg`
-- Plus 7 `sc635hai_slave_*` variants
+1. **Ghidra decompilation of superb** -- extracted the 374-register linear
+   6M @ 30fps init sequence, sensor I2C addressing, and chip ID verification
+2. **Rockchip kernel V4L2 driver** (`research/sc635hai_rockchip_v4l2.c`) --
+   provided the accurate 7-range analog gain model (max 83.79x) and 4-stage
+   digital gain model (max 15.875x). Total system gain: 1330x.
+3. **HIVIEW SC500AI/SC450AI sensor drivers** -- template for the
+   `_cmos.c` + `_sensor_ctl.c` two-file architecture, ISP/AE/AWB callback
+   registration pattern, and `ot_isp_sns_obj` struct layout
+4. **V1.0.2.1 SDK headers** -- `ot_common_sns.h` for the exact callback signatures
 
-### What a Sensor Driver Does
+### What the driver does
 
-A HiSilicon sensor driver (typically `libsns_XXX.so`) provides:
-1. **Register initialization sequences** -- I2C writes to configure the sensor
-   chip for specific modes (resolution, frame rate, HDR, etc.)
-2. **AE (Auto Exposure) callbacks** -- Read/write exposure, gain registers
-3. **AWB (Auto White Balance) data** -- Sensor-specific color calibration
-4. **ISP calibration parameters** -- PQ (Picture Quality) bins for day/night/etc.
+- **Register init**: 374 I2C writes for SC635HAI linear 6M @ 30fps mode (BGGR)
+- **AE callbacks**: exposure (long/short), analog/digital gain, FPS, slow shutter
+- **AWB callbacks**: white balance gain reads
+- **Group hold**: reg 0x3812 brackets per-frame writes to prevent flicker
 
-The PQ bins ARE available separately at `/home/sensor/sc635hai/pqbin/` (on the
-resfs partition), but the register init sequences and AE callbacks are inside
-`superb`.
+PQ (Picture Quality) bins for ISP tuning are available at
+`/home/sensor/sc635hai/pqbin/` on the camera's resfs partition. Our driver
+loads them automatically; without them, ISP runs with default tuning
+(works but image quality is suboptimal).
 
-### Possible Paths to Get a Working Driver
+### Status
 
-1. **Extract from `superb` via Ghidra** -- The I2C register writes during
-   `sc635hai_linear_6m30_10bit_init` can be decompiled to reconstruct the
-   init sequence. The AE callback functions can be identified. This is the
-   most realistic path but requires significant RE effort.
-
-2. **Use a similar sensor driver as a template** -- SC635HAI is in the same
-   SmartSens family as SC500AI (both are SmartSens "HAI" series, similar
-   register maps). The `libsns_sc500ai.so` from HIVIEW could be adapted.
-
-3. **Find SC635HAI driver source online** -- SmartSens sometimes provides
-   reference drivers to camera manufacturers. The SC635HAI is relatively
-   new (2024+) so leaked sources are unlikely but worth searching.
-
-4. **Use the camera's own kernel modules + a custom userspace** -- Keep the
-   XMeye kernel modules loaded (they're already running) and write a userspace
-   application that uses the HiSilicon SDK headers to control the video
-   pipeline. The sensor is already initialized by the existing boot scripts.
-   **This is the pragmatic approach**: don't replace the kernel, just replace
-   the userspace application (`superb`).
-
-### The Pragmatic Path: Run Alongside `superb`
-
-Rather than replacing `superb`, we can run custom programs alongside it. The
-kernel modules are already loaded and the sensor is already initialized. A
-custom binary using the SDK headers can:
-
-- Open `/dev/svp_npu` and run its own NPU inference stream
-- Read `/proc/umap/*` for hardware status
-- Use `/dev/venc` or `/dev/vpss` for frame capture
-- Control GPIO for LEDs
-- Run an HTTP server
-- Fire webhooks
-
-The risk is resource contention with `superb` (shared hardware access), but
-the NPU supports multiple concurrent streams (3 free streams shown in
-`/proc/umap/svp_npu`).
+Our driver successfully initializes the sensor end-to-end. The full pipeline
+(VI -> ISP -> VPSS -> VENC) initializes via the V1.0.2.1 SDK. See
+`PHASE3_CONTINUE.md` for the current state of the pipeline bringup.
 
 ---
 
@@ -680,17 +750,21 @@ OpenWrt) support the Hi3516CV610.
   linked into `superb`. Must be reverse-engineered or obtained from SmartSens.
 - **Application layer**: HIVIEW uses modular processes; camera uses monolithic `superb`
 - **Cloud protocol**: HIVIEW has no Alibaba IoT; camera's cloud is inside `superb`
-- **SDK version**: Camera firmware uses CS71.2.10.5.B002, toolchain is V12CS61.005.010,
-  HIVIEW SDK is V1.0.2.0 B051. All are for the same chip but different release dates.
-  Kernel module ABI may differ slightly between releases.
+- **SDK version**: Camera firmware kernel is V1.0.2.0 B051 (Apr 2025).
+  Our V1.0.2.1 SDK is B020 (May 2025), ABI-compatible. HIVIEW SDK is V1.0.1.0
+  B040 (Sep 2024), incompatible (different ISP ioctl type 0x49 vs 0x70).
+  Toolchain matches camera exactly: CS71.2.10.5.B002.
 
 ### Do We Still Need superb.log?
 
-**For now, yes.** Until we build a custom binary that can either:
-1. Access the NPU detection results directly (via SVP ACL API using HIVIEW headers)
-2. Run its own inference stream alongside `superb`
-3. Or replace `superb` entirely with HIVIEW-based firmware
+**For alarm detection: yes for now.** The custom pipeline (Phase 3) is
+focused on getting raw video out, not on NPU inference. Until we either:
+1. Add NPU inference to our custom binary (via SVP ACL API)
+2. Or replace `superb` entirely
 
-The log-scraping approach (`monitor_alerts.py`) remains the only working method
-for local alarm detection. The HIVIEW SDK and toolchain provide the path to
-eliminate this dependency, but building and testing the replacement takes time.
+...the log-scraping approach (`monitor_alerts.py`) remains the working method
+for alarm detection.
+
+**For video streaming: replaceable soon.** Once frame flow works (see
+`PHASE3_CONTINUE.md`), we'll have a full open video pipeline that doesn't
+depend on `superb` at all.
