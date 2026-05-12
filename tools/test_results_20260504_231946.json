@@ -1,0 +1,30 @@
+{
+  "timestamp": "20260504_231946",
+  "camera_ip": "192.168.1.153",
+  "results": [
+    {
+      "test": 1,
+      "key": "channelName",
+      "original": "myChan",
+      "test_value": "TEST_CAM_123",
+      "result": "NO_EFFECT",
+      "note": ""
+    },
+    {
+      "test": 2,
+      "key": "bShowOSD",
+      "original": "1",
+      "test_value": "0",
+      "result": "WORKS",
+      "note": ""
+    },
+    {
+      "test": 10,
+      "key": "doublelight_bOutVoice",
+      "original": "1",
+      "test_value": "0",
+      "result": "WORKS",
+      "note": ""
+    }
+  ]
+}

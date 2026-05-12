@@ -1,0 +1,30 @@
+{
+  "timestamp": "20260504_234232",
+  "camera_ip": "192.168.1.153",
+  "results": [
+    {
+      "test": 3,
+      "key": "nightVisionMode",
+      "original": "0",
+      "test_value": "2",
+      "result": "NO_EFFECT",
+      "note": ""
+    },
+    {
+      "test": 5,
+      "key": "IVPEnable",
+      "original": "1",
+      "test_value": "0",
+      "result": "NO_EFFECT",
+      "note": "still see green box"
+    },
+    {
+      "test": 8,
+      "key": "RegionDetectEnable",
+      "original": "0",
+      "test_value": "1",
+      "result": "NO_EFFECT",
+      "note": ""
+    }
+  ]
+}
