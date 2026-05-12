@@ -1,0 +1,18 @@
+[submodule "research/hi3516cv610_toolchain"]
+	path = research/hi3516cv610_toolchain
+	url = https://gitee.com/walosx/hi3516cv610_toolchain.git
+[submodule "research/Hi3516CV610_SDK_V1.0.2.1_MPP_Sample"]
+	path = research/Hi3516CV610_SDK_V1.0.2.1_MPP_Sample
+	url = https://gitee.com/e-hi3516cv610/Hi3516CV610_SDK_V1.0.2.1_MPP_Sample.git
+[submodule "research/hi3516cv610_PictureQuality"]
+	path = research/hi3516cv610_PictureQuality
+	url = https://gitee.com/e-hi3516cv610/PQ.git
+[submodule "research/Hi3516CV610_Firmware_Building"]
+	path = research/Hi3516CV610_Firmware_Building
+	url = https://gitee.com/e-hi3516cv610/Hi3516CV610_Firmware_Building
+[submodule "research/HIVIEW"]
+	path = research/HIVIEW
+	url = ../../openhisilicon/HIVIEW.git
+[submodule "research/shumjj-3516cv610_app"]
+	path = research/shumjj-3516cv610_app
+	url = https://gitee.com/shumjj/3516cv610_app.git
