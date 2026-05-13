@@ -1304,12 +1304,12 @@ static hi_s32 configure_lowlight_nr(void)
         }
     }
 
-    /* ── 2. DRC: log state, keep PQ bin defaults ──────────────
-     * Superb's proc shows: DRC en=1, manu_en=1, strength=256
-     * (this is the "digital WDR" feature from SystemCfg.ini bEnableWdr=1).
-     * The PQ bin sets DRC params including BCNR. Previous code force-set
-     * BCNR strength=8 (max) and dark_gain_limit_chroma=0x40.
-     * Now we trust the PQ bin defaults and just log for diagnostics. */
+    /* ── 2. DRC: keep PQ bin defaults, only enable BCNR ───────
+     * PQ bin sets: manual strength=160, asymmetry curve (asym=10,
+     * second_pole=200, stretch=60, compress=200), contrast_ctrl=8.
+     * DRC shadow boost experiment showed no visible difference --
+     * at max AE (ISO 19198), DRC can't create light that isn't there.
+     * Only change: enable BCNR for Bayer-domain chroma NR. */
     {
         ot_isp_drc_attr drc;
         memset(&drc, 0, sizeof(drc));
@@ -1317,12 +1317,11 @@ static hi_s32 configure_lowlight_nr(void)
         if (ret == HI_SUCCESS) {
             printf("[DRC ] enable=%d, op_type=%d, curve=%d\n",
                    drc.enable, drc.op_type, drc.curve_select);
-            printf("[DRC ] dark_gain_limit_luma=%u, dark_gain_limit_chroma=%u\n",
+            printf("[DRC ] strength=%u, dark_gain_luma=%u, dark_gain_chroma=%u\n",
+                   drc.manual_attr.strength,
                    drc.dark_gain_limit_luma, drc.dark_gain_limit_chroma);
-            printf("[DRC ] bright_gain_limit=%u, contrast_ctrl=%u\n",
+            printf("[DRC ] bright_gain=%u, contrast_ctrl=%u\n",
                    drc.bright_gain_limit, drc.contrast_ctrl);
-            printf("[DRC ] global_color_ctrl=%u, high_sat_color_ctrl=%u\n",
-                   drc.global_color_ctrl, drc.high_saturation_color_ctrl);
             printf("[DRC ] bcnr: enable=%d, strength=%u\n",
                    drc.bcnr_attr.enable, drc.bcnr_attr.strength);
 
@@ -1332,8 +1331,8 @@ static hi_s32 configure_lowlight_nr(void)
             drc.bcnr_attr.enable = 1;
             drc.bcnr_attr.strength = 6;    /* Was 3 from PQ bin, max is 8 */
             ret = ss_mpi_isp_set_drc_attr(VI_PIPE, &drc);
-            printf("[DRC ] BCNR: enable=1 strength=%u (was %u): ret=0x%08X\n",
-                   (unsigned)drc.bcnr_attr.strength, 3, (unsigned)ret);
+            printf("[DRC ] BCNR: enable=1 strength=%u (was 3): ret=0x%08X\n",
+                   (unsigned)drc.bcnr_attr.strength, (unsigned)ret);
         } else {
             printf("[DRC ] get_drc_attr FAILED: 0x%08X\n", (unsigned)ret);
         }

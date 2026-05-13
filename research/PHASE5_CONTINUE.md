@@ -919,8 +919,31 @@ kill -CONT $MYS       # Resume mySystem
 
 ### Remaining Work
 
-1. **Chroma NR fine-tuning** -- 8 items documented above, now possible with live RTSP A/B
-2. **ISP I2C sync fix** -- production AE requires frame-synced register writes
+1. **ISP I2C sync fix** -- production AE requires frame-synced register writes
+   (direct I2C works but not synced to vsync; ISP register sync mechanism needed)
+2. **Audio support** -- camera has mic, needs AI/AENC init + second RTSP track
 3. **Daylight test** -- verify NR changes don't over-smooth bright scenes
-4. **DRC tuning** -- superb slightly brighter in shadows
-5. **Update rtsp_run.sh** with watchdog + SIGSTOP pattern
+4. **Scene mode switching** -- day/night/light PQ bin swapping
+
+### Completed / Resolved
+
+- **NR tuning** -- all deployed and verified, user confirmed "looks good"
+- **DRC tuning** -- TESTED: boosted strength 160→384, asymmetry 10→4, etc.
+  No visible difference in dark scene (AE maxed at ISO 19198, DRC can't create
+  light). Reverted to PQ bin defaults. Only BCNR boost (3→6) kept.
+- **Deploy workflow** -- `recv` binary on camera (port 8888 one-shot) + send_file.py
+  is fast and reliable. base64 chunked deploy_file.py works but slow.
+  `capture_run.sh` deployed for file capture mode (no RTSP).
+- **PQ bin DRC defaults discovered**: strength=160 (not 256), asymmetry=10,
+  second_pole=200, stretch=60, compress=200, detail_adj=8, spatial_flt=1
+
+### Key Files for New Sessions
+
+- `tools/recv.c` -- already compiled on camera at `/progs/rec/00/ipc_drv/recv`
+- `tools/send_file.py` -- send files to recv (one-shot or daemon mode)
+- `tools/pull_file.py` -- pull files from camera (TCP callback + base64 fallback)
+- `tools/capture_run.sh` -- on camera, runs capture mode (setsid, SIGSTOP, 150 frames)
+- `tools/rtsp_run.sh` -- on camera, runs RTSP streaming mode
+- `tools/deploy_file.py` -- base64 deploy (slow fallback, use recv instead)
+- `driver/test/pipeline_test.c` -- main binary
+- `driver/Makefile` -- `make pipeline` to cross-compile
