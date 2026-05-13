@@ -89,17 +89,33 @@ $(BUILD)/sensor_test: test/sensor_test.c src/sc635hai_cmos.h
 # and links against all SDK MPI libraries for the full video pipeline.
 # At runtime, the SDK .so files must be on the camera (they are, loaded
 # by kernel modules at boot).
+#
+# RTSP support: Uses the SDK's xop RTSP library (libxoprtsp.a) for live
+# H.265 streaming.  The xop lib is C++, so we need libstdc++.  The .so
+# is already on the camera at /lib/libstdc++.so.6.
 PIPELINE_LIBS = -lss_mpi -lot_mpi_isp -lss_mpi_isp -lss_mpi_ae -lss_mpi_awb \
                 -lss_mpi_sysbind -lss_mpi_sysmem -lsecurec -lot_osal \
                 -lpthread -ldl -lm
+
+# RTSP library and its C++ runtime dependency
+RTSP_LIB_DIR  = ../research/Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/lib/3rdparty
+RTSP_INC_DIR  = ../research/Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/include/3rdparty
+# libxoprtsp.a is C++ so needs libstdc++.  The toolchain's .so is a broken
+# linker script, so use the static .a for linking.  At runtime the camera's
+# /lib/libstdc++.so.6 provides the symbols (already present on device).
+STDCXX_A      = $(TC_BASE)/arm-linux-musleabi/lib/a7_softfp_neon-vfpv4/libstdc++.a
+RTSP_LIBS     = -L$(RTSP_LIB_DIR) -lxoprtsp $(STDCXX_A)
 
 pipeline: check_toolchain $(BUILD)/pipeline_test
 	@echo "Built: $(BUILD)/pipeline_test"
 	@ls -la $(BUILD)/pipeline_test
 
-$(BUILD)/pipeline_test: test/pipeline_test.c
-	$(CC) $(CFLAGS) -o $@ $< \
-		-L$(SDK_LIB) $(PIPELINE_LIBS) \
+$(BUILD)/rtsp_push.o: rtsp/rtsp_push.c rtsp/rtsp_push.h
+	$(CC) $(CFLAGS) -I$(RTSP_INC_DIR) -Irtsp -c -o $@ $<
+
+$(BUILD)/pipeline_test: test/pipeline_test.c $(BUILD)/rtsp_push.o rtsp/rtsp_push.h
+	$(CC) $(CFLAGS) -Irtsp -I$(RTSP_INC_DIR) -o $@ $< $(BUILD)/rtsp_push.o \
+		-L$(SDK_LIB) $(PIPELINE_LIBS) $(RTSP_LIBS) \
 		-Wl,-rpath,/usr/lib -Wl,-rpath,/progs/rec/00 \
 		-Wl,--gc-sections -fno-use-linker-plugin \
 		-Wl,--allow-shlib-undefined

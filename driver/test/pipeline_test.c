@@ -32,6 +32,7 @@
 #include <sys/mman.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include <linux/watchdog.h>   /* WDIOC_KEEPALIVE, WDIOC_GETTIMEOUT */
 
 /* SDK headers (V1.0.2.1 B020 -- ot_ types, ss_mpi_ APIs) */
 #include "ot_type.h"
@@ -60,16 +61,24 @@
 #include "ss_mpi_sys_bind.h"
 #include "ss_mpi_sys_mem.h"
 
+/* 3DNR position API (for setting NR at VI or VPSS level) */
+/* ss_mpi_sys_set_3dnr_pos / ss_mpi_sys_get_3dnr_pos are in ss_mpi_sys.h */
+
 /* MIPI RX ioctl definitions */
 #include "ot_mipi_rx.h"
 
 /* B040 hi_ to V1.0.2.1 ot_/ss_mpi_ compatibility */
 #include "hi_compat.h"
 
+/* RTSP streaming (optional, enabled with --rtsp flag) */
+#include "rtsp_push.h"
+
 /* ── Configuration ────────────────────────────────────────────── */
 #define SENSOR_WIDTH      3200
 #define SENSOR_HEIGHT     1800
-#define SENSOR_FPS        20.0f
+#define SENSOR_FPS        20.0f  /* Sensor native 20fps (VTS=2812). Superb encodes at 15fps
+                                  * but the sensor/ISP runs at 20fps for better 3DNR temporal
+                                  * sampling. VENC src_frame_rate=20, dst_frame_rate=15. */
 
 #define VI_DEV            0
 #define VI_PIPE           0
@@ -85,20 +94,96 @@
 #define SENSOR_LIB        "/progs/rec/00/ipc_drv/libsns_sc635hai.so"
 #define SENSOR_OBJ_NAME   "g_sns_sc635hai_obj"
 
-/* Buffer pool sizes -- keep minimal to fit in MMZ
+/* Buffer pool sizes
  * RAW10: 10 bits/pixel, stride-aligned = width * 2 (conservative)
  * YUV420 NV21: width * height * 1.5
- * Use minimal buffer counts to reduce memory pressure */
+ * 3DNR manages its own reference frames internally via the VPSS driver,
+ * so we just need the normal working buffers. Keep minimal for MMZ. */
 #define VB_BLK_SIZE_RAW   (SENSOR_WIDTH * SENSOR_HEIGHT * 2)   /* RAW10 ~= 2 bytes/pixel */
 #define VB_BLK_SIZE_YUV   (SENSOR_WIDTH * SENSOR_HEIGHT * 3/2) /* NV21 */
 #define VB_RAW_CNT        2
-#define VB_YUV_CNT        2
+#define VB_YUV_CNT        3    /* +1 over minimum for 3DNR headroom */
 
 /* ── Globals ──────────────────────────────────────────────────── */
 static hi_isp_sns_obj *g_sns_obj = NULL;
 static void           *g_sns_dl  = NULL;
 static volatile int    g_isp_running = 0;
 static pthread_t       g_isp_thread;
+
+/* RTSP streaming mode */
+static int             g_rtsp_mode = 0;          /* 1 = stream via RTSP, 0 = file capture */
+static const char     *g_rtsp_ip   = "0.0.0.0";  /* Bind all interfaces */
+static int             g_rtsp_port = 554;
+static volatile int    g_stop      = 0;           /* Signal flag for clean RTSP shutdown */
+
+/* Hardware watchdog -- superb normally feeds /dev/watchdog. When we kill
+ * superb, we must take over watchdog duties or the SoC hard-resets after
+ * ~30 seconds. Keep the fd open and write periodically. */
+static int             g_watchdog_fd = -1;
+
+/* ── Watchdog helpers ─────────────────────────────────────────── */
+
+static void watchdog_open(void)
+{
+    g_watchdog_fd = open("/dev/watchdog", O_RDWR);
+    if (g_watchdog_fd < 0) {
+        /* Try write-only if rdwr fails */
+        g_watchdog_fd = open("/dev/watchdog", O_WRONLY);
+    }
+    if (g_watchdog_fd < 0) {
+        printf("[WDT ] open(/dev/watchdog): %s (non-fatal)\n", strerror(errno));
+        return;
+    }
+
+    /* Query the watchdog timeout */
+    int timeout = 0;
+    if (ioctl(g_watchdog_fd, WDIOC_GETTIMEOUT, &timeout) == 0) {
+        printf("[WDT ] timeout = %d seconds\n", timeout);
+    } else {
+        printf("[WDT ] WDIOC_GETTIMEOUT failed (errno=%d), timeout unknown\n", errno);
+    }
+
+    /* Try to set a longer timeout if possible */
+    int new_timeout = 120;
+    if (ioctl(g_watchdog_fd, WDIOC_SETTIMEOUT, &new_timeout) == 0) {
+        printf("[WDT ] timeout extended to %d seconds\n", new_timeout);
+    } else {
+        printf("[WDT ] WDIOC_SETTIMEOUT failed (errno=%d) -- using default\n", errno);
+    }
+
+    /* Immediately ping to reset the countdown */
+    ioctl(g_watchdog_fd, WDIOC_KEEPALIVE, NULL);
+
+    printf("[ OK ] Watchdog opened (fd=%d) -- we are now feeding it\n", g_watchdog_fd);
+}
+
+static void watchdog_feed(void)
+{
+    if (g_watchdog_fd >= 0) {
+        /* The HiSilicon ot_wdt driver does NOT support WDIOC_KEEPALIVE or
+         * write() for feeding -- both return EPERM.  The only mechanism that
+         * resets the countdown is WDIOC_SETTIMEOUT.  Confirmed by wdt_test:
+         * survived 45s with a 30s timeout using SETTIMEOUT every second,
+         * while KEEPALIVE and write both failed with EPERM every time.
+         *
+         * So we "feed" by re-setting the timeout to 120s each time, which
+         * resets the hardware countdown as a side effect. */
+        int timeout = 120;
+        ioctl(g_watchdog_fd, WDIOC_SETTIMEOUT, &timeout);
+    }
+}
+
+static void watchdog_close(void)
+{
+    if (g_watchdog_fd >= 0) {
+        /* Write magic close character 'V' to cleanly disarm the watchdog,
+         * so we don't cause a reboot when pipeline_test exits. */
+        write(g_watchdog_fd, "V", 1);
+        close(g_watchdog_fd);
+        g_watchdog_fd = -1;
+        printf("[ OK ] Watchdog disarmed (magic close)\n");
+    }
+}
 
 /* ── Helpers ──────────────────────────────────────────────────── */
 
@@ -699,8 +784,9 @@ static hi_s32 isp_init(void)
  *
  *  Must be called AFTER ss_mpi_isp_init() and BEFORE capturing frames.
  * ═══════════════════════════════════════════════════════════════ */
-#define PQ_BIN_PATH  "/home/sensor/sc635hai/pqbin/day.bin"
+#define PQ_BIN_PATH_DEFAULT  "/home/sensor/sc635hai/pqbin/day.bin"
 #define LIBBIN_PATH  "/progs/rec/00/ipc_drv/libbin.so"
+static const char *g_pq_bin_path = PQ_BIN_PATH_DEFAULT;
 
 /* PQ bin module config struct -- matches ot_pq_bin.h */
 typedef struct {
@@ -781,9 +867,9 @@ static hi_s32 load_pq_bin(void)
     }
 
     /* Read PQ bin file into memory */
-    fp = fopen(PQ_BIN_PATH, "rb");
+    fp = fopen(g_pq_bin_path, "rb");
     if (fp == NULL) {
-        printf("[WARN] fopen(%s): %s\n", PQ_BIN_PATH, strerror(errno));
+        printf("[WARN] fopen(%s): %s\n", g_pq_bin_path, strerror(errno));
         return HI_FAILURE;
     }
 
@@ -812,7 +898,7 @@ static hi_s32 load_pq_bin(void)
         free(buf);
         return HI_FAILURE;
     }
-    printf("[ OK ] Read %s (%ld bytes)\n", PQ_BIN_PATH, file_size);
+    printf("[ OK ] Read %s (%ld bytes)\n", g_pq_bin_path, file_size);
 
     /* Configure PQ bin module params (matches sample_pq_bin.c) */
     memset(&bin_param, 0, sizeof(bin_param));
@@ -929,8 +1015,19 @@ static hi_s32 configure_isp_color(void)
                    sat.auto_attr.sat[12], sat.auto_attr.sat[13],
                    sat.auto_attr.sat[14], sat.auto_attr.sat[15]);
 
-            /* Keep auto saturation from PQ bin -- it has proper ISO table */
-            printf("[SAT ] keeping auto mode from PQ bin\n");
+            /* PQ bin auto table goes [90-140] across ISOs. Superb shows sat=103
+             * at ISO~19189. Slightly reduce high-ISO saturation to make chroma
+             * noise less visible, but NOT the aggressive 50-70 crush we tried before.
+             * Only touch entries [12..15] (very high ISO). */
+            printf("[SAT ] PQ bin defaults: sat[12..15]=%u,%u,%u,%u\n",
+                   sat.auto_attr.sat[12], sat.auto_attr.sat[13],
+                   sat.auto_attr.sat[14], sat.auto_attr.sat[15]);
+            for (int i = 12; i < 16; i++) {
+                if (sat.auto_attr.sat[i] > 95)
+                    sat.auto_attr.sat[i] = 90;  /* Cap at 90 (was ~100-110) */
+            }
+            ret = ss_mpi_isp_set_saturation_attr(VI_PIPE, &sat);
+            printf("[SAT ] high-ISO sat[12..15] capped to 90: ret=0x%08X\n", (unsigned)ret);
         } else {
             printf("[SAT ] get_saturation_attr FAILED: 0x%08X\n", (unsigned)ret);
         }
@@ -1007,14 +1104,23 @@ static hi_s32 configure_isp_color(void)
         }
     }
 
-    /* ── 9. Log NR (BNR) state (keep PQ bin settings) ────── */
+    /* ── 9. Log NR (BNR) state (tuning done in configure_lowlight_nr) ─ */
     {
         ot_isp_nr_attr nr;
         memset(&nr, 0, sizeof(nr));
         ret = ss_mpi_isp_get_nr_attr(VI_PIPE, &nr);
         if (ret == HI_SUCCESS) {
-            printf("[NR  ] enable=%d, op_type=%d (keeping PQ bin)\n",
-                   nr.enable, nr.op_type);
+            printf("[NR  ] enable=%d, op_type=%d, md_en=%d\n",
+                   nr.enable, nr.op_type, nr.md_en);
+            if (nr.op_type == OT_OP_MODE_AUTO) {
+                printf("[NR  ] auto: fine_str[0]=%u coring_wgt[0]=%u\n",
+                       nr.snr_cfg.snr_attr.snr_auto.fine_strength[0],
+                       nr.snr_cfg.snr_attr.snr_auto.coring_wgt[0]);
+            } else {
+                printf("[NR  ] manual: fine_str=%u coring_wgt=%u\n",
+                       nr.snr_cfg.snr_attr.snr_manual.fine_strength,
+                       nr.snr_cfg.snr_attr.snr_manual.coring_wgt);
+            }
         } else {
             printf("[NR  ] get_nr_attr FAILED: 0x%08X\n", (unsigned)ret);
         }
@@ -1107,6 +1213,395 @@ static hi_s32 configure_isp_color(void)
     printf("[INFO] ISP color config done: all PQ modules on, "
            "auto CCM+AWB (ADVANCE), PQ bin CSC preserved\n");
 
+    return HI_SUCCESS;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ *  STEP 4a++: Low-light noise reduction tuning
+ *
+ *  Three-pronged approach to reduce chroma noise in low light:
+ *  1. ISP BayerNR: boost high-ISO entries in auto table
+ *  2. DRC: limit dark-area chroma gain + enable DRC-embedded BCNR
+ *  3. ISP NR md_cfg: tune motion detection NR for better temporal NR
+ *
+ *  The biggest NR improvement comes from 3DNR (temporal+chroma) which
+ *  is configured separately in configure_3dnr() after VPSS init.
+ * ═══════════════════════════════════════════════════════════════ */
+static hi_s32 configure_lowlight_nr(void)
+{
+    hi_s32 ret;
+
+    printf("\n=== Low-Light NR Tuning ===\n");
+
+    /* ── 1. ISP BayerNR: use PQ bin defaults, just ensure md_en=1 ──
+     * Superb's proc shows: fine_strength=80, coring_wgt=50, sfm0_de_prot=16,
+     * md_en=1, md_mode=2, tfs=255, md_sta_fine_str=55, md_sta_ratio=26.
+     * These come from the PQ bin (day.bin). Previous code maxed everything
+     * (fine_str=128, md_static_fine=200) which over-smoothed the image.
+     * Now we just ensure md_en=1 and leave everything else at PQ bin defaults. */
+    {
+        ot_isp_nr_attr nr;
+        memset(&nr, 0, sizeof(nr));
+        ret = ss_mpi_isp_get_nr_attr(VI_PIPE, &nr);
+        if (ret == HI_SUCCESS) {
+            printf("[BNR ] enable=%d, op_type=%d, md_en=%d\n",
+                   nr.enable, nr.op_type, nr.md_en);
+
+            /* Enable motion detection if not already on (superb has md_en=1) */
+            if (!nr.md_en) {
+                nr.md_en = 1;
+                printf("[BNR ] enabling motion detection (md_en=1)\n");
+            }
+
+            if (nr.op_type == OT_OP_MODE_AUTO) {
+                /* Log PQ bin auto table values */
+                printf("[BNR ] auto fine_str: ");
+                for (int i = 0; i < 16; i++)
+                    printf("%u ", nr.snr_cfg.snr_attr.snr_auto.fine_strength[i]);
+                printf("\n");
+                printf("[BNR ] auto coring_wgt: ");
+                for (int i = 0; i < 16; i++)
+                    printf("%u ", nr.snr_cfg.snr_attr.snr_auto.coring_wgt[i]);
+                printf("\n");
+
+                /* Log md_cfg values before modification */
+                printf("[BNR ] md_auto tfs (before): ");
+                for (int i = 0; i < 16; i++)
+                    printf("%u ", nr.md_cfg.md_auto.tfs[i]);
+                printf("\n");
+                printf("[BNR ] md_auto sta_fine (before): ");
+                for (int i = 0; i < 16; i++)
+                    printf("%u ", nr.md_cfg.md_auto.md_static_fine_strength[i]);
+                printf("\n");
+                printf("[BNR ] md_auto sta_ratio (before): ");
+                for (int i = 0; i < 16; i++)
+                    printf("%u ", nr.md_cfg.md_auto.md_static_ratio[i]);
+                printf("\n");
+
+                /* Boost md_static_fine_strength at high ISO entries [8..15].
+                 * PQ bin gives [32..64] range; superb proc shows 55 at ISO~19189.
+                 * Range is [0-255]. Boost high-ISO entries for more aggressive
+                 * static-area denoising in low light. Keep low-ISO entries
+                 * (bright scenes) unchanged to avoid over-smoothing. */
+                for (int i = 8; i < 16; i++) {
+                    /* Scale up: if PQ bin had 55, push to ~90 */
+                    int boosted = nr.md_cfg.md_auto.md_static_fine_strength[i];
+                    boosted = (boosted * 170) / 100;  /* 1.7x */
+                    if (boosted > 120) boosted = 120;  /* Cap well below 255 max */
+                    if (boosted < 80) boosted = 80;    /* Floor at 80 */
+                    nr.md_cfg.md_auto.md_static_fine_strength[i] = (unsigned char)boosted;
+                }
+                printf("[BNR ] md_auto sta_fine (after): ");
+                for (int i = 0; i < 16; i++)
+                    printf("%u ", nr.md_cfg.md_auto.md_static_fine_strength[i]);
+                printf("\n");
+            }
+
+            ret = ss_mpi_isp_set_nr_attr(VI_PIPE, &nr);
+            printf("[BNR ] set_nr_attr (md_en=1 only): ret=0x%08X\n", (unsigned)ret);
+        } else {
+            printf("[BNR ] get_nr_attr FAILED: 0x%08X\n", (unsigned)ret);
+        }
+    }
+
+    /* ── 2. DRC: log state, keep PQ bin defaults ──────────────
+     * Superb's proc shows: DRC en=1, manu_en=1, strength=256
+     * (this is the "digital WDR" feature from SystemCfg.ini bEnableWdr=1).
+     * The PQ bin sets DRC params including BCNR. Previous code force-set
+     * BCNR strength=8 (max) and dark_gain_limit_chroma=0x40.
+     * Now we trust the PQ bin defaults and just log for diagnostics. */
+    {
+        ot_isp_drc_attr drc;
+        memset(&drc, 0, sizeof(drc));
+        ret = ss_mpi_isp_get_drc_attr(VI_PIPE, &drc);
+        if (ret == HI_SUCCESS) {
+            printf("[DRC ] enable=%d, op_type=%d, curve=%d\n",
+                   drc.enable, drc.op_type, drc.curve_select);
+            printf("[DRC ] dark_gain_limit_luma=%u, dark_gain_limit_chroma=%u\n",
+                   drc.dark_gain_limit_luma, drc.dark_gain_limit_chroma);
+            printf("[DRC ] bright_gain_limit=%u, contrast_ctrl=%u\n",
+                   drc.bright_gain_limit, drc.contrast_ctrl);
+            printf("[DRC ] global_color_ctrl=%u, high_sat_color_ctrl=%u\n",
+                   drc.global_color_ctrl, drc.high_saturation_color_ctrl);
+            printf("[DRC ] bcnr: enable=%d, strength=%u\n",
+                   drc.bcnr_attr.enable, drc.bcnr_attr.strength);
+
+            /* Enable BCNR and boost strength for better Bayer chroma NR.
+             * PQ bin default strength=3; SDK range [0-8].
+             * Push to 6 for stronger Bayer-domain chroma denoising. */
+            drc.bcnr_attr.enable = 1;
+            drc.bcnr_attr.strength = 6;    /* Was 3 from PQ bin, max is 8 */
+            ret = ss_mpi_isp_set_drc_attr(VI_PIPE, &drc);
+            printf("[DRC ] BCNR: enable=1 strength=%u (was %u): ret=0x%08X\n",
+                   (unsigned)drc.bcnr_attr.strength, 3, (unsigned)ret);
+        } else {
+            printf("[DRC ] get_drc_attr FAILED: 0x%08X\n", (unsigned)ret);
+        }
+    }
+
+    printf("[INFO] Low-light NR tuning done\n");
+    return HI_SUCCESS;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ *  STEP 5a: Configure 3DNR (temporal + chroma noise reduction)
+ *
+ *  3DNR operates at the VPSS level (or VI level). It provides:
+ *  - Temporal NR (tfy/tfs): uses motion detection to blend frames
+ *  - Spatial luma NR (sfy): spatial filtering per frequency band
+ *  - Chroma NR (nrc0/nrc1): spatial+temporal chroma denoising
+ *
+ *  The PQ bin does NOT configure 3DNR -- this is the big missing
+ *  piece vs superb's pipeline. Superb likely uses 3DNR heavily
+ *  for chroma noise suppression in low light.
+ *
+ *  Must be called AFTER vpss_init() (VPSS group must exist).
+ * ═══════════════════════════════════════════════════════════════ */
+static hi_s32 configure_3dnr(void)
+{
+    hi_s32 ret;
+
+    printf("\n=== 3DNR Configuration ===\n");
+
+    /* ── 1. Try VI pipe 3DNR first (this platform uses VI-level 3DNR) ── */
+    {
+        ot_3dnr_attr nr_attr;
+        memset(&nr_attr, 0, sizeof(nr_attr));
+
+        /* Read current VI pipe 3DNR state */
+        ret = ss_mpi_vi_get_pipe_3dnr_attr(VI_PIPE, &nr_attr);
+        printf("[3DNR] VI pipe get_attr: enable=%d, type=%d, compress=%d, motion=%d, ret=0x%08X\n",
+               nr_attr.enable, nr_attr.nr_type, nr_attr.compress_mode,
+               nr_attr.nr_motion_mode, (unsigned)ret);
+
+        /* Enable 3DNR with normal video mode */
+        nr_attr.enable = TD_TRUE;
+        nr_attr.nr_type = OT_NR_TYPE_VIDEO_NORM;
+        nr_attr.compress_mode = OT_COMPRESS_MODE_NONE;
+        nr_attr.nr_motion_mode = OT_NR_MOTION_MODE_NORM;
+
+        ret = ss_mpi_vi_set_pipe_3dnr_attr(VI_PIPE, &nr_attr);
+        printf("[3DNR] VI pipe set_attr(enable=1, VIDEO_NORM): ret=0x%08X\n", (unsigned)ret);
+
+        if (ret != HI_SUCCESS) {
+            printf("[3DNR] VI pipe failed, trying VPSS group 3DNR...\n");
+
+            /* Fallback: try VPSS group 3DNR */
+            memset(&nr_attr, 0, sizeof(nr_attr));
+            ret = ss_mpi_vpss_get_grp_3dnr_attr(VPSS_GRP, &nr_attr);
+            printf("[3DNR] VPSS get_attr: enable=%d, ret=0x%08X\n",
+                   nr_attr.enable, (unsigned)ret);
+
+            nr_attr.enable = TD_TRUE;
+            nr_attr.nr_type = OT_NR_TYPE_VIDEO_NORM;
+            nr_attr.compress_mode = OT_COMPRESS_MODE_NONE;
+            nr_attr.nr_motion_mode = OT_NR_MOTION_MODE_NORM;
+
+            ret = ss_mpi_vpss_set_grp_3dnr_attr(VPSS_GRP, &nr_attr);
+            printf("[3DNR] VPSS set_attr: ret=0x%08X\n", (unsigned)ret);
+            if (ret != HI_SUCCESS) {
+                printf("[3DNR] WARNING: Both VI and VPSS 3DNR failed\n");
+                return HI_FAILURE;
+            }
+        }
+    }
+
+    /* ── 2. Configure 3DNR V2 parameters ─────────────────────── */
+    /* Values extracted from superb's running ISP via /proc/umap/vi.
+     * Key insight: superb uses MODERATE NR, not maxed-out values.
+     * Previous code maxed everything (trc=255 etc) causing over-smoothing.
+     *
+     * Superb's proc dump (low-light, ISO~19189):
+     *   mdy0: pretfs=8, premath=100, premathd=80, premabw=2, pretdz=32
+     *   tfy:  tfs=0,11,12  tss=16,0,0  tfr0=14,8,14,8,0,0  tfr1=16,8,16,8,0,0
+     *   mdy:  math=100,419  (mate not shown, using sensible defaults)
+     *   nrc0: trc=24, sfc=24, tfc=12, tfs=13
+     *   nrc1: pre_sfs=9, sfs1=119, sfs2_coarse=15, sfs2_coarse_f=15, sfs2_fine_f=15, sfs2_fine_b=15
+     *   tfs_mode=1, sfs2_mode=0, gamma_en=1, ca_en=0
+     *   nry1-4_en=1,1,1,1  nrc_en=1  nrc0_mode=0
+     */
+    {
+        ot_3dnr_param nr_param;
+        memset(&nr_param, 0, sizeof(nr_param));
+
+        /* Read current params -- preserves all default values from the driver.
+         * We only override the fields we can decode from superb's proc dump. */
+        ret = ss_mpi_vi_get_pipe_3dnr_param(VI_PIPE, &nr_param);
+        printf("[3DNR] VI get_param: version=%d, ret=0x%08X\n",
+               nr_param.nr_version, (unsigned)ret);
+
+        if (ret == HI_SUCCESS) {
+            nr_param.nr_version = OT_NR_V2;
+
+            ot_nr_v2 *v2 = &nr_param.nr_norm_param_v2.nr_manual.nr_param;
+
+            /* Manual mode for precise control */
+            nr_param.nr_norm_param_v2.op_mode = OT_OP_MODE_MANUAL;
+
+            /* ── Enable all NR channels (matches superb) ── */
+            v2->nry1_en = 1;
+            v2->nry2_en = 1;
+            v2->nry3_en = 1;
+            v2->nry4_en = 1;
+            v2->nrc_en = 1;
+            v2->nrc0_mode = 0;
+
+            /* ── Post-processing: gamma on, ca off (matches superb) ── */
+            v2->pp.gamma_en = 1;
+            v2->pp.ca_en = 0;
+
+            /* ── mdy0 (pre-stage motion detection) ── */
+            v2->mdy0.tfs = 8;
+            v2->mdy0.math = 100;
+            v2->mdy0.mathd = 80;
+            v2->mdy0.mabw = 2;
+            v2->mdy0.tdz = 32;
+            printf("[3DNR] V2 MDY0: tfs=%u math=%u mathd=%u mabw=%u tdz=%u\n",
+                   v2->mdy0.tfs, v2->mdy0.math, v2->mdy0.mathd,
+                   v2->mdy0.mabw, v2->mdy0.tdz);
+
+            /* ── Chroma NR channel 0 (nrc0) -- temporal chroma ──
+             * Superb proc: trc=24 sfc=24 tfc=12 tfs=13
+             * SDK ranges: trc[0-255] sfc[0-255] tfc[0-63] tfs[0-15]
+             * Push trc/sfc to 128 (half-max) for aggressive chroma temporal NR.
+             * This is the #1 knob for green/magenta speckle in low light. */
+            v2->nrc0.trc = 128;            /* 5.3x superb -- half-max temporal chroma */
+            v2->nrc0.sfc = 128;            /* 5.3x superb -- half-max chroma motion thresh */
+            v2->nrc0.tfc = 32;             /* 2.7x superb -- stronger temporal control (max 63) */
+            v2->nrc0.tfs = 13;             /* Keep superb's temporal strength */
+            /* Leave tfs_mot at driver defaults (read-modify-write) */
+            printf("[3DNR] V2 NRC0: trc=%u sfc=%u tfc=%u tfs=%u\n",
+                   v2->nrc0.trc, v2->nrc0.sfc, v2->nrc0.tfc, v2->nrc0.tfs);
+
+            /* ── Chroma NR channel 1 (nrc1) -- spatial chroma ──
+             * Superb: pre_sfs=9 sfs1=119 sfs2_coarse=15
+             * SDK ranges: pre_sfs[0-16] sfs1[0-255] sfs2_coarse[0-31]
+             * Push sfs1 to 220 for stronger spatial chroma denoising. */
+            v2->nrc1.pre_sfs = 14;         /* Near max (16) pre-filter */
+            v2->nrc1.sfs1 = 220;           /* 1.85x superb -- strong spatial chroma */
+            /* Leave sfs1_mot at driver defaults */
+            v2->nrc1.sfs2_coarse = 24;     /* Bump from 15 toward max (31) */
+            v2->nrc1.sfs2_coarse_f = 24;   /* Background chroma NR -- match coarse */
+            v2->nrc1.sfs2_fine_f = 15;     /* Keep at superb level */
+            v2->nrc1.sfs2_fine_b = 15;     /* Keep at superb level */
+            /* Leave sfs2_mot at driver defaults */
+            v2->nrc1.sfs2_mode = 0;
+            printf("[3DNR] V2 NRC1: pre=%u sfs1=%u coarse=%u coarse_f=%u\n",
+                   v2->nrc1.pre_sfs, v2->nrc1.sfs1, v2->nrc1.sfs2_coarse,
+                   v2->nrc1.sfs2_coarse_f);
+
+            /* ── Temporal luma NR (tfy) ──
+             * Superb: tfs=0,11,12  tss=16,0,0
+             *         tfr0=14,8,14,8,0,0  tfr1=16,8,16,8,0,0
+             * tfs0=0 means coarse temporal OFF in superb. Enable tfs0=4 for
+             * low-frequency noise patches at the cost of mild motion smear. */
+            for (int i = 0; i < 2; i++) {
+                v2->tfy[i].tfs0 = 4;       /* Coarse temporal ON (superb=0, try 4) */
+                v2->tfy[i].tfs1 = 11;      /* Medium temporal (superb) */
+                v2->tfy[i].tfs2 = 12;      /* Fine temporal (superb) */
+                v2->tfy[i].ref_en = 1;     /* Reference frame enabled */
+                v2->tfy[i].tss0 = 16;
+                v2->tfy[i].tss1 = 0;
+                v2->tfy[i].tss2 = 0;
+                v2->tfy[i].tfr0[0] = 14; v2->tfy[i].tfr0[1] = 8;
+                v2->tfy[i].tfr0[2] = 14; v2->tfy[i].tfr0[3] = 8;
+                v2->tfy[i].tfr0[4] = 0;  v2->tfy[i].tfr0[5] = 0;
+                v2->tfy[i].tfr1[0] = 16; v2->tfy[i].tfr1[1] = 8;
+                v2->tfy[i].tfr1[2] = 16; v2->tfy[i].tfr1[3] = 8;
+                v2->tfy[i].tfr1[4] = 0;  v2->tfy[i].tfr1[5] = 0;
+                v2->tfy[i].tfs_mode = 1;
+            }
+            printf("[3DNR] V2 TFY: tfs=4,11,12 tss=16,0,0 tfr0=14,8,14,8,0,0 ref_en=1\n");
+
+            /* ── Motion detection (mdy) ──
+             * Superb: math0=100 math1=419 (high motion threshold = less temporal NR on moving areas)
+             * mate and mabw not visible in proc -- use sensible defaults */
+            for (int i = 0; i < 2; i++) {
+                v2->mdy[i].math0 = 100;
+                v2->mdy[i].mate0 = 4;      /* Keep from driver default */
+                v2->mdy[i].math1 = 419;
+                v2->mdy[i].mate1 = 4;
+                v2->mdy[i].mabw0 = 7;      /* Keep from driver default */
+                v2->mdy[i].mabw1 = 7;
+            }
+            printf("[3DNR] V2 MDY: math0=100 math1=419 mabw=7\n");
+
+            /* ── Spatial luma NR (sfy) ──
+             * Superb's proc dump decoded (columns are sfy[0]/nry1, sfy[1]/nry2, sfy[2]/nry3):
+             * sf1: sfs1/sbr1  = 64/128 for all 3
+             * sf2: sfs2/sft2/sbr2 = 64/0/128 for all 3
+             * sf4: sfs4/sft4/sbr4 = 64/0/128 for sfy[0], 64/0/128+10/10 for sfy[1..2]
+             * sth: 40/80/60 / 40/40/40 for sfy[0..2]
+             * sfn: 2/2/2/0 + 0/0/0/4 for sfy[0]; 2/2/2/2 + 2/2/2/2 for sfy[1..2]
+             * sf5 (sfy[1] only): sfs5=32
+             * bld6: 2 for sfy[0]
+             * Column 4 (nry4/pshrp) values from proc: 180/200/200 etc -- leave at defaults
+             */
+            for (int i = 0; i < 3; i++) {
+                v2->sfy[i].sfs1 = 64;
+                v2->sfy[i].sbr1 = 128;
+                v2->sfy[i].sfs2 = 64;
+                v2->sfy[i].sft2 = 0;
+                v2->sfy[i].sbr2 = 128;
+                v2->sfy[i].sfs4 = 64;
+                v2->sfy[i].sft4 = 0;
+                v2->sfy[i].sbr4 = 128;
+                v2->sfy[i].sth1_0 = 40;
+                v2->sfy[i].sth2_0 = 80;
+                v2->sfy[i].sth3_0 = 60;
+                v2->sfy[i].sth1_1 = 40;
+                v2->sfy[i].sth2_1 = 40;
+                v2->sfy[i].sth3_1 = 40;
+            }
+            /* sfy[0] (nry1): sfn = 2,2,2,0 / 0,0,0,4 */
+            v2->sfy[0].sfn0_0 = 2; v2->sfy[0].sfn1_0 = 2;
+            v2->sfy[0].sfn2_0 = 2; v2->sfy[0].sfn3_0 = 0;
+            v2->sfy[0].sfn0_1 = 0; v2->sfy[0].sfn1_1 = 0;
+            v2->sfy[0].sfn2_1 = 0; v2->sfy[0].sfn3_1 = 4;
+            v2->sfy[0].bld6 = 2;
+            v2->sfy[0].sfn6_0 = 2; v2->sfy[0].sfn6_1 = 4;
+            /* sfy[1] (nry2): sfn = 2,2,2,2 / 2,2,2,2 */
+            v2->sfy[1].sfn0_0 = 2; v2->sfy[1].sfn1_0 = 2;
+            v2->sfy[1].sfn2_0 = 2; v2->sfy[1].sfn3_0 = 2;
+            v2->sfy[1].sfn0_1 = 2; v2->sfy[1].sfn1_1 = 2;
+            v2->sfy[1].sfn2_1 = 2; v2->sfy[1].sfn3_1 = 2;
+            v2->sfy[1].sfs5 = 32;
+            v2->sfy[1].bld6 = 5;
+            v2->sfy[1].sfn6_0 = 5; v2->sfy[1].sfn6_1 = 3;
+            v2->sfy[1].sfn7_0 = 4; v2->sfy[1].sfn7_1 = 3;
+            v2->sfy[1].sfn8_0 = 4; v2->sfy[1].sfn8_1 = 3;
+            /* strf3/strb3 for sfy[1..2]: from proc sf3_2=10_10 */
+            v2->sfy[1].strf3 = 10; v2->sfy[1].strb3 = 10;
+            v2->sfy[1].strf4 = 10; v2->sfy[1].strb4 = 10;
+            /* sfy[2] (nry3): sfn = 2,2,2,2 / 2,2,2,2 */
+            v2->sfy[2].sfn0_0 = 2; v2->sfy[2].sfn1_0 = 2;
+            v2->sfy[2].sfn2_0 = 2; v2->sfy[2].sfn3_0 = 2;
+            v2->sfy[2].sfn0_1 = 2; v2->sfy[2].sfn1_1 = 2;
+            v2->sfy[2].sfn2_1 = 2; v2->sfy[2].sfn3_1 = 2;
+            v2->sfy[2].bld6 = 5;
+            v2->sfy[2].sfn6_0 = 5; v2->sfy[2].sfn6_1 = 0;
+            v2->sfy[2].sfn7_0 = 4; v2->sfy[2].sfn7_1 = 3;
+            v2->sfy[2].sfn8_0 = 4; v2->sfy[2].sfn8_1 = 3;
+            v2->sfy[2].strf3 = 10; v2->sfy[2].strb3 = 10;
+            v2->sfy[2].strf4 = 10; v2->sfy[2].strb4 = 10;
+            printf("[3DNR] V2 SFY: sfs1=64 sbr1=128 sfs2=64 sth=40/80/60\n");
+
+            /* Leave iey (pshrp/nry4) and luty at driver defaults --
+             * these have complex LUT-based params. The proc dump shows
+             * pshrp values (col 4: 180_180 etc) but those are sharpening
+             * params that should be fine at PQ bin defaults. */
+
+            ret = ss_mpi_vi_set_pipe_3dnr_param(VI_PIPE, &nr_param);
+            printf("[3DNR] VI set_param(V2, manual, superb-matched): ret=0x%08X\n", (unsigned)ret);
+            if (ret != HI_SUCCESS) {
+                printf("[3DNR] WARNING: V2 param set failed (0x%08X)\n", (unsigned)ret);
+            }
+        } else {
+            printf("[3DNR] get_param failed, skipping param config\n");
+        }
+    }
+
+    printf("[INFO] 3DNR configuration done\n");
     return HI_SUCCESS;
 }
 
@@ -1312,27 +1807,46 @@ static hi_s32 venc_init(void)
     chn_attr.venc_attr.h265_attr.frame_buf_ratio = 100;  /* 100% = no compression */
     chn_attr.venc_attr.h265_attr.rcn_ref_share_buf_en = HI_FALSE;
 
-    /* Rate control: CBR at ~4Mbps */
-    chn_attr.rc_attr.rc_mode = OT_VENC_RC_MODE_H265_CBR;
-    chn_attr.rc_attr.h265_cbr.gop           = 20;   /* I-frame every 20 frames (1 sec) */
-    chn_attr.rc_attr.h265_cbr.stats_time    = 1;    /* 1 second stats window */
-    chn_attr.rc_attr.h265_cbr.src_frame_rate = 20;
-    chn_attr.rc_attr.h265_cbr.dst_frame_rate = 20;
-    chn_attr.rc_attr.h265_cbr.bit_rate      = 4000; /* 4Mbps */
+    /* Rate control: VBR at ~4Mbps max (matches superb: rcMode=3=VBR, bitrate=4096)
+     * Superb runs sensor at 20fps but encodes at 15fps (SystemCfg.ini).
+     * src_frame_rate=20 (ISP output), dst_frame_rate=15 (encoded output).
+     * VENC drops every 4th frame to achieve 15fps from 20fps input. */
+    chn_attr.rc_attr.rc_mode = OT_VENC_RC_MODE_H265_VBR;
+    chn_attr.rc_attr.h265_vbr.gop           = 15;   /* I-frame every 15 frames (1 sec at 15fps) */
+    chn_attr.rc_attr.h265_vbr.stats_time    = 1;    /* 1 second stats window */
+    chn_attr.rc_attr.h265_vbr.src_frame_rate = 20;  /* Sensor/ISP runs at 20fps */
+    chn_attr.rc_attr.h265_vbr.dst_frame_rate = 15;  /* Encode at 15fps (drop every 4th) */
+    chn_attr.rc_attr.h265_vbr.max_bit_rate  = 4096; /* 4Mbps max (superb config) */
 
     /* GOP: all I-frames for easy extraction (every frame is independently decodable) */
     chn_attr.gop_attr.gop_mode = OT_VENC_GOP_MODE_NORMAL_P;
     chn_attr.gop_attr.normal_p.ip_qp_delta = 2;
 
-    printf("[INFO] VENC H265 chn_attr: sizeof=%zu, type=%u, %ux%u, buf=%u, gop=%u, bitrate=%u\n",
+    printf("[INFO] VENC H265 chn_attr: sizeof=%zu, type=%u, %ux%u, buf=%u, gop=%u, max_br=%u\n",
            sizeof(chn_attr), chn_attr.venc_attr.type,
            chn_attr.venc_attr.pic_width, chn_attr.venc_attr.pic_height,
            chn_attr.venc_attr.buf_size,
-           chn_attr.rc_attr.h265_cbr.gop,
-           chn_attr.rc_attr.h265_cbr.bit_rate);
+           chn_attr.rc_attr.h265_vbr.gop,
+           chn_attr.rc_attr.h265_vbr.max_bit_rate);
 
     ret = ss_mpi_venc_create_chn(VENC_CHN, &chn_attr);
     CHECK_RET("ss_mpi_venc_create_chn(H265)", ret);
+
+    /* Set VBR QP limits to match superb (minQP=35, maxQP=44) */
+    {
+        ot_venc_rc_param rc_param;
+        memset(&rc_param, 0, sizeof(rc_param));
+        rc_param.h265_vbr_param.max_qp = 44;
+        rc_param.h265_vbr_param.min_qp = 35;
+        rc_param.h265_vbr_param.max_i_qp = 44;
+        rc_param.h265_vbr_param.min_i_qp = 35;
+        rc_param.h265_vbr_param.max_reencode_times = 3;
+        rc_param.h265_vbr_param.max_i_proportion = 100;
+        rc_param.h265_vbr_param.min_i_proportion = 1;
+        rc_param.h265_vbr_param.qpmap_en = HI_FALSE;
+        hi_s32 rc_ret = ss_mpi_venc_set_rc_param(VENC_CHN, &rc_param);
+        printf("[INFO] VBR QP limits set: max_qp=44 min_qp=35 ret=0x%08X\n", (unsigned)rc_ret);
+    }
 
     /* Start the VENC channel (continuous receive) */
     start_param.recv_pic_num = -1;
@@ -1365,7 +1879,7 @@ static hi_s32 venc_init(void)
  *  Save raw .h265 bitstream to SD card. Convert on host with:
  *    ffmpeg -i capture.h265 -frames:v 1 capture.png
  * ═══════════════════════════════════════════════════════════════ */
-#define CAPTURE_FRAMES   200  /* ~10 seconds at 20fps -- time for light toggle test */
+#define CAPTURE_FRAMES   150  /* ~10 seconds at 15fps VENC output -- time for light toggle test */
 
 static hi_s32 capture_h265(void)
 {
@@ -1375,17 +1889,25 @@ static hi_s32 capture_h265(void)
     struct timeval timeout_val;
     ot_venc_chn_status stat;
     ot_venc_stream stream;
-    FILE *fp;
+    FILE *fp = NULL;
     hi_u32 total_bytes = 0;
     int frames_saved = 0;
 
-    printf("\n=== Capturing H.265 bitstream ===\n");
+    if (g_rtsp_mode) {
+        printf("\n=== RTSP streaming mode ===\n");
+    } else {
+        printf("\n=== Capturing H.265 bitstream ===\n");
+    }
 
     /* Let ISP/AE stabilize after PQ bin loading.
      * With PQ calibration loaded, AE should converge to proper exposure
-     * within a few seconds. Give it 5s to be safe. */
+     * within a few seconds. Give it 12s to be safe.
+     * Feed the watchdog during this wait to prevent SoC hard-reset. */
     printf("[INFO] Waiting 12s for ISP/AE/AWB to stabilize...\n");
-    sleep(12);
+    for (int stab_i = 0; stab_i < 12; stab_i++) {
+        sleep(1);
+        watchdog_feed();
+    }
 
     /* Readback actual sensor exposure registers via I2C */
     if (g_sns_obj && g_sns_obj->pfn_read_reg) {
@@ -1452,13 +1974,33 @@ static hi_s32 capture_h265(void)
     }
     printf("[ OK ] VENC fd = %d\n", venc_fd);
 
-    fp = fopen(OUTPUT_FILE, "wb");
-    if (fp == NULL) {
-        printf("[FAIL] fopen(%s): %s\n", OUTPUT_FILE, strerror(errno));
-        return HI_FAILURE;
+    /* Start RTSP server if in streaming mode */
+    if (g_rtsp_mode) {
+        if (rtsp_start(g_rtsp_ip, g_rtsp_port) != 0) {
+            printf("[FAIL] RTSP server failed to start\n");
+            return HI_FAILURE;
+        }
     }
 
-    while (frames_saved < CAPTURE_FRAMES) {
+    /* In file mode, also open file for capture */
+    if (!g_rtsp_mode) {
+        fp = fopen(OUTPUT_FILE, "wb");
+        if (fp == NULL) {
+            printf("[FAIL] fopen(%s): %s\n", OUTPUT_FILE, strerror(errno));
+            return HI_FAILURE;
+        }
+    }
+
+    /*
+     * Main VENC loop:
+     *   - File mode: run for CAPTURE_FRAMES then exit
+     *   - RTSP mode: run indefinitely until SIGINT/SIGTERM
+     */
+    while (!g_stop) {
+        /* In file mode, stop after enough frames */
+        if (!g_rtsp_mode && frames_saved >= CAPTURE_FRAMES)
+            break;
+
         FD_ZERO(&read_fds);
         FD_SET(venc_fd, &read_fds);
         timeout_val.tv_sec  = 5;
@@ -1466,14 +2008,17 @@ static hi_s32 capture_h265(void)
 
         ret = select(venc_fd + 1, &read_fds, NULL, NULL, &timeout_val);
         if (ret <= 0) {
+            watchdog_feed();  /* Feed during select timeout too */
+            if (g_rtsp_mode) continue;  /* Timeout is OK in streaming mode */
             printf("[WARN] select returned %d after %d frames\n", ret, frames_saved);
             break;
         }
 
         ret = ss_mpi_venc_query_status(VENC_CHN, &stat);
         if (ret != HI_SUCCESS || stat.cur_packs == 0) {
-            printf("[WARN] query_status: ret=0x%08X, cur_packs=%u\n",
-                   (unsigned)ret, stat.cur_packs);
+            if (!g_rtsp_mode)
+                printf("[WARN] query_status: ret=0x%08X, cur_packs=%u\n",
+                       (unsigned)ret, stat.cur_packs);
             continue;
         }
 
@@ -1484,38 +2029,60 @@ static hi_s32 capture_h265(void)
         ret = ss_mpi_venc_get_stream(VENC_CHN, &stream, -1);
         if (ret != HI_SUCCESS) {
             free(stream.pack);
-            printf("[WARN] get_stream: 0x%08X\n", (unsigned)ret);
+            if (!g_rtsp_mode)
+                printf("[WARN] get_stream: 0x%08X\n", (unsigned)ret);
             continue;
         }
 
-        for (hi_u32 i = 0; i < stream.pack_cnt; i++) {
-            hi_u8 *data = stream.pack[i].addr + stream.pack[i].offset;
-            hi_u32 len  = stream.pack[i].len - stream.pack[i].offset;
-            fwrite(data, 1, len, fp);
-            total_bytes += len;
+        /* Push to RTSP clients */
+        if (g_rtsp_mode) {
+            rtsp_push_venc_stream(&stream);
+        }
+
+        /* Write to file (file mode, or both if desired) */
+        if (fp) {
+            for (hi_u32 i = 0; i < stream.pack_cnt; i++) {
+                hi_u8 *data = stream.pack[i].addr + stream.pack[i].offset;
+                hi_u32 len  = stream.pack[i].len - stream.pack[i].offset;
+                fwrite(data, 1, len, fp);
+                total_bytes += len;
+            }
         }
 
         ss_mpi_venc_release_stream(VENC_CHN, &stream);
         free(stream.pack);
         frames_saved++;
 
-        /* Periodic AE/AWB status during capture (every 50 frames) */
-        if (frames_saved % 50 == 0) {
-            ot_isp_exp_info ei;
-            ot_isp_wb_info wi;
-            memset(&ei, 0, sizeof(ei));
-            memset(&wi, 0, sizeof(wi));
-            ss_mpi_isp_query_exposure_info(VI_PIPE, &ei);
-            ss_mpi_isp_query_wb_info(VI_PIPE, &wi);
-            printf("[F%03d] AE: exp=%u, again=%u, dgain=%u, lum=%u, iso=%u | "
-                   "AWB: R=%u G=%u B=%u ct=%u\n",
-                   frames_saved, ei.exp_time, ei.a_gain, ei.d_gain,
-                   ei.ave_lum, ei.iso,
-                   wi.r_gain, wi.gr_gain, wi.b_gain, wi.color_temp);
+        /* Feed hardware watchdog every frame to prevent SoC hard-reset */
+        watchdog_feed();
+
+        /* Log every 20th frame for debugging in RTSP mode */
+        if (g_rtsp_mode && (frames_saved % 20 == 0)) {
+            fprintf(stderr, "[VENC] frame=%d\n", frames_saved);
+        }
+
+        /* Periodic AE/AWB status (every 50 frames in file mode, every 300 in RTSP) */
+        {
+            int interval = g_rtsp_mode ? 300 : 50;
+            if (frames_saved % interval == 0) {
+                ot_isp_exp_info ei;
+                ot_isp_wb_info wi;
+                memset(&ei, 0, sizeof(ei));
+                memset(&wi, 0, sizeof(wi));
+                ss_mpi_isp_query_exposure_info(VI_PIPE, &ei);
+                ss_mpi_isp_query_wb_info(VI_PIPE, &wi);
+                printf("[F%d] AE: exp=%u, again=%u, dgain=%u, lum=%u, iso=%u | "
+                       "AWB: R=%u G=%u B=%u ct=%u\n",
+                       frames_saved, ei.exp_time, ei.a_gain, ei.d_gain,
+                       ei.ave_lum, ei.iso,
+                       wi.r_gain, wi.gr_gain, wi.b_gain, wi.color_temp);
+            }
         }
     }
 
-    fclose(fp);
+    /* Cleanup */
+    if (fp) fclose(fp);
+    if (g_rtsp_mode) rtsp_stop();
 
     /* Final I2C readback after capture */
     if (g_sns_obj && g_sns_obj->pfn_read_reg) {
@@ -1531,7 +2098,10 @@ static hi_s32 capture_h265(void)
                exp_val, ag_c, ag_f, dg_c, dg_f);
     }
 
-    if (frames_saved > 0) {
+    if (g_rtsp_mode) {
+        printf("[ OK ] RTSP streaming ended after %d frames\n", frames_saved);
+        return HI_SUCCESS;
+    } else if (frames_saved > 0) {
         printf("[ OK ] Saved H.265: %s (%u bytes, %d frames)\n",
                OUTPUT_FILE, total_bytes, frames_saved);
         return HI_SUCCESS;
@@ -1634,6 +2204,9 @@ static void teardown(void)
     hi_mpi_sys_exit();
     hi_mpi_vb_exit();
 
+    /* Disarm watchdog cleanly so mySystem can take it back */
+    watchdog_close();
+
     /* Unload PQ bin library */
     if (g_pqbin_dl) {
         dlclose(g_pqbin_dl);
@@ -1650,12 +2223,52 @@ static void teardown(void)
 }
 
 /* ═══════════════════════════════════════════════════════════════
+ *  Crash signal handler -- capture fatal signals for debugging
+ * ═══════════════════════════════════════════════════════════════ */
+static void crash_handler(int sig)
+{
+    /* Write directly to stderr (fd 2) using write() -- async-signal-safe */
+    const char *msg = NULL;
+    switch (sig) {
+        case SIGSEGV: msg = "\n!!! CRASH: SIGSEGV (segfault) !!!\n"; break;
+        case SIGABRT: msg = "\n!!! CRASH: SIGABRT (abort) !!!\n"; break;
+        case SIGBUS:  msg = "\n!!! CRASH: SIGBUS (bus error) !!!\n"; break;
+        case SIGFPE:  msg = "\n!!! CRASH: SIGFPE (floating point) !!!\n"; break;
+        case SIGPIPE: msg = "\n!!! CRASH: SIGPIPE (broken pipe) !!!\n"; break;
+        case SIGHUP:  msg = "\n!!! SIGNAL: SIGHUP (hangup) !!!\n"; break;
+        default:      msg = "\n!!! CRASH: unknown signal !!!\n"; break;
+    }
+    if (msg) write(2, msg, strlen(msg));
+
+    /* Print the signal number for clarity */
+    char buf[64];
+    int n = snprintf(buf, sizeof(buf), "Signal number: %d\n", sig);
+    if (n > 0) write(2, buf, n);
+
+    /* Disarm watchdog to prevent reboot on crash */
+    if (g_watchdog_fd >= 0) {
+        write(g_watchdog_fd, "V", 1);
+        close(g_watchdog_fd);
+        g_watchdog_fd = -1;
+    }
+
+    /* Restore default handler and re-raise to get core dump */
+    signal(sig, SIG_DFL);
+    raise(sig);
+}
+
+/* ═══════════════════════════════════════════════════════════════
  *  Signal handler for clean exit
  * ═══════════════════════════════════════════════════════════════ */
 static void sig_handler(int sig)
 {
     (void)sig;
-    printf("\n[INFO] Signal %d received, tearing down...\n", sig);
+    printf("\n[INFO] Signal %d received, stopping...\n", sig);
+    g_stop = 1;
+    if (g_rtsp_mode) {
+        rtsp_stop();
+    }
+    watchdog_close();  /* Disarm before teardown to prevent reboot */
     teardown();
     exit(1);
 }
@@ -1666,14 +2279,51 @@ static void sig_handler(int sig)
 int main(int argc, char *argv[])
 {
     hi_s32 ret;
+    int i;
 
-    (void)argc;
-    (void)argv;
+    /* Parse command-line arguments */
+    for (i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--rtsp") == 0) {
+            g_rtsp_mode = 1;
+        } else if (strcmp(argv[i], "--rtsp-port") == 0 && i + 1 < argc) {
+            g_rtsp_port = atoi(argv[++i]);
+        } else if (strcmp(argv[i], "--rtsp-ip") == 0 && i + 1 < argc) {
+            g_rtsp_ip = argv[++i];
+        } else if (argv[i][0] != '-') {
+            /* Positional arg: PQ bin path (backward compat) */
+            g_pq_bin_path = argv[i];
+            printf("[INFO] PQ bin: %s\n", g_pq_bin_path);
+        } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+            printf("Usage: pipeline_test [options] [pq_bin_path]\n");
+            printf("  --rtsp           Stream via RTSP instead of file capture\n");
+            printf("  --rtsp-port N    RTSP port (default: 554)\n");
+            printf("  --rtsp-ip IP     Bind IP (default: 0.0.0.0)\n");
+            printf("  pq_bin_path      Path to PQ bin file\n");
+            return 0;
+        }
+    }
+
+    /* Disable stdout buffering so crash output is visible */
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
 
     printf("============================================\n");
-    printf("  SC635HAI Phase 3 Pipeline Test\n");
-    printf("  Hi3516CV610 + SC635HAI (3200x1800 @ 20fps)\n");
+    printf("  SC635HAI Pipeline Test\n");
+    printf("  Hi3516CV610 + SC635HAI (3200x1800 @ 20fps sensor, 15fps encode)\n");
+    if (g_rtsp_mode) {
+        printf("  Mode: RTSP streaming on port %d\n", g_rtsp_port);
+    } else {
+        printf("  Mode: File capture (%d frames)\n", CAPTURE_FRAMES);
+    }
     printf("============================================\n");
+
+    /* Install crash signal handlers (before any SDK calls) */
+    signal(SIGSEGV, crash_handler);
+    signal(SIGABRT, crash_handler);
+    signal(SIGBUS,  crash_handler);
+    signal(SIGFPE,  crash_handler);
+    signal(SIGPIPE, crash_handler);
+    signal(SIGHUP,  crash_handler);
 
     signal(SIGINT, sig_handler);
     signal(SIGTERM, sig_handler);
@@ -1685,6 +2335,11 @@ int main(int argc, char *argv[])
     /* Step 1: System init */
     ret = sys_init();
     if (ret != HI_SUCCESS) goto fail;
+
+    /* Take over hardware watchdog from superb (which we just killed).
+     * Must happen ASAP after superb teardown to prevent watchdog timeout.
+     * The SoC hard-resets ~30s after superb stops feeding /dev/watchdog. */
+    watchdog_open();
 
     /* Step 2: MIPI RX init */
     ret = mipi_init();
@@ -1751,6 +2406,12 @@ int main(int argc, char *argv[])
     /* Step 4a+: Configure ISP color pipeline (disable chrominance crushers) */
     configure_isp_color();
 
+    /* Step 4a++: Low-light NR tuning (ISP BayerNR + DRC chroma) */
+    configure_lowlight_nr();
+
+    /* Step 4a+++: Configure 3DNR at VI pipe level (before VPSS) */
+    configure_3dnr();
+
     /* Step 5: VPSS group/channel + bind VI->VPSS */
     ret = vpss_init();
     if (ret != HI_SUCCESS) {
@@ -1776,9 +2437,13 @@ int main(int argc, char *argv[])
         printf("[INFO] The failure might be in VENC or frame timing.\n");
     } else {
         printf("\n========================================\n");
-        printf("  Phase 4 SUCCESS!\n");
-        printf("  H.265 saved to: %s\n", OUTPUT_FILE);
-        printf("  Convert on host: ffmpeg -i capture.h265 -frames:v 1 capture.png\n");
+        if (g_rtsp_mode) {
+            printf("  RTSP streaming completed\n");
+        } else {
+            printf("  Phase 4 SUCCESS!\n");
+            printf("  H.265 saved to: %s\n", OUTPUT_FILE);
+            printf("  Convert on host: ffmpeg -i capture.h265 -frames:v 1 capture.png\n");
+        }
         printf("========================================\n");
     }
 

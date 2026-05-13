@@ -665,21 +665,25 @@ static td_void cmos_ae_fswdr_attr_set(ot_vi_pipe vi_pipe,
 /* ════════════════════════════════════════════════════════════════
  *  AWB SENSOR CALLBACK
  *
- *  AWB calibration data: CCM matrices, Planckian locus curve params,
- *  static WB reference gains, and AGC saturation table.
+ *  SC635HAI-specific AWB calibration data extracted from the manufacturer's
+ *  "superb" firmware running ISP via read-only query APIs (awb_dump tool).
  *
- *  These values are adapted from the SC4336P reference driver (another
- *  SmartSens sensor on CV610). They provide the AWB algorithm with:
- *    - Planckian locus curve fitting (wb_para p1/p2/q1/a/b/c)
- *    - CCM matrices at 4 color temperatures (2525K..6420K)
- *    - Saturation rolloff table per ISO
- *    - Static WB gain offset at reference temperature
+ *  Contains:
+ *    - Planckian locus curve fitting (wb_para p1=-31, p2=287, a=187899, c=-137074)
+ *    - CCM matrices at 4 color temperatures (2640K, 3850K, 4950K, 6350K)
+ *    - Saturation rolloff table per ISO (140 at low ISO, 90 at max)
+ *    - Static WB gain offset at ref temp 4950K (R=477, B=535)
+ *    - Initial WB gains from superb's converged daylight state (R=523, B=538)
  *
- *  These are NOT perfectly calibrated for SC635HAI but provide a
- *  far better starting point than all-zeros. The AWB algorithm
- *  will fine-tune per-frame using these as its reference framework.
+ *  Extraction method: awb_dump tool queries superb's running ISP on pipe 0
+ *  using ss_mpi_isp_get_wb_attr, ss_mpi_isp_get_ccm_attr, etc. Requires
+ *  LD_PRELOAD of ISP algorithm plugins. See driver/test/awb_dump.c.
  *
- *  TODO: replace with SC635HAI-specific calibration from IQ tool
+ *  Key platform notes:
+ *    - SC635HAI QE differs significantly from SC4336P (R=1.86x vs 1.60x at 4950K)
+ *    - Planckian curve shape is unique (p1=-31 vs SC4336P p1=+36)
+ *    - AWB must use ADVANCE algorithm (set in pipeline_test.c, not here)
+ *    - PQ bin does NOT load AWB calibration -- it only comes from this driver
  * ════════════════════════════════════════════════════════════════ */
 
 /* CCM matrices at 4 color temperatures (extracted from superb's running ISP).

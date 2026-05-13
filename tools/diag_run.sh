@@ -36,14 +36,15 @@ rm -f "$PIPELINE_LOG" "$DIAG_TXT" "$META_TXT" "$TMP_LOG"
 (
     export LD_PRELOAD='/progs/rec/00/ipc_drv/libbnr.so /progs/rec/00/ipc_drv/libdrc.so /progs/rec/00/ipc_drv/libacs.so /progs/rec/00/ipc_drv/libcalcflicker.so /progs/rec/00/ipc_drv/libir_auto.so /progs/rec/00/ipc_drv/libldci.so /progs/rec/00/ipc_drv/libdehaze.so /progs/rec/00/ipc_drv/libextend_stats.so'
     export LD_LIBRARY_PATH=/progs/rec/00/ipc_drv
-    ./pipeline_test > "$TMP_LOG" 2>&1 &
+    PQ_BIN="${1:-/home/sensor/sc635hai/pqbin/day.bin}"
+    ./pipeline_test "$PQ_BIN" > "$TMP_LOG" 2>&1 &
     echo $! > "$DIAG_DIR/pt_pid"
 ) </dev/null
 PT_PID=$(cat "$DIAG_DIR/pt_pid")
 
-# Pipeline_test does ~6s of init, 8s ISP/AE stabilization, then 10s capture (200 frames).
-# Total runtime ~24s. Wait 30s before capturing diag.
-sleep 30
+# Pipeline_test does ~6s of init, 12s ISP/AE stabilization, then 10s capture (150 frames@15fps).
+# Total runtime ~28s. Wait 35s before capturing diag.
+sleep 35
 
 # Capture diagnostics with CLEAN environment (no LD_PRELOAD)
 unset LD_PRELOAD

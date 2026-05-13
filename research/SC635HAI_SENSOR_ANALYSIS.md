@@ -1377,4 +1377,257 @@ Remaining risks:
 - Register init ordering (mitigated by standard SmartSens pattern + Phase 2 confirms values match)
 - 0x3E08 bit[7] meaning (Phase 1 showed 0x00 in bright light -- may only appear in low light / high gain)
 - SC635HAI-specific gain table differences from SC500AI (likely minimal)
-- Bayer pattern assumed BGGR (standard SmartSens, but unconfirmed for SC635HAI)
+- ~~Bayer pattern assumed BGGR (standard SmartSens, but unconfirmed for SC635HAI)~~
+  **CONFIRMED BGGR** -- setting RGGB produces R/B color swap. PQ bin overrides
+  bayer_format to RGGB; must re-set to BGGR after every PQ bin load.
+
+---
+
+## Bayer Pattern: BGGR (Confirmed)
+
+SC635HAI uses BGGR Bayer pattern, consistent with all SmartSens sensors on this
+platform (SC4336P, SC500AI). Evidence:
+
+1. SC4336P reference driver uses `OT_ISP_BAYER_BGGR`
+2. SC500AI PQ configs use `bayer_format = 3` (BGGR)
+3. shumjj third-party app README: forcing SC4336P from BGGR to RGGB
+   "will cause color anomalies" (R/B swap) -- the exact symptom we had
+4. Our ISP output with RGGB shows swapped R/B channels; BGGR is correct
+
+**Critical**: The PQ bin `day.bin` ISP calibration (type 0) overrides
+`pub_attr.bayer_format` from BGGR(3) to RGGB(0). Must re-set after every
+PQ bin load. All 4 scene bins (day/night/light/black) have this override.
+
+Mirror/flip (register 0x3221) changes the physical Bayer pattern:
+- `0x00` = normal BGGR
+- `0x06` = mirror = GRBG
+- `0x60` = vflip = GBRG
+- `0x66` = both = RGGB
+
+Superb runs with `0x3221 = 0x00` (normal BGGR).
+
+---
+
+## AWB Calibration (Extracted from Superb)
+
+SC635HAI AWB calibration was extracted from superb's running ISP via read-only
+query APIs (tool: `driver/test/awb_dump.c`). Key values in `sc635hai_cmos.c`:
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Ref color temp | 4950K | D50 reference |
+| Gain offset R | 477 (~1.86x) | Higher than SC4336P (409, ~1.60x) |
+| Gain offset B | 535 (~2.09x) | Higher than SC4336P (452, ~1.77x) |
+| Planckian p1 | -31 | Negative (SC4336P is +36) |
+| Planckian p2 | 287 | |
+| Planckian a,b,c | 187899, 128, -137074 | |
+| CCM temps | 6350, 4950, 3850, 2640K | 4 matrices |
+| Init WB R/G/B | 523/256/538 | Daylight converged |
+| AWB algorithm | ADVANCE (not LOWCOST) | Set in pipeline_test.c |
+| AWB run interval | 2 | Every 2nd frame |
+
+SC635HAI has significantly different quantum efficiency from SC4336P -- the
+Planckian curve shape and gain ratios are quite different. Using SC4336P
+calibration produces CT~4566K for a scene that superb reports as ~5524K.
+With SC635HAI-specific calibration, we get CT~5617K (near-match).
+
+---
+
+## Platform Noise Reduction Architecture (Hi3516CV610)
+
+The Hi3516CV610 has a multi-stage NR pipeline:
+
+### Stage 1: ISP Bayer NR (`ot_isp_nr_attr`)
+- Operates in Bayer domain (before demosaic)
+- API: `ss_mpi_isp_set_nr_attr` / `ss_mpi_isp_get_nr_attr`
+- `snr_cfg`: Spatial NR with `fine_strength` [0,128] and `coring_wgt` [0,3200]
+  per-ISO auto table (16 entries for OT_ISP_AUTO_ISO_NUM)
+- `md_cfg`: Motion detection NR (Hi3516CV610-only, replaces tnr_cfg on Hi3519DV500)
+  with `md_static_fine_strength`, `tfs` (temporal filter), `sfr_r/g/b` per-ISO
+- PQ bin `day.bin` sets this to auto mode with fine_str=80, coring_wgt=50
+
+### Stage 2: DRC BCNR (`ot_isp_drc_bcnr_attr`)
+- Hi3516CV610-specific Bayer chroma NR embedded in the DRC module
+- `enable` [0,1], `strength` [0,8], `detail_restore_lut` [16 entries]
+- PQ bin sets enable=0, strength=3 by default (disabled!)
+- Also: `dark_gain_limit_chroma` [0, 0x85] in DRC attr limits chroma
+  amplification in shadows (superb sets this to 0 = no chroma boost)
+
+### Stage 3: 3DNR V2 at VI Pipe (`ot_3dnr_attr` / `ot_3dnr_param`)
+- **Must use VI pipe APIs** (not VPSS) on this platform with VI_ONLINE_VPSS_OFFLINE
+- VPSS 3DNR calls return `0xA007800C` (NOT_PERM)
+- Platform uses **NR V2** structures (not V1). V1 returns `0xA0108007`.
+- APIs: `ss_mpi_vi_set_pipe_3dnr_attr` / `ss_mpi_vi_set_pipe_3dnr_param`
+- Contains temporal + spatial luma NR (tfy, sfy, mdy) and chroma NR (nrc0, nrc1)
+- Chroma NR (nrc0): `trc` [0,255] temporal, `tfc` [0,63], `tfs` [0,15]
+- Chroma NR (nrc1): `sfs1` [0,255] spatial, `sfs2_coarse` [0,31]
+- Must read-modify-write: read current params, modify only known fields, write back.
+  Zeroing the whole struct causes ILLEGAL_PARAM (pshrp/sfy have complex defaults).
+- 3DNR confirmed active by ~3x bitstream size reduction at same ISO.
+
+### Stage 4: VENC (H.265 encoder NR)
+- VBR mode with QP 35-44 matching superb's SystemCfg.ini
+- No additional NR tuning at VENC level -- relies on upstream ISP/3DNR
+
+### No standalone CNR API
+This SDK has **no** `ss_mpi_isp_set_cnr_attr`. Chroma NR is done via:
+1. DRC BCNR (Bayer domain, stage 2)
+2. 3DNR nrc0/nrc1 (post-demosaic, stage 3)
+
+### Superb's framerate: 20fps sensor, 15fps encode
+**CORRECTION**: SystemCfg.ini's 15fps is the **VENC output rate**, not the
+sensor/ISP rate. Live evidence from `/proc/umap/vi`:
+- `src_rate=20, dst_rate=20` in VI pipe
+- `frame_rate=20` in VI chn status
+- `/proc/umap/isp` AE: `fps: 20.00, real_fps: 2000`
+- VTS register live: `0x320E/0F = 0x0AFC` = VTS=2812 (20fps native)
+
+The sensor runs at 20fps (VTS=2812). VENC takes 20fps input and encodes at
+15fps by dropping every 4th frame. The extra frames improve 3DNR temporal
+quality (more samples for motion detection and frame averaging).
+Max exposure per frame at 20fps: ~50ms (VTS=2812).
+
+---
+
+## Superb's SystemCfg.ini Video Configuration
+
+From `/etc/conf.d/syscfg/SystemCfg.ini`:
+
+| Channel | Resolution | FPS | RC Mode | Bitrate | QP Range |
+|---------|-----------|-----|---------|---------|----------|
+| CH1 (main) | 3840x2160 | 15 | VBR (3) | 4096 kbps | 35-44 |
+| CH2 (sub) | 720x576 | 15 | VBR (3) | 1024 kbps | 24-38 |
+
+Note: Config says 3840x2160 but sensor is 3200x1800. Superb may upscale
+or this may be a template value. The 15fps here is the **encoded output rate**;
+the sensor/ISP runs at 20fps (confirmed via `/proc/umap/vi` and live VTS read).
+
+---
+
+## WDR/HDR Mode: Linear (No Sensor HDR)
+
+**Superb uses pure LINEAR mode.** Evidence:
+
+- `/proc/umap/vi` WDR fusion: `wdr_mode: none`
+- `/proc/umap/isp` pub_attr: `wdr_mode: linear`, `bayer: rggb`
+- MIPI WDR mode: `OT_MIPI_WDR_MODE_NONE`
+- VI WDR fusion struct: all zeros in ioctl trace
+- Sensor init: calls `sc635hai_linear_6m30_10bit_init` (not `vc_wdr_2t1`)
+
+Superb's "WDR" feature (`bEnableWdr=1, wdrStrength=256` in SystemCfg.ini) is
+**ISP DRC (Dynamic Range Compression)** -- purely digital tone-mapping. Ghidra
+decompilation confirms: `secu_sensor_digital_wdr_set` calls
+`hi_mpi_isp_set_drc_attr()` with enable + strength params.
+
+The SC635HAI hardware supports 2-exposure staggered HDR (`vc_wdr_2t1`) and
+InSensor HDR, but neither is used on this camera.
+
+---
+
+## Superb's Live ISP State (from /proc/umap/isp, low-light ISO ~19189)
+
+Captured while superb is running, nightlight-only scene:
+
+### AE
+- `fps: 20.00`, `real_fps: 2000`, `vmax: 2812`
+- `again: 85800`, `dgain: 2336`, `isp_dg: 1028`, `iso: 19189`
+- `slow_mod: 1` (enabled but not currently active)
+- `max_line: 2804`, `max_agt: 85801`, `max_dgt: 16128`, `max_idgt: 4096`
+
+### AWB
+- `sat: 103`, `speed: 256`
+- `gain0=0x11f, gain1=0x100, gain2=0x100, gain3=0x2b1` (R~1.12x, B~2.69x)
+- `cotemp: 2680` K
+
+### BayerNR
+- `enable: 1`, `md_en: 1`, `nr_lsc_enable: 0`
+- `fine_strength: 80`, `coring_wgt: 50`, `sfm0_de_prot: 16`, `tss: 39`
+- `sfm0_coarse_str 1-4: 108`
+- `md_mode: 2`, `tfs: 255`, `md_sta_ratio: 26`, `md_mot_ratio: 13`
+- `md_sta_fine_str: 55`, `md_anti_fli_str: 32`
+- `sfr_r: 26`, `sfr_g: 32`, `sfr_b: 26`
+- `bnr_proc_iso: 19114`
+
+### DRC
+- `en: 1`, `manu_en: 1`, `strength: 256`
+
+### Dehaze
+- `enable: 1`, `manu_en: 1`, `manu_strength: 32`
+
+### Sharpen
+- `enable: 1`, `texture_freq: 100`, `edge_freq: 100`
+- `over_shoot: 7`, `under_shoot: 33`, `detail_ctrl: 124`
+
+### Demosaic
+- `enable: 1`, `nondir_str: 64`, `nondir_mf_str: 15`, `hf_str: 8`
+
+### Black Level
+- `mode: manual`, `isp_blc: 1012` (all channels)
+
+### 3DNR V2 (from /proc/umap/vi)
+- `enable: Y`, `nr_type: NORM`, `compress_mode: frame`, `nr_motion_mode: NORM`
+- `version: VER_2`, `opt_mode: MANUAL`, `ref: 1`
+- `nry1-4_en: 1,1,1,1`, `nrc0_mode: 0`, `nrc_en: 1`, `gamma_en: 1`, `ca_en: 0`
+- `tfs_mode: 1`, `sfs2_mode: 0`
+- **mdy0**: `pretfs=8, premath=100, premathd=80, premabw=2, pretdz=32`
+- **nrc0**: `trc=24, sfc=24, tfc=12, tfs=13`
+- **nrc1**: `presfs=9, ncsfs1=119, sfs2c=15, sfs2c_f=15, sfs2f_b=15, sfs2f_f=15`
+- **tfy**: `tfs=0,11,12; tss=16,0,0; tfr0=14,8,14,8,0,0; tfr1=16,8,16,8,0,0`
+- **mdy**: `math=100,419`
+- **sfy**: `sfs1=64, sbr1=128, sfs2=64, sft2=0, sbr2=128, sth=40/80/60`
+
+---
+
+## RTSP Streaming
+
+### Library
+
+Uses SDK's xop RTSP library (`libxoprtsp.a`) -- pre-built 32-bit ARM static
+library from `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/lib/3rdparty/`. C++ internally,
+exposed via 4-function C API (`rtsp_server_api.h`). Statically linked (no
+additional .so deployment needed).
+
+### Stream URL
+
+`rtsp://<camera_ip>:554/live0` -- H.265/HEVC, 3200x1800 @ 15fps VBR
+
+### Integration
+
+`driver/rtsp/rtsp_push.c` wraps the xop API. In the VENC get_stream loop, each
+`ot_venc_pack` is pushed as a NALU. The xop library handles RTP packetization
+(FU fragmentation for large NALUs), SDP generation (VPS/SPS/PPS base64), RTSP
+handshake (OPTIONS/DESCRIBE/SETUP/PLAY/TEARDOWN), and multi-client management.
+
+### Hardware Watchdog
+
+**Critical discovery:** `superb` feeds `/dev/watchdog` (fd 4) with a 30-second
+timeout. When superb is killed, the hardware watchdog fires and hard-resets the
+SoC after exactly 30 seconds. This was the root cause of the "~27s RTSP crash"
+that plagued Phase 8 development.
+
+**Fix:** `pipeline_test` now takes over watchdog duties:
+- Opens `/dev/watchdog` with `O_RDWR` immediately after `sys_init()`
+- Extends timeout to 120s via `WDIOC_SETTIMEOUT`
+- Feeds via `WDIOC_KEEPALIVE` every VENC frame and during AE stabilization
+- Disarms with magic close `write(fd, "V", 1)` on clean exit
+- Crash handler also disarms to prevent reboot on segfault
+
+The watchdog is NOT `nowayout` -- magic close works. But closing without 'V'
+(e.g., `echo > /dev/watchdog` in a script) triggers immediate reboot.
+
+### Launch Requirements
+
+Must SIGSTOP mySystem to prevent superb respawn. Pipeline_test feeds the
+watchdog internally. Shell connection dies when mySystem stops (tcpsvd is a
+mySystem child), so launch must be fire-and-forget via `setsid`.
+
+### Alternative RTSP implementations in research/
+
+Found but not used (xop is simplest for our needs):
+
+1. **shumjj-3516cv610_app/rtsp/** -- Full C++ RTSP server with `ceanic::rtsp`
+   namespace, H.265 FU packetization, UDP+TCP transport, observer pattern.
+   Uses both `ss_mpi_*` and `ot_mpi_*` prefixes.
+
+2. **HIVIEW/mod/rtsps/** -- C-based, multi-process GSF framework with st-rtsp
+   threads. Uses its own IPC messaging. Too complex for our single-stream need.
