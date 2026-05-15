@@ -194,20 +194,21 @@ ipc_XMeye_camera/
 
 | Component | Detail |
 |-----------|--------|
-| SoC | Hi3516CV610, single Cortex-A7 @ ~900 MHz |
+| SoC | Hi3516CV610, dual Cortex-A7 @ ~950 MHz |
 | RAM | 128 MB (split ~64 OS / ~64 MMZ for video) |
 | Flash | 16 MB SPI NOR |
 | Sensor | SmartSens SC635HAI, 6.35 MP, 3200x1800, 20 fps |
 | Encoding | H.265 hardware encoder |
 | NPU | Built-in (for AI detection) |
-| Wi-Fi | RTL8188FU (USB, 2.4 GHz) |
+| Wi-Fi | AltoBeam ATBM6x6x (USB, WiFi 6, dual-band 2.4/5 GHz) |
 | Storage | Micro SD card slot |
 | Watchdog | Hardware, ~30s timeout, must be fed |
 
 ## Key constraints
 
-- **Single core.** CPU is the bottleneck, not RAM. NPU + HW encoder
-  offload the heavy work; daemon glue is the only CPU consumer.
+- **Dual core, still constrained.** CPU is the bottleneck, not RAM.
+  Two Cortex-A7 cores at ~950 MHz. NPU + HW encoder offload the heavy
+  work; daemon glue is the only CPU consumer.
 - **MPP SDK V1.0.2.1.** Our kernel modules and userspace libs are
   byte-identical to the KOL SDK V1.0.2.1 build. We stay on this
   version. HIVIEW uses V1.0.1.0 (ABI mismatch -- do not adopt
@@ -236,8 +237,13 @@ asked.
 ## See also
 
 - `ROADMAP.md` -- full project plan with Phases 0-8+
-- `driver/README.md` -- sensor driver architecture, build details
-- `tools/ghidra/output/sensor_i2c_kernel.md` -- kernel I2C sync path
-  forensics (deep reference)
-- `research/archive/` -- historical phase docs, research notes,
+- `CAMERA.md` -- camera hardware, stock firmware, protocols, cloud
+  architecture, control surfaces, security assessment
+- `DRIVER.md` -- sensor driver reference (architecture, register map,
+  I2C sync path, AE/AWB calibration, NR pipeline, build/deploy)
+- `DRIVER_INTERNALS.md` -- kernel decompilation forensics, ioctl
+  tables, binary comparison, investigation timeline
+- `driver/README.md` -- older driver overview (mostly superseded by
+  `DRIVER.md`)
+- `research/archive/` -- historical research docs, research notes,
   investigative tools

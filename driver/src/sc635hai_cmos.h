@@ -35,7 +35,7 @@ extern "C" {
 
 /* ── Exposure constants ────────────────────────────────────────── */
 #define SC635HAI_EXP_MIN         2      /* half-lines (from Rockchip SC635HAI driver) */
-#define SC635HAI_EXP_OFFSET      10     /* max = 2*VTS - offset */
+#define SC635HAI_EXP_OFFSET      10     /* max = VTS - offset (single-line max, matches superb) */
 
 /* ── Register addresses ────────────────────────────────────────── */
 /* Stream control */

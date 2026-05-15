@@ -9,7 +9,7 @@ docs).
 
 ## Hardware + stack baseline (frozen)
 
-- SoC: HiSilicon Hi3516CV610, single-core Cortex-A7 @ ~900 MHz, 128 MB RAM
+- SoC: HiSilicon Hi3516CV610, dual-core Cortex-A7 @ ~950 MHz, 128 MB RAM
   (typically split ~64 MB OS / ~64 MB MMZ).
 - Sensor: SmartSens SC635HAI (6.35 MP, 3200×1800 native, BGGR, 20 fps).
   Our driver is complete and working.
@@ -28,7 +28,7 @@ docs).
 - Stock superb resident: ~30 MB. Our daemon target: 1-10 MB.
 - HIVIEW per-module processes: ~1-3 MB each.
 - shumjj single binary: ~15-25 MB.
-- CPU is the real constraint, not RAM. Single Cortex-A7 @ 900 MHz. NPU
+- CPU is the real constraint, not RAM. Dual Cortex-A7 @ ~950 MHz. NPU
   inference offloads from CPU; H.265 encoding is dedicated HW. Daemon
   glue is the only CPU consumer that matters.
 

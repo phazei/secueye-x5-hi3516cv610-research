@@ -727,8 +727,8 @@ static td_void cmos_get_inttime_max(ot_vi_pipe vi_pipe,
     if (state == TD_NULL || int_time == TD_NULL || lf_max_int_time == TD_NULL)
         return;
 
-    /* Linear mode: max = 2*VTS - 10 */
-    int_time->int_time_max[0] = 2 * state->fl[0] - SC635HAI_EXP_OFFSET;
+    /* Linear mode: max = VTS - 10 (matches cmos_inttime_update clamp) */
+    int_time->int_time_max[0] = state->fl[0] - SC635HAI_EXP_OFFSET;
     int_time->int_time_min[0] = SC635HAI_EXP_MIN;
     *lf_max_int_time = int_time->int_time_max[0];
 }
@@ -1028,8 +1028,9 @@ static td_s32 sensor_unregister_callback(ot_vi_pipe vi_pipe,
  *  ot_isp_sns_obj -- TOP-LEVEL SENSOR OBJECT (ENTRY POINT)
  *
  *  This struct is loaded by dlopen("libsns_sc635hai.so") +
- *  dlsym("g_sns_sc635hai_obj"). It provides all 11 function
- *  pointers the ISP framework needs to control the sensor.
+ *  dlsym("g_sns_sc635hai_obj"). It provides all 12 function
+ *  pointers the ISP framework needs to control the sensor
+ *  (V1.0.2.1 SDK added pfn_set_fast_ae as the 12th).
  * ════════════════════════════════════════════════════════════════ */
 
 /* Bus info wrapper (called by ISP framework before registration) */
