@@ -452,7 +452,11 @@ Confirms camera running at minimum digital gain (expected in normal lighting).
 
 ### Exposure Registers (0x3E00 / 0x3E01 / 0x3E02)
 
-Three registers encode a 16-bit exposure value with half-line precision:
+> **Status**: VERIFIED CORRECT (2026-05-14, kernel I2C sync path working).
+
+Three registers encode a 16-bit exposure value. The register holds an
+integer count in **half-line units**, but the AE algorithm and ISP
+scheduling treat AE `int_time` as **whole lines**, with `max_int_time = VTS - 10`.
 
 ```
 0x3E00 = bits [15:12] of inttime  (high nibble only, bits 3:0)
@@ -467,14 +471,112 @@ reg_3E01 = (inttime >> 4)  & 0xFF;
 reg_3E02 = (inttime & 0x0F) << 4;
 ```
 
-Constraints (from SC500AI, linear mode):
-- Minimum exposure: 3 half-lines
-- Maximum exposure: 2 * VTS - 10
-- For SC635HAI at VTS=2812: max = 2 * 2812 - 10 = 5614 half-lines
+Constraints (verified against stock superb behavior):
+- Minimum exposure: 2 lines (SC635HAI_EXP_MIN)
+- Maximum exposure: `VTS - 10` (= 2802 at VTS=2812)
+- At VTS=2812, 20fps: max = 2802
 
-**Our live dump**: 0x3E01=0x0B, 0x3E02=0x20
-- inttime = (0x0B << 4) | (0x20 >> 4) = 0xB2 = 178 half-lines
-- This is a short exposure (normal daylight conditions)
+**Live readback during AE-converged operation**: exposure register
+decodes to whatever `/proc/umap/isp` reports as `line:`. They MUST
+match if the kernel I2C sync path is working.
+
+#### Superseded hypotheses (kept for context, do not use)
+
+- ~~"Max exposure = 2*VTS - 10 = 5614 half-lines"~~ -- inferred from
+  SC500AI datasheet, but stock superb empirically caps at `VTS - 10`.
+  Setting `max_int_time = 2*VTS - 10` halved our ISP interrupt rate
+  (`int_rat` 10 vs superb's 20). Tracking: the AE algorithm computes
+  exposure in line units, and `2*VTS - 10` made it schedule double
+  the exposure steps it should, presumably overrunning frame time.
+
+### Activating The Kernel I2C Sync Path (Required For Frame-Synchronized Sensor Writes)
+
+> **Status**: VERIFIED 2026-05-14. With all of the following in place,
+> `cmos_inttime_update` and `cmos_gains_update` need NOT issue any direct
+> I2C writes -- the kernel's registered `ot_sensor_i2c_write` callback
+> handles all sensor exposure/gain delivery, frame-synchronized at FE_END.
+
+**Required fixes (all six)**:
+
+1. `cmos_get_ae_default`: populate `hmax_times = 1e9 / (VTS * fps)`.
+   The AE algorithm uses this to convert exposure microseconds to
+   sensor lines. Missing => AE cannot schedule frame-accurate exposure.
+
+2. `cmos_get_ae_default`, `cmos_fps_set`, `cmos_slow_framerate_set`:
+   use `max_int_time = VTS - SC635HAI_EXP_OFFSET` (single-line max).
+   Also fix the clamp in `cmos_inttime_update`.
+
+3. Add ALL AE callbacks in `cmos_init_ae_exp_function`:
+   - `pfn_cmos_ae_quick_start_status_set` -- resets `sync_init=FALSE`
+     when AE algo signals quick-start toggle.
+   - `pfn_cmos_ae_fast_ae_attr_get` -- returns `sns_delay_frame = 3`.
+   - `pfn_cmos_ae_fast_ae_attr_set` -- stub OK.
+
+4. In pipeline_test (or equivalent application), call
+   `ss_mpi_isp_set_ctrl_param` AFTER `register_callback`/`set_bus_info`/
+   `ae_register`/`awb_register` but BEFORE `ss_mpi_isp_mem_init`:
+   - `be_buf_num = 4`
+   - `quick_start_en = 1`
+   - (Do NOT set `isp_run_wakeup_select = BE_END` -- isp_init rejects
+     it with `0xa01c800c` in our online running_mode.)
+
+5. After `ss_mpi_isp_init`, call `ss_mpi_isp_set_ae_route_attr` with
+   3 nodes: `{int_time=8, sys_gain=1024}`, `{2804, 1024}`,
+   `{2804, 196608}`. Iris fields set to 1.
+
+6. **CRITICAL** -- in `cmos_get_sns_reg_info`'s incremental-update
+   branch (the path taken on every frame after the first), force
+   `i2c_data[i].update = TD_TRUE` for:
+   - EXP_H, EXP_M, EXP_L (3E00/01/02)
+   - AGAIN_COARSE, AGAIN_FINE (3E08/09)
+   - DGAIN_COARSE, DGAIN_FINE (3E06/07)
+   - HOLD_START, HOLD_END (group-hold bookends at 3812)
+
+   Why: the kernel iterates `regs_info[].reg_num` registers and only
+   sends I2C transactions for ones with `update == TD_TRUE`. The
+   sc4336p reference uses diff-based updates (`update = (data[N] != data[N-1])`),
+   but once AE converges the values stop changing and ALL flags go
+   FALSE, so the kernel writes nothing. Forcing TRUE on AE-driven
+   regs makes the kernel write them every frame -- which is what AE
+   actually wants since sensor regs can drift (e.g., from external
+   pokes, brownouts, or initial register load mismatch).
+
+   VTS regs can remain diff-based since AE rarely changes them and
+   we don't want unnecessary I2C overhead.
+
+#### How to verify the kernel I2C sync path is working
+
+1. Comment out all `sc635hai_write_register` calls in
+   `cmos_inttime_update` AND `cmos_gains_update`.
+2. Rebuild driver, deploy, restart pipeline_test, wait ~10s for AE.
+3. Read sensor regs: `i2c_read 0 0x60 0x3E00 0x3E02 2 1`. Decode the
+   16-bit value: it MUST match `/proc/umap/isp` `line:` field.
+4. Poke a marker: `i2c_write 0 0x60 0x3E01 0xFF 2 1`. Wait 3s. Read
+   back. Sensor regs MUST have been restored to the AE target.
+
+If steps 3 or 4 fail, the kernel I2C path isn't engaged. Check each
+of the 6 requirements above.
+
+#### Open Question (worth investigating in a new session)
+
+The diff-based update logic (sc4336p style) doesn't work for us. The
+sc4336p reference (in shumjj/.../smart_sc4336p/sc4336p_cmos.c:850)
+uses pure diff-based updates and is presumably working in shumjj's
+image. Either:
+
+- shumjj's image also has this problem and just doesn't notice
+  because real scenes always have minor exposure jitter that keeps
+  diffs non-zero
+- shumjj's `ot_isp.ko` differs from ours in a subtle way that
+  re-writes all regs regardless of update flag (our byte-equivalence
+  analysis was against camera firmware's stock, not shumjj's)
+- There's a different code path in V1.0.2.0 vs V1.0.2.1 userspace
+  ISP libs that influences this
+
+For now we force-update on AE-driven regs and the path works. The
+edge case to worry about: **manual exposure mode** where AE explicitly
+locks at one value -- in our solution this is fine (kernel writes
+every frame); in a pure-diff solution this would silently break.
 
 ### DPC Noise Fix at High Gain
 
@@ -1631,3 +1733,182 @@ Found but not used (xop is simplest for our needs):
 
 2. **HIVIEW/mod/rtsps/** -- C-based, multi-process GSF framework with st-rtsp
    threads. Uses its own IPC messaging. Too complex for our single-stream need.
+
+---
+
+## ISP Kernel I2C Sync Path (ot_isp.ko -> ot_sensor_i2c.ko)
+
+> **Status (2026-05-14): RESOLVED.** The kernel I2C sync path is working.
+> Root cause was diff-based `update` flags in `cmos_get_sns_reg_info` going
+> FALSE once AE converged, causing the kernel to silently skip all I2C
+> writes. Fix: force `update = TD_TRUE` for AE-driven registers every frame.
+> Direct I2C writes in `cmos_inttime_update` and `cmos_gains_update` are
+> now disabled. See `research/PHASE9_ISP_I2C_SYNC.md` for the full
+> investigation, Ghidra analysis, and all fixes applied.
+
+### Architecture
+
+The Hi3516CV610 ISP framework uses **two parallel I2C write paths**:
+
+1. **Userspace direct I2C** (`/dev/i2c-0`): Used for sensor init sequence,
+   standby/restart, mirror/flip, and debug writes. The sensor driver opens
+   `/dev/i2c-0` in `pfn_cmos_sns_init` and uses raw `write()` calls.
+
+2. **Kernel VBlank-synchronized I2C** (`ot_sensor_i2c.ko`): Used for per-frame
+   exposure, gain, and VTS register updates. The ISP kernel thread calls
+   `pfn_cmos_get_sns_reg_info` each frame to get the register descriptors,
+   then writes them via `ot_sensor_i2c.ko` at the precise VBlank interrupt
+   timing. This ensures exposure/gain changes take effect between frames
+   without tearing.
+
+Both paths coexist -- all reference drivers (SC4336P, GC8613, SC431HAI, etc.)
+use both. The kernel path handles the critical frame-synchronized AE writes;
+the userspace path handles one-time or infrequent writes.
+
+### Kernel Module
+
+`ot_sensor_i2c.ko` is loaded at boot from `appfs/home/ipc_drv/extdrv/`:
+```
+insmod extdrv/ot_sensor_i2c.ko
+```
+It loads after `ot_isp.ko` and before `ot_mipi_rx.ko`. No explicit API call
+is needed to enable it -- the ISP framework uses it automatically when the
+sensor driver provides valid `ot_isp_sns_regs_info` data.
+
+### Critical Data Flow in cmos_get_sns_reg_info
+
+The `pfn_cmos_get_sns_reg_info` callback has a strict data flow pattern that
+must be followed exactly. All SDK reference drivers follow this pattern:
+
+```
+ISP calls pfn_cmos_get_sns_reg_info(vi_pipe, &sns_regs_info)
+    |
+    |-- if (sync_init == FALSE || sns_regs_info->config == FALSE):
+    |       populate state->regs_info[0]  (full init, all update=TRUE)
+    |       sync_init = TRUE
+    |
+    |-- else:
+    |       diff state->regs_info[0] vs regs_info[1]  (delta update)
+    |       set update flags on state->regs_info[0]
+    |
+    |-- memcpy(sns_regs_info <- state->regs_info[0])  // return to ISP
+    |-- memcpy(state->regs_info[1] <- state->regs_info[0])  // save snapshot
+    |-- fl[1] = fl[0]
+```
+
+**Critical**: The init and update paths must write to `state->regs_info[0]`,
+NOT to `sns_regs_info` directly. The memcpy at the end copies `regs_info[0]`
+to `sns_regs_info`, so any writes directly to `sns_regs_info` get clobbered.
+
+### Bugs Found and Fixed (Session 2025-05-13)
+
+Our original `cmos_get_sns_reg_info` had two structural bugs:
+
+**Bug 1 - Init path target**: The init path wrote register addresses, data,
+and metadata directly to `sns_regs_info` (the ISP-provided output pointer).
+The memcpy at the end then overwrote `sns_regs_info` from `state->regs_info[0]`
+(which was still zeroed), clobbering all the init data. Result: ISP received
+zeroed register descriptors with no valid addresses or data.
+
+**Bug 2 - Update flag target**: The update path set `.update` flags on
+`sns_regs_info`, which was also clobbered by the same memcpy. Result: ISP
+always saw stale update flags from the previous frame's snapshot.
+
+**Bug 3 - Missing config check**: The SDK reference checks both `sync_init`
+AND `sns_regs_info->config` to determine init vs update path. Our code only
+checked `sync_init`, meaning the ISP couldn't request a full re-init.
+
+**Fix**: Rewrote `cmos_get_sns_reg_info` to match the SDK pattern exactly:
+- Init path writes to `state->regs_info[0]`
+- Update path sets flags on `state->regs_info[0]`
+- Checks `(sync_init == FALSE) || (config == FALSE)` for init trigger
+- memcpy copies `regs_info[0]` to output, then snapshots to `regs_info[1]`
+
+### dev_addr Format
+
+The `dev_addr` field in `ot_isp_i2c_data` uses the **8-bit write address**
+(7-bit address left-shifted by 1). All SmartSens sensors on this platform:
+- SC635HAI: `dev_addr = 0x60` (7-bit = 0x30)
+- SC4336P: `dev_addr = 0x60` (7-bit = 0x30)
+- SC431HAI: `dev_addr = 0x60` (7-bit = 0x30)
+
+The kernel `ot_sensor_i2c.ko` internally right-shifts to get the 7-bit
+address for Linux I2C operations.
+
+### Direct I2C Writes (REQUIRED -- DO NOT REMOVE)
+
+Our `cmos_inttime_update` and `cmos_gains_update` contain **both** the standard
+`regs_info[0]` data writes (for the kernel sync path) AND direct userspace I2C
+writes via `sc635hai_write_register()`. The direct writes are **load-bearing** --
+they are the actual mechanism delivering exposure/gain to the sensor. The
+kernel sync path's writes do NOT reach the sensor in our setup (see below).
+
+Reference sensor drivers (SC4336P, GC8613) do NOT have direct I2C writes in
+their `cmos_inttime_update` / `cmos_gains_update` -- those drivers run with a
+correctly-matched ISP kernel module + userspace library, so the kernel sync
+path works. Our setup has a version mismatch (see PHASE3_CONTINUE.md "ISP I2C
+Sync Path Investigation").
+
+### What Was Fixed in cmos_get_sns_reg_info (2026-05-13)
+
+Three structural bugs were fixed so the function now matches the SDK reference
+pattern (SC4336P, SC431HAI, GC8613, HY006):
+
+1. **Init path target**: Was writing register addresses/data to `sns_regs_info`
+   (ISP output pointer). The memcpy at the end then overwrote those writes
+   from `state->regs_info[0]` (zeroed). Now writes to `state->regs_info[0]`.
+
+2. **Update flag target**: Was setting `.update` flags on `sns_regs_info`,
+   also clobbered by the memcpy. Now sets flags on `state->regs_info[0]`.
+
+3. **Missing config check**: SDK reference checks both `sync_init` AND
+   `sns_regs_info->config` to decide init vs update. Now matches SDK.
+
+**Verification of the fix (diagnostic prints temporarily added during testing):**
+With the fix, `sns_regs_info` returned to the ISP framework contains correct
+data: `type=I2C(0)`, `dev=0`, `reg_num=11`, `cfg2_valid_delay_max=2`,
+`addr[exp_h]=0x3E00`, `addr[again_c]=0x3E08`, data values that track the AE
+commands frame-by-frame, and update flags that correctly differentiate
+which registers changed between frames.
+
+### Earlier Test Suggested Kernel Path Doesn't Work (Needs Re-Validation)
+
+Previous test (2026-05-13 morning) disabled direct I2C in `cmos_inttime_update`
+only (leaving gains direct as control):
+
+- ISP AE commanded `int_time=8` (sensor should be at minimum exposure)
+- Sensor register readback: exp=1867 half-lines (stale value)
+- Gain registers correct (because direct gain writes still active)
+
+This was interpreted as proof that the kernel sync path doesn't deliver
+exposure updates. **However**, subsequent Ghidra analysis shows the userspace
+library and kernel module are compatible with superb's working flow, so the
+test result is suspect -- the AE may not have been converged when the readback
+was taken, or there was some other timing issue.
+
+A controlled re-test with proper instrumentation is in progress.
+
+### Testing Procedure for Kernel Sync Path Verification
+
+```bash
+# 1. With both paths active (current state), confirm system works:
+python tools/cam_cmd.py "i2c_read 0 0x60 0x3E00 0x3E09 2 1"
+python tools/cam_cmd.py "cat /proc/umap/isp | grep -A1 'sys_gain'"
+# The ISP's "line:" value should match the encoded exposure from sensor regs:
+# inttime = (0x3E00 << 12) | (0x3E01 << 4) | (0x3E02 >> 4)
+
+# 2. To isolate the kernel path: comment out the sc635hai_write_register
+# calls in cmos_inttime_update (keep gains direct writes as control).
+# Rebuild: cd driver && make driver
+# Deploy: python tools/send_file.py 192.168.1.153 8888 driver/build/libsns_sc635hai.so
+# MD5 verify: python tools/cam_cmd.py "md5sum /progs/rec/00/ipc_drv/libsns_sc635hai.so"
+
+# 3. Restart pipeline_test, wait 12-15s for AE convergence, then:
+python tools/cam_cmd.py "i2c_read 0 0x60 0x3E00 0x3E02 2 1"
+python tools/cam_cmd.py "cat /proc/umap/isp | grep -A1 'sys_gain'"
+
+# 4. SUCCESS criterion: sensor exp register matches ISP "line:" value.
+#    FAILURE criterion: sensor exp register stale while ISP line varies.
+
+# 5. As a baseline reference, run the same checks with stock superb.
+```

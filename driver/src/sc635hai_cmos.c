@@ -220,9 +220,23 @@ static td_s32 cmos_get_blc_clamp_info(ot_vi_pipe vi_pipe, td_bool *clamp_en)
 
 /* Return I2C register map for ISP synchronization.
  *
- * The ISP framework uses this to know which registers to write and in
- * what order during each frame's vertical blanking period. We tell it
- * about the exposure, gain, and VTS registers. */
+ * The ISP framework calls this every frame during VBlank. The returned
+ * ot_isp_sns_regs_info tells ot_isp.ko which I2C registers to write
+ * (via the kernel-internal ot_sensor_i2c.ko path -- no /dev/ device node).
+ *
+ * CRITICAL DATA FLOW (must match SDK reference drivers exactly):
+ *
+ *   Init path:  populate state->regs_info[0]  (NOT sns_regs_info directly)
+ *   Update path: set .update flags on state->regs_info[0]  (NOT sns_regs_info)
+ *   End:         memcpy(sns_regs_info <- regs_info[0])  // return to ISP
+ *                memcpy(regs_info[1]  <- regs_info[0])  // save for next diff
+ *
+ * Previous bugs (both now fixed):
+ *   Bug 1: Init path wrote to sns_regs_info, which got clobbered by memcpy
+ *   Bug 2: Update flags were set on sns_regs_info, also clobbered by memcpy
+ *
+ * Reference: SC4336P (shumjj repo) cmos_isp_get_sns_regs_info()
+ */
 static td_s32 cmos_get_sns_reg_info(ot_vi_pipe vi_pipe,
     ot_isp_sns_regs_info *sns_regs_info)
 {
@@ -235,80 +249,126 @@ static td_s32 cmos_get_sns_reg_info(ot_vi_pipe vi_pipe,
     state = SC635HAI_GET_STATE(vi_pipe);
     if (state == TD_NULL) return OT_ERR_ISP_NULL_PTR;
 
-    if (state->sync_init == TD_FALSE) {
-        /* First call: populate register map */
-        sns_regs_info->sns_type = OT_ISP_SNS_TYPE_I2C;
-        sns_regs_info->reg_num = LINEAR_REGS_NUM;
-        sns_regs_info->cfg2_valid_delay_max = 2;
-        sns_regs_info->com_bus.i2c_dev = g_bus_info[vi_pipe].i2c_dev;
+    if ((state->sync_init == TD_FALSE) || (sns_regs_info->config == TD_FALSE)) {
+        /* ── Full init: populate state->regs_info[0] ──────────────── */
+        state->regs_info[0].sns_type = OT_ISP_SNS_TYPE_I2C;
+        state->regs_info[0].reg_num = LINEAR_REGS_NUM;
+        state->regs_info[0].cfg2_valid_delay_max = 2;
+        state->regs_info[0].com_bus.i2c_dev = g_bus_info[vi_pipe].i2c_dev;
 
         for (i = 0; i < LINEAR_REGS_NUM; i++) {
-            sns_regs_info->i2c_data[i].update = TD_TRUE;
-            sns_regs_info->i2c_data[i].dev_addr = SC635HAI_I2C_ADDR_WRITE;
-            sns_regs_info->i2c_data[i].addr_byte_num = SC635HAI_ADDR_BYTE;
-            sns_regs_info->i2c_data[i].data_byte_num = SC635HAI_DATA_BYTE;
+            state->regs_info[0].i2c_data[i].update = TD_TRUE;
+            state->regs_info[0].i2c_data[i].dev_addr = SC635HAI_I2C_ADDR_WRITE;
+            state->regs_info[0].i2c_data[i].addr_byte_num = SC635HAI_ADDR_BYTE;
+            state->regs_info[0].i2c_data[i].data_byte_num = SC635HAI_DATA_BYTE;
         }
 
         /* Set register addresses */
         /* Group hold: start buffering before any gain/exposure writes */
-        sns_regs_info->i2c_data[LINEAR_HOLD_START].reg_addr   = SC635HAI_REG_GROUP_HOLD;
-        sns_regs_info->i2c_data[LINEAR_HOLD_START].data       = SC635HAI_GROUP_HOLD_START;
+        state->regs_info[0].i2c_data[LINEAR_HOLD_START].reg_addr   = SC635HAI_REG_GROUP_HOLD;
+        state->regs_info[0].i2c_data[LINEAR_HOLD_START].data       = SC635HAI_GROUP_HOLD_START;
 
-        sns_regs_info->i2c_data[LINEAR_EXP_H].reg_addr       = SC635HAI_REG_EXP_H;
-        sns_regs_info->i2c_data[LINEAR_EXP_M].reg_addr       = SC635HAI_REG_EXP_M;
-        sns_regs_info->i2c_data[LINEAR_EXP_L].reg_addr       = SC635HAI_REG_EXP_L;
-        sns_regs_info->i2c_data[LINEAR_AGAIN_COARSE].reg_addr = SC635HAI_REG_AGAIN_COARSE;
-        sns_regs_info->i2c_data[LINEAR_AGAIN_FINE].reg_addr   = SC635HAI_REG_AGAIN_FINE;
-        sns_regs_info->i2c_data[LINEAR_DGAIN_COARSE].reg_addr = SC635HAI_REG_DGAIN_COARSE;
-        sns_regs_info->i2c_data[LINEAR_DGAIN_FINE].reg_addr   = SC635HAI_REG_DGAIN_FINE;
-        sns_regs_info->i2c_data[LINEAR_VTS_H].reg_addr        = SC635HAI_REG_VTS_H;
-        sns_regs_info->i2c_data[LINEAR_VTS_L].reg_addr        = SC635HAI_REG_VTS_L;
+        state->regs_info[0].i2c_data[LINEAR_EXP_H].reg_addr       = SC635HAI_REG_EXP_H;
+        state->regs_info[0].i2c_data[LINEAR_EXP_M].reg_addr       = SC635HAI_REG_EXP_M;
+        state->regs_info[0].i2c_data[LINEAR_EXP_L].reg_addr       = SC635HAI_REG_EXP_L;
+        state->regs_info[0].i2c_data[LINEAR_AGAIN_COARSE].reg_addr = SC635HAI_REG_AGAIN_COARSE;
+        state->regs_info[0].i2c_data[LINEAR_AGAIN_FINE].reg_addr   = SC635HAI_REG_AGAIN_FINE;
+        state->regs_info[0].i2c_data[LINEAR_DGAIN_COARSE].reg_addr = SC635HAI_REG_DGAIN_COARSE;
+        state->regs_info[0].i2c_data[LINEAR_DGAIN_FINE].reg_addr   = SC635HAI_REG_DGAIN_FINE;
+        state->regs_info[0].i2c_data[LINEAR_VTS_H].reg_addr        = SC635HAI_REG_VTS_H;
+        state->regs_info[0].i2c_data[LINEAR_VTS_L].reg_addr        = SC635HAI_REG_VTS_L;
 
         /* Group hold: release to apply all changes atomically */
-        sns_regs_info->i2c_data[LINEAR_HOLD_END].reg_addr     = SC635HAI_REG_GROUP_HOLD;
-        sns_regs_info->i2c_data[LINEAR_HOLD_END].data         = SC635HAI_GROUP_HOLD_END;
+        state->regs_info[0].i2c_data[LINEAR_HOLD_END].reg_addr     = SC635HAI_REG_GROUP_HOLD;
+        state->regs_info[0].i2c_data[LINEAR_HOLD_END].data         = SC635HAI_GROUP_HOLD_END;
+
+        /* Exposure registers: delay 0 (apply this frame's VBlank) */
+        state->regs_info[0].i2c_data[LINEAR_HOLD_START].delay_frame_num = 0;
+        state->regs_info[0].i2c_data[LINEAR_EXP_H].delay_frame_num      = 0;
+        state->regs_info[0].i2c_data[LINEAR_EXP_M].delay_frame_num      = 0;
+        state->regs_info[0].i2c_data[LINEAR_EXP_L].delay_frame_num      = 0;
+        state->regs_info[0].i2c_data[LINEAR_AGAIN_COARSE].delay_frame_num = 0;
+        state->regs_info[0].i2c_data[LINEAR_AGAIN_FINE].delay_frame_num   = 0;
+        state->regs_info[0].i2c_data[LINEAR_DGAIN_COARSE].delay_frame_num = 0;
+        state->regs_info[0].i2c_data[LINEAR_DGAIN_FINE].delay_frame_num   = 0;
+        state->regs_info[0].i2c_data[LINEAR_HOLD_END].delay_frame_num     = 0;
+
+        /* VTS registers: delay 0 (SC4336P uses delay 1, but SmartSens group
+         * hold ensures atomic update within the same VBlank) */
+        state->regs_info[0].i2c_data[LINEAR_VTS_H].delay_frame_num = 0;
+        state->regs_info[0].i2c_data[LINEAR_VTS_L].delay_frame_num = 0;
 
         /* Initialize VTS data to default so ISP doesn't write 0.
          * Without this, the ISP's first sync write clobbers VTS
-         * from the sensor init table (0x0AFC) to 0x0000, causing
-         * the sensor to output only ~225 lines per frame. */
-        sns_regs_info->i2c_data[LINEAR_VTS_H].data = (SC635HAI_VTS_DEF >> 8) & 0xFF;
-        sns_regs_info->i2c_data[LINEAR_VTS_L].data = SC635HAI_VTS_DEF & 0xFF;
+         * from the sensor init table (0x0AFC) to 0x0000. */
+        state->regs_info[0].i2c_data[LINEAR_VTS_H].data = (SC635HAI_VTS_DEF >> 8) & 0xFF;
+        state->regs_info[0].i2c_data[LINEAR_VTS_L].data = SC635HAI_VTS_DEF & 0xFF;
 
         /* Initialize exposure to a sane mid-range value */
-        td_u32 init_exp = SC635HAI_VTS_DEF;  /* ~1/30s at 30fps */
-        sns_regs_info->i2c_data[LINEAR_EXP_H].data = (init_exp >> 12) & 0x0F;
-        sns_regs_info->i2c_data[LINEAR_EXP_M].data = (init_exp >> 4) & 0xFF;
-        sns_regs_info->i2c_data[LINEAR_EXP_L].data = (init_exp & 0x0F) << 4;
+        {
+            td_u32 init_exp = SC635HAI_VTS_DEF;  /* ~1/20s at 20fps */
+            state->regs_info[0].i2c_data[LINEAR_EXP_H].data = (init_exp >> 12) & 0x0F;
+            state->regs_info[0].i2c_data[LINEAR_EXP_M].data = (init_exp >> 4) & 0xFF;
+            state->regs_info[0].i2c_data[LINEAR_EXP_L].data = (init_exp & 0x0F) << 4;
+        }
 
         /* Initialize gain to 1x */
-        sns_regs_info->i2c_data[LINEAR_AGAIN_COARSE].data = 0x00;
-        sns_regs_info->i2c_data[LINEAR_AGAIN_FINE].data   = 0x20; /* 1.0x */
-        sns_regs_info->i2c_data[LINEAR_DGAIN_COARSE].data = 0x00;
-        sns_regs_info->i2c_data[LINEAR_DGAIN_FINE].data   = 0x80; /* 1.0x */
+        state->regs_info[0].i2c_data[LINEAR_AGAIN_COARSE].data = 0x00;
+        state->regs_info[0].i2c_data[LINEAR_AGAIN_FINE].data   = 0x20; /* 1.0x */
+        state->regs_info[0].i2c_data[LINEAR_DGAIN_COARSE].data = 0x00;
+        state->regs_info[0].i2c_data[LINEAR_DGAIN_FINE].data   = 0x80; /* 1.0x */
 
         state->sync_init = TD_TRUE;
     } else {
-        /* Subsequent calls: compare regs_info[0] (updated by AE callbacks)
-         * against regs_info[1] (previous frame's snapshot) to determine
-         * which registers changed and need I2C write. */
+        /* ── Force AE-driven regs to update every frame ────────────
+         * 2026-05-14: Diff-based update (sc4336p style) leaves update
+         * flags FALSE once AE converges (same exp/gain values frame
+         * after frame). The kernel ISP then skips the I2C write for
+         * those regs. POKE TEST CONFIRMS: with diff-based update,
+         * poking 0x3E00-02 manually is never restored by the kernel,
+         * but with all regs forced TD_TRUE the kernel restores within
+         * one frame.
+         *
+         * 2026-05-15: Validated empirically. Outcome A confirmed --
+         * diff-based update DOES handle transients correctly given
+         * the Iteration 2 sync-queue fixes (AE responds to lighting
+         * changes and color-temperature changes), but the steady-
+         * state freeze is real and reproducible (poked 0x3E00 stays
+         * stuck until pipeline_test restart). Force-TRUE re-enabled
+         * as a steady-state safety net. See PHASE9_ISP_I2C_SYNC.md.
+         *
+         * Force TRUE for exposure + gain regs. Leave VTS / group hold
+         * as diff-based since those rarely change and we'd waste I2C
+         * bandwidth writing them every frame. */
+        state->regs_info[0].i2c_data[LINEAR_EXP_H].update      = TD_TRUE;
+        state->regs_info[0].i2c_data[LINEAR_EXP_M].update      = TD_TRUE;
+        state->regs_info[0].i2c_data[LINEAR_EXP_L].update      = TD_TRUE;
+        state->regs_info[0].i2c_data[LINEAR_AGAIN_COARSE].update = TD_TRUE;
+        state->regs_info[0].i2c_data[LINEAR_AGAIN_FINE].update   = TD_TRUE;
+        state->regs_info[0].i2c_data[LINEAR_DGAIN_COARSE].update = TD_TRUE;
+        state->regs_info[0].i2c_data[LINEAR_DGAIN_FINE].update   = TD_TRUE;
+        /* Group hold bookends always TRUE when other regs update */
+        state->regs_info[0].i2c_data[LINEAR_HOLD_START].update = TD_TRUE;
+        state->regs_info[0].i2c_data[LINEAR_HOLD_END].update   = TD_TRUE;
+        /* VTS: diff-based (rarely changes during AE) */
         for (i = 0; i < LINEAR_REGS_NUM; i++) {
-            sns_regs_info->i2c_data[i].update =
-                (state->regs_info[0].i2c_data[i].data !=
-                 state->regs_info[1].i2c_data[i].data);
+            if (i == LINEAR_VTS_H || i == LINEAR_VTS_L) {
+                if (state->regs_info[0].i2c_data[i].data !=
+                    state->regs_info[1].i2c_data[i].data) {
+                    state->regs_info[0].i2c_data[i].update = TD_TRUE;
+                } else {
+                    state->regs_info[0].i2c_data[i].update = TD_FALSE;
+                }
+            }
         }
-        /* Group hold bookends always need writing */
-        sns_regs_info->i2c_data[LINEAR_HOLD_START].update = TD_TRUE;
-        sns_regs_info->i2c_data[LINEAR_HOLD_END].update   = TD_TRUE;
     }
 
-    /* Copy regs_info[0] (live AE data) -> sns_regs_info (for ISP I2C write).
-     * Then snapshot regs_info[0] -> regs_info[1] for next frame comparison. */
+    /* Return regs_info[0] to ISP framework, then snapshot for next diff.
+     * This is the standard SDK pattern (see SC4336P, GC8613). */
+    sns_regs_info->config = TD_FALSE;
     memcpy(sns_regs_info, &state->regs_info[0], sizeof(ot_isp_sns_regs_info));
     memcpy(&state->regs_info[1], &state->regs_info[0], sizeof(ot_isp_sns_regs_info));
     state->fl[1] = state->fl[0];
-
-    sns_regs_info->config = TD_FALSE;
 
     return TD_SUCCESS;
 }
@@ -351,11 +411,24 @@ static td_s32 cmos_get_ae_default(ot_vi_pipe vi_pipe,
     /* Frame lines */
     ae_sns_dft->full_lines_std = SC635HAI_VTS_DEF;
     ae_sns_dft->full_lines     = SC635HAI_VTS_DEF;
+    ae_sns_dft->full_lines_max = SC635HAI_VTS_MAX;  /* slow-shutter cap */
     /* fl_std is tracked in ot_isp_sns_state, not ae_sensor_default */
 
-    /* Exposure: half-line accuracy */
-    ae_sns_dft->max_int_time = 2 * SC635HAI_VTS_DEF - SC635HAI_EXP_OFFSET;
+    /* Per-line time in ns: 1e9 / (VTS * fps).
+     * Reference: sc4336p_cmos.c:148, sc431hai_cmos.c:206, gc8613, gc4023.
+     * Without this set, the AE algorithm cannot schedule
+     * cross-frame exposure transitions (cros_cnt stays 0). */
+    ae_sns_dft->hmax_times =
+        (td_u32)(1000000000U / ((td_u32)SC635HAI_VTS_DEF * (td_u32)SC635HAI_FPS_DEF));
+
+    /* Exposure max in register units = VTS - 10 (matches superb's
+     * /proc/umap/isp max_line=2804 at VTS=2814). The SC500AI doc
+     * suggests max=2*VTS-10 (half-line precision), but superb
+     * deliberately caps at single-line max. Matching superb. */
+    ae_sns_dft->max_int_time = SC635HAI_VTS_DEF - SC635HAI_EXP_OFFSET;
     ae_sns_dft->min_int_time = SC635HAI_EXP_MIN;
+    ae_sns_dft->max_int_time_target = 65535;  /* per sc4336p */
+    ae_sns_dft->min_int_time_target = SC635HAI_EXP_MIN;
 
     ae_sns_dft->int_time_accu.accu_type = OT_ISP_AE_ACCURACY_LINEAR;
     ae_sns_dft->int_time_accu.accuracy  = 1;  /* 1 half-line step */
@@ -364,18 +437,23 @@ static td_s32 cmos_get_ae_default(ot_vi_pipe vi_pipe,
     /* Analog gain: table lookup */
     ae_sns_dft->max_again = g_again_table[SC635HAI_AGAIN_TBL_SIZE - 1]; /* 85804 = ~83.8x */
     ae_sns_dft->min_again = 1024;  /* 1.0x */
+    ae_sns_dft->max_again_target = ae_sns_dft->max_again;
+    ae_sns_dft->min_again_target = ae_sns_dft->min_again;
     ae_sns_dft->again_accu.accu_type = OT_ISP_AE_ACCURACY_TABLE;
     ae_sns_dft->again_accu.accuracy  = 1;
 
     /* Digital gain: linear steps within power-of-2 ranges */
     ae_sns_dft->max_dgain = SC635HAI_DGAIN_MAX;  /* 32640 = ~31.875x */
     ae_sns_dft->min_dgain = SC635HAI_DGAIN_MIN;  /* 1024 = 1.0x */
+    ae_sns_dft->max_dgain_target = ae_sns_dft->max_dgain;
+    ae_sns_dft->min_dgain_target = ae_sns_dft->min_dgain;
     ae_sns_dft->dgain_accu.accu_type = OT_ISP_AE_ACCURACY_TABLE;
     ae_sns_dft->dgain_accu.accuracy  = 1;
 
     /* ISP digital gain */
     ae_sns_dft->isp_dgain_shift = 8;
     ae_sns_dft->max_isp_dgain_target = 2 << 8;  /* 512 = 2x ISP dgain */
+    ae_sns_dft->min_isp_dgain_target = 1 << 8;  /* 256 = 1x */
 
     /* Flicker */
     ae_sns_dft->flicker_freq = 50 * 256;  /* 50Hz (PAL regions) */
@@ -384,7 +462,7 @@ static td_s32 cmos_get_ae_default(ot_vi_pipe vi_pipe,
     ae_sns_dft->init_exposure = 76151;
     ae_sns_dft->ae_compensation = 40;
 
-    ae_sns_dft->lines_per500ms = SC635HAI_VTS_DEF * 30 / 2;
+    ae_sns_dft->lines_per500ms = (td_u32)(SC635HAI_VTS_DEF * SC635HAI_FPS_DEF / 2);
 
     return TD_SUCCESS;
 }
@@ -418,7 +496,7 @@ static td_void cmos_fps_set(ot_vi_pipe vi_pipe, td_float f32_fps,
 
     /* Update AE limits */
     ae_sns_dft->full_lines_std = vts;
-    ae_sns_dft->max_int_time   = 2 * vts - SC635HAI_EXP_OFFSET;
+    ae_sns_dft->max_int_time   = vts - SC635HAI_EXP_OFFSET;
     ae_sns_dft->lines_per500ms = vts * f32_fps / 2;
     ae_sns_dft->fps            = f32_fps;
 }
@@ -446,7 +524,7 @@ static td_void cmos_slow_framerate_set(ot_vi_pipe vi_pipe,
     state->regs_info[0].i2c_data[LINEAR_VTS_L].data = vts & 0xFF;
 
     ae_sns_dft->full_lines = vts;
-    ae_sns_dft->max_int_time = 2 * vts - SC635HAI_EXP_OFFSET;
+    ae_sns_dft->max_int_time = vts - SC635HAI_EXP_OFFSET;
 }
 
 /* Write exposure time to sensor registers.
@@ -467,19 +545,20 @@ static td_void cmos_inttime_update(ot_vi_pipe vi_pipe, td_u32 int_time)
     state = SC635HAI_GET_STATE(vi_pipe);
     if (state == TD_NULL) return;
 
-    /* Debug: print first 10 and every 20th AE request to track convergence */
-    if (g_inttime_dbg_cnt < 10 || (g_inttime_dbg_cnt % 20) == 0) {
+    /* Debug: print first 10 and every 100th AE request to track convergence */
+    if (g_inttime_dbg_cnt < 10 || (g_inttime_dbg_cnt % 100) == 0) {
         printf("sc635hai: inttime_update #%u: int_time=%u, fl=%u\n",
                g_inttime_dbg_cnt, int_time, state->fl[0]);
     }
     g_inttime_dbg_cnt++;
 
-    /* Clamp to valid range */
-    max_exp = 2 * state->fl[0] - SC635HAI_EXP_OFFSET;
+    /* Clamp to valid range (single-line max, matches superb) */
+    max_exp = state->fl[0] - SC635HAI_EXP_OFFSET;
     if (int_time > max_exp) int_time = max_exp;
     if (int_time < SC635HAI_EXP_MIN) int_time = SC635HAI_EXP_MIN;
 
-    /* Encode into 3 registers */
+    /* Populate regs_info[0] for the ISP kernel sync path (ot_sensor_i2c.ko).
+     * Note: this path is NOT functional in our setup -- see direct write below. */
     state->regs_info[0].i2c_data[LINEAR_EXP_H].data =
         (int_time >> 12) & 0x0F;
     state->regs_info[0].i2c_data[LINEAR_EXP_M].data =
@@ -487,10 +566,10 @@ static td_void cmos_inttime_update(ot_vi_pipe vi_pipe, td_u32 int_time)
     state->regs_info[0].i2c_data[LINEAR_EXP_L].data =
         (int_time & 0x0F) << 4;
 
-    /* Direct I2C write bypass -- ISP sync mechanism not propagating exposure */
-    sc635hai_write_register(vi_pipe, SC635HAI_REG_EXP_H, (int_time >> 12) & 0x0F);
-    sc635hai_write_register(vi_pipe, SC635HAI_REG_EXP_M, (int_time >> 4) & 0xFF);
-    sc635hai_write_register(vi_pipe, SC635HAI_REG_EXP_L, (int_time & 0x0F) << 4);
+    /* Direct I2C write -- DISABLED for force-update test 2026-05-14. */
+    /* sc635hai_write_register(vi_pipe, SC635HAI_REG_EXP_H, (int_time >> 12) & 0x0F); */
+    /* sc635hai_write_register(vi_pipe, SC635HAI_REG_EXP_M, (int_time >> 4) & 0xFF); */
+    /* sc635hai_write_register(vi_pipe, SC635HAI_REG_EXP_L, (int_time & 0x0F) << 4); */
 }
 
 /* Write analog + digital gain to sensor registers.
@@ -557,14 +636,14 @@ static td_void cmos_gains_update(ot_vi_pipe vi_pipe,
     state->regs_info[0].i2c_data[LINEAR_DGAIN_COARSE].data = dgain_reg;
     state->regs_info[0].i2c_data[LINEAR_DGAIN_FINE].data   = dgain_fine;
 
-    /* Direct I2C write bypass -- ISP sync mechanism not propagating gains */
-    sc635hai_write_register(vi_pipe, SC635HAI_REG_GROUP_HOLD, SC635HAI_GROUP_HOLD_START);
-    sc635hai_write_register(vi_pipe, SC635HAI_REG_AGAIN_COARSE, info->reg_coarse);
-    sc635hai_write_register(vi_pipe, SC635HAI_REG_AGAIN_FINE,
-        info->reg_fine_base + (again - info->idx_base) * info->reg_fine_step);
-    sc635hai_write_register(vi_pipe, SC635HAI_REG_DGAIN_COARSE, dgain_reg);
-    sc635hai_write_register(vi_pipe, SC635HAI_REG_DGAIN_FINE, dgain_fine);
-    sc635hai_write_register(vi_pipe, SC635HAI_REG_GROUP_HOLD, SC635HAI_GROUP_HOLD_END);
+    /* Direct gain writes -- DISABLED for force-update test 2026-05-14. */
+    /* sc635hai_write_register(vi_pipe, SC635HAI_REG_GROUP_HOLD, SC635HAI_GROUP_HOLD_START); */
+    /* sc635hai_write_register(vi_pipe, SC635HAI_REG_AGAIN_COARSE, info->reg_coarse); */
+    /* sc635hai_write_register(vi_pipe, SC635HAI_REG_AGAIN_FINE,
+        info->reg_fine_base + (again - info->idx_base) * info->reg_fine_step); */
+    /* sc635hai_write_register(vi_pipe, SC635HAI_REG_DGAIN_COARSE, dgain_reg); */
+    /* sc635hai_write_register(vi_pipe, SC635HAI_REG_DGAIN_FINE, dgain_fine); */
+    /* sc635hai_write_register(vi_pipe, SC635HAI_REG_GROUP_HOLD, SC635HAI_GROUP_HOLD_END); */
 
     /* ── DPC noise fix (hysteresis at high gain) ────────────── */
     total_gain = g_again_table[again] * dgain / 1024;
@@ -800,21 +879,60 @@ static td_s32 cmos_init_sensor_exp_function(ot_isp_sns_exp_func *exp_func)
     return TD_SUCCESS;
 }
 
+/* Quick-start status callback: AE algorithm calls this when quick_start_en
+ * is set via ss_mpi_isp_set_ctrl_param. Reference: sc4336p_cmos.c:483.
+ * Resets sync_init so the next get_sns_reg_info re-populates regs_info[0]
+ * with full register set + update flags. */
+static td_void cmos_ae_quick_start_status_set(ot_vi_pipe vi_pipe, td_bool quick_start_en)
+{
+    ot_isp_sns_state *state;
+
+    SC635HAI_CHECK_PIPE_VOID(vi_pipe);
+    state = SC635HAI_GET_STATE(vi_pipe);
+    if (state == TD_NULL) return;
+    (void)quick_start_en;
+    state->sync_init = TD_FALSE;
+}
+
+/* Fast-AE attribute query: tells the AE algorithm how many frames of
+ * sensor pipeline delay to compensate for. Reference: sc4336p_cmos.c:498.
+ * Returning enable=0 means fast AE is disabled (we don't try to do the
+ * extra-fast convergence path). */
+static td_void cmos_ae_fast_ae_attr_get(ot_vi_pipe vi_pipe,
+    ot_isp_ae_fast_ae_attr *fast_ae_attr)
+{
+    SC635HAI_CHECK_PIPE_VOID(vi_pipe);
+    if (fast_ae_attr == TD_NULL) return;
+    fast_ae_attr->enable = TD_FALSE;
+    fast_ae_attr->sns_delay_frame = 1 + 2;  /* delay 1 + 2 frame */
+}
+
+/* Fast-AE attribute set: stub (no-op, fast AE disabled). */
+static td_void cmos_ae_fast_ae_attr_set(ot_vi_pipe vi_pipe,
+    const ot_isp_ae_fast_ae_attr *fast_ae_attr)
+{
+    SC635HAI_CHECK_PIPE_VOID(vi_pipe);
+    if (fast_ae_attr == TD_NULL) return;
+    (void)fast_ae_attr;  /* no-op */
+}
+
 static td_s32 cmos_init_ae_exp_function(ot_isp_ae_sensor_exp_func *ae_func)
 {
     if (ae_func == TD_NULL) return TD_FAILURE;
     memset(ae_func, 0, sizeof(ot_isp_ae_sensor_exp_func));
 
-    ae_func->pfn_cmos_get_ae_default     = cmos_get_ae_default;
-    ae_func->pfn_cmos_fps_set            = cmos_fps_set;
-    ae_func->pfn_cmos_slow_framerate_set = cmos_slow_framerate_set;
-    ae_func->pfn_cmos_inttime_update     = cmos_inttime_update;
-    ae_func->pfn_cmos_gains_update       = cmos_gains_update;
-    ae_func->pfn_cmos_again_calc_table   = cmos_again_calc_table;
-    ae_func->pfn_cmos_dgain_calc_table   = cmos_dgain_calc_table;
-    ae_func->pfn_cmos_get_inttime_max    = cmos_get_inttime_max;
-    ae_func->pfn_cmos_ae_fswdr_attr_set  = cmos_ae_fswdr_attr_set;
-    /* pfn_cmos_ae_quick_start_status_set = NULL (not needed) */
+    ae_func->pfn_cmos_get_ae_default              = cmos_get_ae_default;
+    ae_func->pfn_cmos_fps_set                     = cmos_fps_set;
+    ae_func->pfn_cmos_slow_framerate_set          = cmos_slow_framerate_set;
+    ae_func->pfn_cmos_inttime_update              = cmos_inttime_update;
+    ae_func->pfn_cmos_gains_update                = cmos_gains_update;
+    ae_func->pfn_cmos_again_calc_table            = cmos_again_calc_table;
+    ae_func->pfn_cmos_dgain_calc_table            = cmos_dgain_calc_table;
+    ae_func->pfn_cmos_get_inttime_max             = cmos_get_inttime_max;
+    ae_func->pfn_cmos_ae_fswdr_attr_set           = cmos_ae_fswdr_attr_set;
+    ae_func->pfn_cmos_ae_quick_start_status_set   = cmos_ae_quick_start_status_set;
+    ae_func->pfn_cmos_ae_fast_ae_attr_get         = cmos_ae_fast_ae_attr_get;
+    ae_func->pfn_cmos_ae_fast_ae_attr_set         = cmos_ae_fast_ae_attr_set;
     /* pfn_cmos_exp_param_convert = NULL (not needed) */
     /* pfn_cmos_get_thermo_default = NULL (no thermal sensor) */
 

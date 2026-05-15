@@ -33,7 +33,7 @@ write it back. Must be done after EVERY PQ bin load (day/night/light/black
 all override bayer_format). See `pipeline_test.c` Step 4a.
 
 ### Remaining work
-- ISP I2C sync mechanism still broken (direct I2C writes work)
+- ISP I2C sync mechanism FIXED -- see PHASE9_ISP_I2C_SYNC.md
 - Scene mode switching (day/night/light/black PQ bin swap) not implemented
 - Low-light / different lighting comparison testing (next session)
 - DRC tuning (our highlights are better preserved but shadows slightly darker
@@ -266,9 +266,9 @@ Current DRC uses PQ bin values in manual mode (op_type=1). Superb's stream
 is brighter but washes out highlights (forest curtain). May want to adjust
 DRC strength or switch to auto mode for better shadow/highlight balance.
 
-### 3. ISP I2C Sync Fix (MEDIUM)
-Direct I2C writes work but aren't frame-synchronized. Need to get the
-ISP register sync mechanism working for production-quality AE/gain control.
+### 3. ISP I2C Sync Fix (RESOLVED)
+Kernel I2C sync path is working. See PHASE9_ISP_I2C_SYNC.md for details.
+Direct I2C writes removed; sensor registers delivered by kernel callback.
 
 ### 4. Scene Mode Switching (MEDIUM)
 Implement day/night/light/black PQ bin swapping. Each swap needs the
@@ -639,8 +639,8 @@ Current approach maxes temporal NR but leaves spatial params at defaults. The
 `sfy` (spatial filter) and `iey` (pre-sharpening) params could be tuned to
 better match superb's spatial smoothing character.
 
-### 3. ISP I2C Sync Fix (MEDIUM)
-Direct I2C writes work but aren't frame-synchronized. Needed for production AE.
+### 3. ISP I2C Sync Fix (RESOLVED)
+See PHASE9_ISP_I2C_SYNC.md. Kernel sync path working, direct I2C removed.
 
 ### 4. DRC Tuning (LOW)
 Superb's stream is slightly brighter in shadows. DRC manual mode params from
@@ -919,8 +919,8 @@ kill -CONT $MYS       # Resume mySystem
 
 ### Remaining Work
 
-1. **ISP I2C sync fix** -- production AE requires frame-synced register writes
-   (direct I2C works but not synced to vsync; ISP register sync mechanism needed)
+1. ~~**ISP I2C sync fix**~~ -- RESOLVED. See PHASE9_ISP_I2C_SYNC.md.
+   Kernel sync path now delivers frame-synchronized register writes.
 2. **Audio support** -- camera has mic, needs AI/AENC init + second RTSP track
 3. **Daylight test** -- verify NR changes don't over-smooth bright scenes
 4. **Scene mode switching** -- day/night/light PQ bin swapping

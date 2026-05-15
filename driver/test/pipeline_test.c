@@ -688,14 +688,14 @@ static hi_s32 isp_init(void)
 
     printf("\n=== ISP init (V1.0.2.1 SDK) ===\n");
 
-    /* ── 1. Set sensor I2C bus ─────────────────────────────── */
-    bus_info.i2c_dev = I2C_BUS;
-    if (g_sns_obj->pfn_set_bus_info) {
-        ret = g_sns_obj->pfn_set_bus_info(VI_PIPE, bus_info);
-        CHECK_RET("pfn_set_bus_info", ret);
-    }
+    /* SDK sample_comm_isp.c order:
+     *   1. pfn_register_callback (sensor -> ISP/AE/AWB callbacks)
+     *   2. pfn_set_bus_info
+     *   3. ss_mpi_ae_register / ss_mpi_awb_register
+     * Tried reordering (set_bus_info before register_callback) - no effect on
+     * kernel sync path. Following SDK order. */
 
-    /* ── 2. Register sensor callbacks with ISP/AE/AWB ──────── */
+    /* ── 1. Register sensor callbacks with ISP/AE/AWB ──────── */
     memset(&ae_lib, 0, sizeof(ae_lib));
     ae_lib.id = VI_PIPE;
     strncpy(ae_lib.lib_name, HI_AE_LIB_NAME, sizeof(ae_lib.lib_name) - 1);
@@ -709,12 +709,68 @@ static hi_s32 isp_init(void)
         CHECK_RET("pfn_register_callback", ret);
     }
 
+    /* ── 2. Set sensor I2C bus ─────────────────────────────── */
+    bus_info.i2c_dev = I2C_BUS;
+    if (g_sns_obj->pfn_set_bus_info) {
+        ret = g_sns_obj->pfn_set_bus_info(VI_PIPE, bus_info);
+        CHECK_RET("pfn_set_bus_info", ret);
+    }
+
     /* ── 3. Register AE/AWB algorithm libraries ────────────── */
     ret = hi_mpi_ae_register(VI_PIPE, &ae_lib);
     CHECK_RET("ss_mpi_ae_register", ret);
 
     ret = hi_mpi_awb_register(VI_PIPE, &awb_lib);
     CHECK_RET("ss_mpi_awb_register", ret);
+
+    /* ── 4-pre. Set ISP ctrl params BEFORE mem_init ───────────
+     * Per SDK pattern in sample_comm_vi.c:1561-1574:
+     *   register_sensor_lib -> set_ctrl_param -> mem_init -> ...
+     *
+     * be_buf_num cannot change after isp init (per header comment).
+     * In our V1.0.2.1 build, even setting them AFTER mem_init returns
+     * OT_ERR_ISP_NOT_SUPPORT (0xa01c800c) -- so the lib's "init state"
+     * check fires earlier than the header suggests.
+     *
+     * superb runs with be_buf_num=4 and BE_END wakeup (per side-by-
+     * side /proc/umap/isp comparison 2026-05-14). The BE_END wakeup
+     * is required for the "cross frame" interrupt path that ultimately
+     * advances the sync_cfg queue head/tail in ot_isp.ko, gating
+     * whether ot_sensor_i2c_write gets invoked from the kernel.
+     * See research/PHASE3_CONTINUE.md "Kernel-Side Analysis". */
+    {
+        ot_isp_ctrl_param ctrl_param;
+        memset(&ctrl_param, 0, sizeof(ctrl_param));
+        ret = ss_mpi_isp_get_ctrl_param(VI_PIPE, &ctrl_param);
+        printf("[ISP ] get_ctrl_param ret=0x%08X be_buf_num=%u wakeup=%d "
+               "proc_param=%u stat_intvl=%u update_pos=%u timeout=%u pwm=%u "
+               "pidly=%u ldci_tpr=%d ob_pos=%d alg_run=%d long_frm=%d quick=%d\n",
+               (unsigned int)ret,
+               ctrl_param.be_buf_num, ctrl_param.isp_run_wakeup_select,
+               ctrl_param.proc_param, ctrl_param.stat_interval,
+               ctrl_param.update_pos, ctrl_param.interrupt_time_out,
+               ctrl_param.pwm_num, ctrl_param.port_interrupt_delay,
+               ctrl_param.ldci_tpr_flt_en, ctrl_param.ob_stats_update_pos,
+               ctrl_param.alg_run_select, ctrl_param.long_frame_interrupt_en,
+               ctrl_param.quick_start_en);
+
+        /* Match superb (partial -- BE_END wakeup makes isp_init fail
+         * in our setup). Try quick_start + be_buf_num=4. quick_start
+         * also flips cfg2_valid_delay_max in the cmos init path to 1. */
+        ctrl_param.be_buf_num    = 4;
+        ctrl_param.quick_start_en = 1;
+
+        ret = ss_mpi_isp_set_ctrl_param(VI_PIPE, &ctrl_param);
+        printf("[ISP ] set_ctrl_param(be_buf_num=4, quick_start=1) ret=0x%08X\n",
+               (unsigned int)ret);
+
+        /* Readback */
+        ot_isp_ctrl_param after;
+        memset(&after, 0, sizeof(after));
+        ss_mpi_isp_get_ctrl_param(VI_PIPE, &after);
+        printf("[ISP ] readback: be_buf_num=%u wakeup=%d\n",
+               after.be_buf_num, after.isp_run_wakeup_select);
+    }
 
     /* ── 4. ISP memory init ────────────────────────────────── */
     ret = hi_mpi_isp_mem_init(VI_PIPE);
@@ -755,6 +811,61 @@ static hi_s32 isp_init(void)
     /* ── 6. ISP init ───────────────────────────────────────── */
     ret = hi_mpi_isp_init(VI_PIPE);
     CHECK_RET("ss_mpi_isp_init", ret);
+
+    /* ── 6a. Set AE route attr (3 nodes mimicking superb) ─────
+     * Superb's /proc/umap/isp shows 3 AE route nodes:
+     *   node 0: int_time=8,    sys_gain=1024
+     *   node 1: int_time=2804, sys_gain=1024
+     *   node 2: int_time=2804, sys_gain=196608
+     *
+     * Hypothesis: the AE algorithm uses ae_route to schedule
+     * exposure/gain transitions across multiple frames, which is
+     * what triggers the kernel's "cross frame" interrupt path
+     * (cros_cnt). Single-node AE route may produce instantaneous
+     * transitions that the kernel doesn't schedule via the sync
+     * cfg queue. */
+    {
+        ot_isp_ae_route ae_route;
+        memset(&ae_route, 0, sizeof(ae_route));
+        ret = ss_mpi_isp_get_ae_route_attr(VI_PIPE, &ae_route);
+        printf("[AE  ] get_ae_route ret=0x%08X total_num=%u\n",
+               (unsigned int)ret, ae_route.total_num);
+        for (td_u32 i = 0; i < ae_route.total_num && i < 4; i++) {
+            printf("[AE  ]   node[%u]: int_time=%u sys_gain=%u iris_fno=%u\n",
+                   i, ae_route.route_node[i].int_time,
+                   ae_route.route_node[i].sys_gain,
+                   ae_route.route_node[i].iris_fno);
+        }
+
+        /* Override with superb's 3-node route */
+        ae_route.total_num = 3;
+        ae_route.route_node[0].int_time     = 8;
+        ae_route.route_node[0].sys_gain     = 1024;
+        ae_route.route_node[0].iris_fno     = 1;  /* OT_ISP_IRIS_F_NO_2_0 etc. */
+        ae_route.route_node[0].iris_fno_lin = 1;
+        ae_route.route_node[1].int_time     = 2804;
+        ae_route.route_node[1].sys_gain     = 1024;
+        ae_route.route_node[1].iris_fno     = 1;
+        ae_route.route_node[1].iris_fno_lin = 1;
+        ae_route.route_node[2].int_time     = 2804;
+        ae_route.route_node[2].sys_gain     = 196608;
+        ae_route.route_node[2].iris_fno     = 1;
+        ae_route.route_node[2].iris_fno_lin = 1;
+
+        ret = ss_mpi_isp_set_ae_route_attr(VI_PIPE, &ae_route);
+        printf("[AE  ] set_ae_route(3 nodes mimicking superb) ret=0x%08X\n",
+               (unsigned int)ret);
+
+        /* Readback */
+        ot_isp_ae_route rb;
+        memset(&rb, 0, sizeof(rb));
+        ss_mpi_isp_get_ae_route_attr(VI_PIPE, &rb);
+        printf("[AE  ] readback: total_num=%u\n", rb.total_num);
+        for (td_u32 i = 0; i < rb.total_num && i < 4; i++) {
+            printf("[AE  ]   node[%u]: int_time=%u sys_gain=%u\n",
+                   i, rb.route_node[i].int_time, rb.route_node[i].sys_gain);
+        }
+    }
 
     /* ── 7. Start ISP processing thread ────────────────────── */
     ret = pthread_create(&g_isp_thread, NULL, isp_thread_func, NULL);
@@ -900,11 +1011,16 @@ static hi_s32 load_pq_bin(void)
     }
     printf("[ OK ] Read %s (%ld bytes)\n", g_pq_bin_path, file_size);
 
-    /* Configure PQ bin module params (matches sample_pq_bin.c) */
+    /* Configure PQ bin module params (matches sample_pq_bin.c).
+     * Note 2026-05-14: also enable stIspEvo to load ISP "evolved" /
+     * extended module params (cross-frame, AE route, etc.) -- this
+     * may be what populates the sync_cfg queue feeders we need. */
     memset(&bin_param, 0, sizeof(bin_param));
-    bin_param.stISP.enable   = 1;     /* Load ISP calibration data */
-    bin_param.st3DNR.enable  = 1;     /* Load 3DNR params */
-    bin_param.st3DNR.viPipe  = VI_PIPE;
+    bin_param.stISP.enable    = 1;    /* Load ISP calibration data */
+    bin_param.st3DNR.enable   = 1;    /* Load 3DNR params */
+    bin_param.st3DNR.viPipe   = VI_PIPE;
+    bin_param.stIspEvo.enable = 1;    /* Load extended/evo ISP params (cross-frame, AE route) */
+    bin_param.stIspEvo.viPipe = VI_PIPE;
 
     /* Import! */
     printf("[INFO] Calling OT_PQ_BIN_ImportBinData...\n");
