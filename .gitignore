@@ -13,7 +13,5 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Monitoring output (generated at runtime)
-tools/uptime_monitor_output.txt
-tools/uptime_monitor_err.txt
-tools/uptime_log.txt
+# Build artifacts (recompilable from source)
+driver/build/
