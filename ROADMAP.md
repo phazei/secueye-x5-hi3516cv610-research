@@ -10,7 +10,7 @@ docs).
 ## Hardware + stack baseline (frozen)
 
 - SoC: HiSilicon Hi3516CV610, dual-core Cortex-A7 @ ~950 MHz, 128 MB RAM
-  (typically split ~64 MB OS / ~64 MB MMZ).
+  (split 40 MB OS / 88 MB MMZ per kernel cmdline `mem=40m`).
 - Sensor: SmartSens SC635HAI (6.35 MP, 3200×1800 native, BGGR, 20 fps).
   Our driver is complete and working.
 - Kernel: Linux 5.10 ARMv7 musleabi, modules already loaded by `mySystem`
@@ -120,6 +120,8 @@ the live WORKLOG.md.
 
 ## Phase 0 -- Consolidation + cleanup (1 session)
 
+**STATUS: complete 2026-05-15 ~14:00**
+
 Purely organizational. No camera functional changes.
 
 ### 0.1 Validate dropbear ssh
@@ -167,7 +169,6 @@ Suggested classifications (verify each):
 - `test_settings.py` (investigative, done)
 - `parse_syscfg.py` (investigative, done)
 - `stream_switch.py` (probably superseded)
-- `start_pipeline_bg.sh` OR `run_pipeline_bg.sh` (pick one, kill other)
 - `recv.c`, `send_file.py` (retire when dropbear works)
 
 **tools/ -- review (may keep, may move to research/):**
@@ -176,8 +177,7 @@ Suggested classifications (verify each):
   contents have unique value, move to `research/archive/`. Else delete.
 - `fix_timezone.py` (will be replaced by web UI; keep until then as
   reference)
-- `diag_run.sh`, `probe_after_test.sh` (one-off diagnostics; keep if
-  small)
+- `diag_run.sh` (diagnostic runner; only comprehensive mid-flight dump tool)
 - `vi_shim.c`, `ioctl_hook.c` (research instruments; archive)
 
 **driver/ -- keep:**
@@ -295,6 +295,34 @@ Series of small git commits, each with clear message:
 
 `docs: consolidate research into top-level README/CAMERA/DRIVER/ROADMAP/WORKLOG`
 
+
+### 0.6 Reset button behavior research
+
+- Locate which script or daemon handles the GPIO reset button. Likely
+  in `mySystem` or one of the `/etc/init.d/` startup scripts. Check
+  for `reset`, `factory`, `default`, `gpio` keywords in scripts.
+- Determine the long-press handler:
+  - What files / directories does it remove or rewrite?
+  - Does it touch `wpa_supplicant.conf`?
+  - Does it touch `SystemCfg.ini` or other config files in `/etc/`?
+  - Does it wipe SD card recordings?
+  - Does it reformat any partition?
+  - **Crucially: does it touch our daemon binary in `/progs/`?**
+- Confirmed empirical fact: the tcpsvd port-9999 backdoor survives a
+  long-press reset. So the reset is NOT a full re-flash; it's a
+  scoped config wipe.
+- Document the exact wipe scope in `CAMERA.md` so we know what's safe
+  vs. what gets clobbered.
+- Determine: do we want our daemon's config files to live in a path
+  the reset DOES wipe (so users get a clean default on reset) or one
+  it doesn't (so user settings survive)? Or split: per-user settings
+  wipeable, per-camera-state non-wipeable.
+- Document recommended config-file paths in ROADMAP Phase 3 (daemon
+  config) and Phase 5 (web UI settings) once reset scope is known.
+- Reset button handler may be embedded in `mySystem` rather than a
+  separate script -- harder to inspect; may require Ghidra work.
+
+
 ### Phase 0 deliverables
 
 - New top-level docs in place: README.md, CAMERA.md, DRIVER.md,
@@ -304,6 +332,7 @@ Series of small git commits, each with clear message:
 - dropbear scp path validated (or documented as future task).
 - Git history reflects the cleanup as a clean series of commits.
 - WORKLOG.md seeded with documentation rules + Phase 0 closing entry.
+- `CAMERA.md` updated with reset-button wipe scope.
 
 ---
 
@@ -348,38 +377,10 @@ cut over.
 - Verify gain is reasonable (not clipping, not silence).
 - Test sample rate and frame timing for sync drift over 5+ minutes.
 
-### 1.5 Reset button behavior research (small side task)
-
-Sneaks in here because it's low-effort camera observation work that
-fits the audio investigation context.
-
-- Locate which script or daemon handles the GPIO reset button. Likely
-  in `mySystem` or one of the `/etc/init.d/` startup scripts. Check
-  for `reset`, `factory`, `default`, `gpio` keywords in scripts.
-- Determine the long-press handler:
-  - What files / directories does it remove or rewrite?
-  - Does it touch `wpa_supplicant.conf`?
-  - Does it touch `SystemCfg.ini` or other config files in `/etc/`?
-  - Does it wipe SD card recordings?
-  - Does it reformat any partition?
-  - **Crucially: does it touch our daemon binary in `/progs/`?**
-- Confirmed empirical fact: the tcpsvd port-9999 backdoor survives a
-  long-press reset. So the reset is NOT a full re-flash; it's a
-  scoped config wipe.
-- Document the exact wipe scope in `CAMERA.md` so we know what's safe
-  vs. what gets clobbered.
-- Determine: do we want our daemon's config files to live in a path
-  the reset DOES wipe (so users get a clean default on reset) or one
-  it doesn't (so user settings survive)? Or split: per-user settings
-  wipeable, per-camera-state non-wipeable.
-- Document recommended config-file paths in ROADMAP Phase 3 (daemon
-  config) and Phase 5 (web UI settings) once reset scope is known.
-
 ### Deliverables
 
 - pipeline_test streams video + audio over RTSP.
 - `CAMERA.md` updated with audio module documentation.
-- `CAMERA.md` updated with reset-button wipe scope.
 - ROADMAP Phase 1 marked complete.
 
 ### Open risks
@@ -388,8 +389,6 @@ fits the audio investigation context.
   require a tinyalsa-style configuration before MPP can use it).
 - Sample rate negotiation with the encoder may have constraints we
   hit only at runtime.
-- Reset button handler may be embedded in `mySystem` rather than a
-  separate script -- harder to inspect; may require Ghidra work.
 
 ---
 

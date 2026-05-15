@@ -13,45 +13,55 @@ then daemon conversion. See `ROADMAP.md` for the full plan.
 | Item | Value |
 |------|-------|
 | Camera IP | `192.168.1.153` |
-| Shell access | `tools/cam_cmd.py` (tcpsvd on port 9999) |
+| SSH | `ssh root@192.168.1.153` (key auth, no prompt) |
+| Shell (legacy) | `tools/cam_cmd.py` (tcpsvd on port 9999, no auth) |
 | Fast file transfer | `recv` on port 8888 + `tools/send_file.py` |
 | Slow file fallback | `tools/deploy_file.py` (base64 over shell) |
 | RTSP stream | `rtsp://192.168.1.153:554/live0` |
-| Root password | `sl.x.` (rootfs `/etc/shadow`, for UART login) |
 | Build environment | WSL Ubuntu + ARM cross toolchain |
 
 ## Talking to the camera
 
-### Shell access (port 9999)
+### SSH (port 22 -- primary)
 
-The camera runs a `tcpsvd` root shell on port 9999 (installed by us
-via SD-card jailbreak, not factory). Use `cam_cmd.py` to send
-commands:
+Dropbear SSH with Ed25519 key-based auth. No password prompt:
 
 ```bash
-# Run a command on the camera
-python tools/cam_cmd.py "ls /progs/rec/00/ipc_drv/"
-
-# Interactive-ish (each call is a new connection)
-python tools/cam_cmd.py "cat /proc/umap/isp"
-python tools/cam_cmd.py "ps | grep pipeline"
+ssh root@192.168.1.153
+ssh root@192.168.1.153 "ps | grep superb"
 ```
 
-### Uploading files (port 8888 -- primary method)
+File transfer over SSH (no SCP/SFTP -- not compiled into dropbear):
+```bash
+# Upload
+cat local_file | ssh root@192.168.1.153 "cat > /path/on/camera"
+# Download
+ssh root@192.168.1.153 "cat /path/on/camera" > local_file
+```
+
+### Shell access (port 9999 -- legacy fallback)
+
+The camera runs a `tcpsvd` root shell on port 9999 (unauthenticated,
+installed by us via SD-card jailbreak). Use `cam_cmd.py` to send
+commands. Kept as fallback in case SSH breaks:
+
+```bash
+python tools/cam_cmd.py "ls /progs/rec/00/ipc_drv/"
+python tools/cam_cmd.py "cat /proc/umap/isp"
+```
+
+### Uploading files (port 8888 -- fast binary transfer)
 
 For fast binary transfer, we use `recv` (a tiny TCP file receiver
 compiled for ARM) running on the camera, paired with `send_file.py`
-on the PC.
+on the PC. `recv` starts automatically at boot via `debug.sh`.
 
 ```bash
-# 1. Start recv daemon on camera (one-time per boot, persists)
-python tools/cam_cmd.py "pidof recv || (nohup /progs/rec/00/ipc_drv/recv 8888 /progs/rec/00/ipc_drv -d > /dev/null 2>&1 &)"
-
-# 2. Send files from PC
+# Send files from PC (recv is already running)
 python tools/send_file.py 192.168.1.153 8888 driver/build/libsns_sc635hai.so driver/build/pipeline_test
 
-# 3. Set permissions
-python tools/cam_cmd.py "chmod +x /progs/rec/00/ipc_drv/pipeline_test"
+# Set permissions
+ssh root@192.168.1.153 "chmod +x /progs/rec/00/ipc_drv/pipeline_test"
 ```
 
 The `recv` source is at `tools/recv.c`. In daemon mode (`-d`), it
@@ -149,13 +159,15 @@ ipc_XMeye_camera/
     Makefile              Cross-compilation build
     README.md             Driver architecture + build details
 
-  tools/                  Host-side utilities
+  tools/                  Host + camera-side utilities
     cam_cmd.py              Send shell commands via tcpsvd (port 9999)
     recv.c                  Camera-side TCP file receiver (port 8888)
     send_file.py            PC-side file sender (pairs with recv)
     deploy_file.py          Slow fallback: base64 over shell
     pull_file.py            Download files from camera (reverse connect)
     redeploy_all.ps1        Batch redeploy after reboot
+    debug.sh                Camera boot script (repo backup of /etc/conf.d/debug.sh)
+    camera_authorized_keys  SSH public keys for camera access
     rtsp_run.sh             Production RTSP launch script (runs on camera)
     diag_run.sh             Full diagnostic run w/ sensor probing (on camera)
     fix_timezone.py         Change camera timezone from UTC+8
@@ -192,7 +204,7 @@ ipc_XMeye_camera/
 | Component | Detail |
 |-----------|--------|
 | SoC | Hi3516CV610, dual Cortex-A7 @ ~950 MHz |
-| RAM | 128 MB (split ~64 OS / ~64 MMZ for video) |
+| RAM | 128 MB (split 40 MB OS / 88 MB MMZ for video) |
 | Flash | 16 MB SPI NOR |
 | Sensor | SmartSens SC635HAI, 6.35 MP, 3200x1800, 20 fps |
 | Encoding | H.265 hardware encoder |
@@ -212,9 +224,10 @@ ipc_XMeye_camera/
   wholesale).
 - **musl libc.** The toolchain uses musl, not glibc. Some POSIX
   features behave differently.
-- **No dropbear/SSH yet.** The camera has no SSH server. Access is
-  via the tcpsvd backdoor we installed. Dropbear deployment is
-  planned for Phase 3.
+- **SSH via dropbear.** Dropbear v2025.89 (statically linked, 302 KB)
+  deployed to SD card. Ed25519 key auth + password fallback. Starts
+  automatically at boot via `debug.sh`. No SCP/SFTP (not compiled in);
+  use cat-over-SSH or recv/send_file.py for file transfer.
 
 ## SD card jailbreak
 
@@ -223,8 +236,25 @@ vector: place a script on SD, camera executes it at boot. Our script
 starts `tcpsvd` listening on port 9999 for unauthenticated shell
 access. This is NOT a factory backdoor -- we installed it.
 
-The cracked root password (`sl.x.`) applies to rootfs `/etc/shadow`
-(for UART console login). The port-9999 shell is unauthenticated.
+The stock rootfs `/etc/shadow` has an empty root password (previously
+believed to be `sl.x.` -- incorrect). Our `debug.sh` sets a real
+password at boot from a hash stored on configfs. The port-9999 shell
+is unauthenticated (legacy fallback).
+
+## What lives where on the camera
+
+| Location | Mount | Persists? | Contents |
+|----------|-------|-----------|----------|
+| configfs (`/etc/conf.d/`) | jffs2 on flash | Reboots + factory reset | `debug.sh`, SSH keys, password hash, device config |
+| SD card (`/progs/rec/00/`) | FAT32 on mmcblk0p1 | Reboots + factory reset | Our binaries (dropbear, recv, pipeline_test, driver), recordings |
+| rootfs (`/`) | squashfs on flash | Read-only | BusyBox, base OS (1.25 MB) |
+| appfs (`/progs/`) | squashfs on flash | Read-only | superb, SDK libs (5 MB) |
+| `/etc/` | tmpfs (RAM) | **Lost on reboot** | Runtime config (shadow, shells, dropbear keys -- restored by debug.sh) |
+| `/root/` | tmpfs (RAM) | **Lost on reboot** | SSH authorized_keys -- restored by debug.sh |
+
+Repo backups: `tools/debug.sh` (boot script), `tools/camera_authorized_keys`
+(SSH public key). Host keys and password hash are on camera configfs only --
+regenerate if lost.
 
 ## Note for AI coding assistants
 

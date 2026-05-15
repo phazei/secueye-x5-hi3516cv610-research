@@ -61,11 +61,25 @@ driver see `DRIVER.md`; for kernel decompilation forensics see
 | Chip | HiSilicon Hi3516CV610-20S |
 | CPU | Dual-core ARM Cortex-A7 @ ~950 MHz |
 | RAM | 128 MB DDR3 (16-bit, 2133 MHz rated) |
-| Split | ~64 MB OS / ~64 MB MMZ (video pipeline) |
+| Split | 40 MB OS (`mem=40m` in cmdline) / 88 MB MMZ (video pipeline) |
 | Generation | 2024+ (newest in Hi3516C line) |
 | Capabilities | 4K/8MP H.265+H.264 encode, SVP NPU, hardware crypto |
 
 Confirmed via `/proc/cpuinfo`: two processors, CPU part `0xc07` (Cortex-A7).
+
+**Memory split:** The kernel cmdline `mem=40m` tells Linux to use only 40 MB of
+the 128 MB physical RAM. The remaining 88 MB is reserved as MMZ (Media Memory
+Zone) for the HiSilicon video pipeline -- ISP buffers, VENC, VDA, NPU inference.
+MemTotal reports ~36 MB (kernel reserves the rest). Superb consumes ~15 MB at
+runtime, leaving ~20 MB free. Our replacement daemon must fit in this budget.
+
+**Full kernel cmdline** (from `/proc/cmdline`):
+```
+mem=40m earlycon=pl011,0x11040000 console=ttyAMA0,115200 clk_ignore_unused
+initcall_debug rw root=/dev/mtdblock3 rootfstype=squashfs
+mtdparts=sfc:320K(boot),64K(bootargs),2M(kernel),1280K(rootfs),
+5M(appfs),1M(configfs),6528K(resfs)
+```
 
 ### Flash
 
@@ -139,7 +153,7 @@ Electronic zoom (EZOOM) via the ISP is the only "zoom" available.
 | NPU | SVP NPU (`ot_svp_npu.ko`); ~17 inf/s on `det_hv_hor.bin` |
 | Crypto | Hardware crypto engine (`ot_cipher.ko`) |
 | SD card | MicroSD, auto-records H.265 to `/progs/rec/00/` |
-| Reset button | GPIO-polled, 1.5s hold = factory reset |
+| Reset button | GPIO 13 (input), polled by superb, 1.5s hold = factory reset |
 | Status LED | Controllable via `StatusLightSwitch` cloud property |
 
 ### Network Identity
@@ -168,24 +182,72 @@ Electronic zoom (EZOOM) via the ISP is the only "zoom" available.
 ### Boot Sequence
 
 ```
-1. U-Boot 2022.07 loads FIT image from SPI flash 0x60000
-2. Linux 5.10.221 boots, mounts squashfs rootfs (/dev/mtdblock3)
-3. BusyBox init -> /etc/init.d/rcS:
-   S00devs, S01udev, S80network, S90hibernate
-   Mount appfs -> bind-mount /progs and /home -> bashrc.sh
-4. bashrc.sh:
-   tmpfs overlay on /etc and /progs/rec
-   Mount configfs (jffs2) -> /etc/conf.d/
-   Source /home/variable + hwconfig.cfg
-   Mount resfs -> bind-mount resources
-   Load ot_*.ko kernel modules
-   -> startup.sh
-5. startup.sh:
-   IF /etc/conf.d/debug.sh exists -> execute it (our backdoor)
-   ELSE -> launch superb
-   After 15s -> PQTools.sh (PQ calibration)
-6. inittab spawns /bin/login on ttyS000 (UART)
+Stage 1: U-Boot
+  U-Boot 2022.07 loads FIT image from SPI NOR flash offset 0x60000
+  Hardcoded: sf probe 0; sf read ...; bootm
+  No SD card boot fallback.
+
+Stage 2: Kernel
+  Linux 5.10.221 boots
+  Mounts squashfs rootfs from /dev/mtdblock3 (read-only)
+  /etc/fstab auto-mounts: proc, sysfs, tmpfs on /dev, /tmp, /var
+
+Stage 3: BusyBox init reads /etc/inittab
+  Action: ::sysinit:/etc/init.d/rcS  (runs to completion first)
+  Action: ttyS000::respawn:/bin/login (UART console)
+  Action: ::restart, ::ctrlaltdel, ::shutdown handlers
+
+Stage 4: /etc/init.d/rcS
+  /bin/mount -a
+  Glob loop: /etc/init.d/S[0-9][0-9]* (alphabetical order)
+    S00devs     : mknod console, ttyAMA0, ttyAMA1, ttyS000, null
+    S01udev     : mkdir /dev/pts, mount devpts (ptmxmode=000!)
+    S80network  : configure eth0 from kernel cmdline ip= param
+    S90hibernate: check for hibernate/snap mode in cmdline
+  Mount appfs (squashfs): find "appfs" MTD, mount to /tmp/appfs
+  Bind-mount /tmp/appfs/progs -> /progs, /tmp/appfs/home -> /home
+  Execute /home/bashrc.sh
+
+Stage 5: /home/bashrc.sh (appfs, 293 lines -- the big one)
+  mount_as_tmpfs /etc/          (tmpfs overlay, makes /etc writable in RAM)
+  mount_as_tmpfs /progs/rec     (tmpfs overlay for recording dir)
+  Set LD_LIBRARY_PATH, ulimit -s unlimited, ulimit -c unlimited
+  Mount configfs (jffs2) -> /etc/conf.d/  (THE writable persistent partition)
+  source /home/variable          (chip, sensor, wifi, partition layout vars)
+  source /etc/conf.d/fixed/hwconfig.cfg
+  Mount resfs (squashfs) -> /tmp/resfs, bind-mount wifi/ble/ivp/sensor/voice
+  insmod motor_advance.ko (if present)
+  /progs/updateID.sh             (SD card jailbreak point! sources recycle_ali.sh)
+  loadhi3516cv610 -i -sensor0 sc635hai ...  (HiSilicon kernel modules)
+  insmod ot_adc.ko
+  Load WiFi kernel modules (atbm6x6x)
+  /progs/networkcfg.sh           (eth0 up, DHCP or static, wpa_supplicant)
+  Launch mySystem &
+  Launch startup.sh &
+
+Stage 6: /progs/startup.sh (runs in background)
+  ulimit -s unlimited
+  IF /etc/conf.d/debug.sh exists -> execute it (our hook)
+  ELSE -> launch superb &, sleep 15, PQTools.sh
+
+Stage 7: superb (once running)
+  Creates /progs/rec/00/ on the tmpfs
+  Mounts SD card: mount -t vfat /dev/mmcblk0p1 /progs/rec/00
+  Starts all services (RTSP, ONVIF, DVRIP, cloud MQTT, recording, AI)
 ```
+
+**Key boot facts:**
+- `/etc/init.d/` is on read-only squashfs; cannot add scripts without reflashing.
+- `/etc` becomes writable (tmpfs) after bashrc.sh step, but contents lost on reboot.
+- `/root` is on read-only squashfs; needs tmpfs overlay for writable home dir.
+- `S01udev` mounts devpts with `ptmxmode=000` -- blocks PTY allocation. Must remount
+  with `ptmxmode=666` for SSH to work.
+- No `/etc/shells` on stock rootfs -- dropbear needs it created.
+- **SD card is mounted by superb**, not by init. The `/progs/rec/00/` directory
+  doesn't exist until superb creates it. Any boot script that needs SD card access
+  must mount it explicitly (and `mkdir -p` the mount point first).
+- `debug.sh` is the primary hook for custom boot logic. It runs instead of the
+  normal superb launch path, so it must launch superb itself.
 
 ### Flash Partition Layout
 
@@ -235,7 +297,9 @@ All partitions dumped and verified: `firmware/mtd[0-6]_*.bin` + `full_flash.bin`
 ```
 PID 1  init (BusyBox)
   |- mySystem        (watchdog, UDP 8899 localhost)
-  |- tcpsvd 9999     (our backdoor, not factory)
+  |- dropbear :22    (SSH daemon, key + password auth)
+  |- tcpsvd 9999     (our backdoor, legacy fallback)
+  |- recv :8888      (fast file transfer daemon)
   |- superb          (TCP 80/554/34567, UDP 3702/30012/30014/34569)
   |   |- 7x /dev/isp_dev FDs
   |   `- /dev/motor (PTZ)
@@ -249,8 +313,10 @@ PID 1  init (BusyBox)
 ip, ifconfig, route, mount, insmod, tcpsvd, udpsvd, inetd, passwd, crontab,
 udhcpc, udhcpd, and ~350 more.
 
-**Stripped:** telnet, telnetd, nc/netcat, tftp, ftpd, httpd, wget, curl.
-All remote access and file transfer tools intentionally removed.
+**Stripped:** telnet, telnetd, nc/netcat, tftp, ftpd, httpd, wget, curl, scp.
+All remote access and file transfer tools intentionally removed. We added
+dropbear (SSH) and recv (fast file transfer) via SD card; see
+[debug.sh Boot Hook](#debugsh-boot-hook).
 
 ### Shared Libraries (appfs)
 
@@ -734,20 +800,22 @@ Chinese SMTP: `smtp.163.com`, user `ipcmail`, password `ipcam71a`
 
 | Service | Auth Status |
 |---------|-------------|
+| SSH (22) | **Ed25519 key + password** (dropbear, our addition) |
 | RTSP (554) | None |
 | ONVIF (80) | None (adding WS-Security breaks it) |
 | DVRIP (34567) | None (all credentials accepted) |
 | HTTP snapshots | None |
 | BLE provisioning | None (no pairing/bonding) |
-| Root shell (9999) | None (our backdoor) |
+| Root shell (9999) | None (our backdoor, legacy fallback) |
 
-**Anyone on the same LAN can view, snapshot, and send commands.**
+**Anyone on the same LAN can view, snapshot, and send commands.** SSH is the
+only authenticated service. All stock services remain unauthenticated.
 
 ### Credentials
 
 | Source | Username | Password | Notes |
 |--------|----------|----------|-------|
-| rootfs `/etc/passwd` | root | `sl.x.` | DES cracked (salt=`04`) |
+| rootfs `/etc/shadow` | root | *(empty)* | SHA-512 hash; verified with `cryptpw` on camera |
 | appfs `/home/passwd` | root | (uncracked) | DES salt=`GI`, exhausted 1-6 chars |
 | ONVIF | admin | admin | Level 0 (admin) |
 | ONVIF | user | 123456 | Level 2 (viewer) |
@@ -814,12 +882,96 @@ cycle. Script executes as root.
 
 ### Factory Reset
 
-Wipes: `syscfg/*`, `network/*`, `face/*`, `custom_voice/*`, `aliyun.conf`,
-`seted_id`, `hwinfo.json`. Reports reset to cloud. Does NOT target
-`/etc/conf.d/debug.sh` -- **backdoor survives factory reset**.
+**Trigger:** GPIO 13 (the only input GPIO), polled by superb via
+`/sys/class/gpio/gpio%u/value`. Counter `reset_detect_times` increments
+while held; fires at ~1.5 seconds. Voice prompt `reset.711` plays.
 
-Three reset functions in superb: `SYSFuncs_factory_default` (with reboot),
-`_without_reboot`, `_by_remote` (cloud/DVRIP `DeviceDefault` command).
+**Three entry points in superb:**
+- `SYSFuncs_factory_default` -- button-triggered, with reboot
+- `SYSFuncs_factory_default_without_reboot` -- programmatic
+- `SYSFuncs_factory_default_by_remote` -- cloud/DVRIP `DeviceDefault`
+
+**What gets wiped** (shell commands embedded in superb binary):
+
+```
+rm -rf /etc/conf.d/syscfg/*
+rm -rf /etc/conf.d/syscfg/network/*
+rm -rf /etc/conf.d/syscfg/face/*
+rm -rf /etc/conf.d/fixed/custom_voice/*
+rm /etc/conf.d/aliyun.conf
+rm -f /etc/conf.d/seted_id
+rm -f /etc/conf.d/hwinfo.json
+rm /etc/conf.d/UserMallCfg.json
+rm /etc/conf.d/syscfg/app_reboot.cfg
+rm /etc/conf.d/syscfg/dooralarm.dat
+rm /etc/conf.d/syscfg/patrol.dat
+rm /etc/conf.d/syscfg/startTime.dat
+rm /etc/conf.d/syscfg/restart.cfg
+rm -rf /etc/conf.d/syscfg/watchpos.cfg
+```
+
+Then restores default network:
+`cp /etc/conf.d/syscfg/default/interface.cfg /etc/conf.d/syscfg/network/`
+
+Also calls `awss_report_reset(0)` to unbind from Alibaba cloud, and
+`mdoubleLight_del_all_custom_voice()`.
+
+**What survives factory reset:**
+
+| Path | Contents | Survives? |
+|------|----------|:-:|
+| `/etc/conf.d/debug.sh` | Our backdoor | YES |
+| `/etc/conf.d/fixed/hwconfig.cfg` | Hardware config | YES |
+| `/etc/conf.d/fixed/base.cfg` | OTA URLs | YES |
+| `/etc/conf.d/lic.bin` | Device identity | YES (but cloud unbind sent) |
+| `/etc/conf.d/aiot_kv.bin` | MQTT keys | YES |
+| SD card (`/progs/rec/00/`) | Recordings, our binaries | YES |
+| `/progs/` (appfs) | superb, libs | YES (read-only squashfs) |
+
+**SD card note:** Factory reset does NOT wipe the SD card. However,
+killing `mySystem` outright (instead of SIGSTOP) causes superb to die
+mid-write to the journalless FAT32 filesystem. On next boot, the
+unclean VFAT state can cause file truncation or trigger a reformat
+(superb checks for "mount abnormal" and has `mkdosfs`/`mkfs.ext4`
+commands). Always use `kill -STOP` on mySystem, never `kill -9`.
+
+### debug.sh Boot Hook
+
+`/etc/conf.d/debug.sh` is our primary boot hook. When it exists, `startup.sh`
+runs it instead of launching superb directly. Our debug.sh handles:
+
+1. Mount SD card (`mkdir -p` + `mount -t vfat`, since superb normally does this)
+2. Set root password (copy stored hash into tmpfs `/etc/shadow`)
+3. Fix devpts (`ptmxmode=666` for SSH PTY allocation)
+4. Create `/etc/shells` (stock rootfs has none)
+5. Mount tmpfs on `/root`, install SSH authorized_keys from configfs
+6. Copy dropbear host keys from configfs to `/etc/dropbear/`
+7. Start dropbear SSH daemon (port 22)
+8. Start tcpsvd backdoor (port 9999, legacy fallback)
+9. Start recv file transfer daemon (port 8888)
+10. Start superb with logging to `/tmp/superb.log`
+11. PQTools calibration after 15s delay
+12. Background log sync to SD card every 30s
+
+### Configfs Layout (`/etc/conf.d/`, jffs2, 1 MB, ~800 KB free)
+
+| Path | Purpose | Ours? |
+|------|---------|:-----:|
+| `debug.sh` | Boot hook script | YES |
+| `shadow_root` | Persistent root password hash | YES |
+| `dropbear/dropbear_*_host_key` | SSH host keys (RSA, ECDSA, Ed25519) | YES |
+| `dropbear/authorized_keys` | SSH public keys for key-based auth | YES |
+| `aiot_kv.bin` | Alibaba IoT MQTT keys | no |
+| `customer.json` | Device identity | no |
+| `devInfo` | Device info | no |
+| `lic.bin` | License/identity | no |
+| `fixed/hwconfig.cfg` | Hardware config | no |
+| `syscfg/` | App settings (wiped on factory reset) | no |
+
+**For our daemon (Phase 3):** We define our own reset behavior. Read
+GPIO 13, decide what to wipe. Recommended: user config in a wipeable
+path, daemon binary + device identity in a non-wipeable path. Skip
+the cloud unbind entirely.
 
 ### Firmware Update
 

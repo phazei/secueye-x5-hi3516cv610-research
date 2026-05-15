@@ -139,3 +139,100 @@ reference. All Phase 0 doc consolidation is now done.
 
 **Next:** Phase 1 (audio capture) or Phase 2 (NPU research). See
 ROADMAP.md.
+
+---
+
+## 2026-05-15 ~14:00 [Phase 0] -- Reset button research + doc cleanup
+
+**Context:** CAMERA.md consolidation review revealed the reset button
+wipe scope was incomplete, PTZ motor was incorrectly documented as
+present, and ROADMAP.md had stale single-core/900MHz specs.
+
+**Did:** Investigated reset button via GPIO enumeration, superb strings
+analysis, and Ghidra decompilation cross-reference. Identified GPIO 13
+as the reset input. Extracted full list of `rm` commands from superb
+binary. Documented wipe scope, survival table, and SD card FAT32
+corruption risk in CAMERA.md. Deleted 3 superseded shell scripts
+(`start_pipeline_bg.sh`, `run_pipeline_bg.sh`, `probe_after_test.sh`).
+Fixed PTZ motor claims (no motor hardware, PCB has unpopulated
+connectors). Fixed ROADMAP.md CPU specs. Added PQ bin bind-mount
+clarification to DRIVER.md. Updated README.md repo structure.
+
+**Found:** Reset button handled entirely by superb (not mySystem or
+scripts). GPIO 13 is the only input GPIO. Factory reset wipes
+`syscfg/*`, `network/*`, `face/*`, `custom_voice/*`, and specific named
+files but does NOT touch `debug.sh`, `hwconfig.cfg`, `lic.bin`, SD card,
+or `/progs/`. SD card file truncation on mySystem kill is caused by
+unclean FAT32 dismount, not the reset path. superb has `mkdosfs`/
+`mkfs.ext4` commands and checks for "mount abnormal" on startup.
+
+**Status:** Complete. Moved to ROADMAP Phase 0.6.
+
+**Next:** Phase 1 (audio capture) or Phase 2 (NPU research).
+
+---
+
+## 2026-05-15 ~17:00 [Phase 0] -- Dropbear SSH deployment
+
+**Context:** Needed secure shell access to camera. Stock firmware has
+no SSH, telnet, or remote file transfer. We had tcpsvd on port 9999
+(unauthenticated) and recv/send_file.py (unencrypted TCP). Dropbear
+was referenced in the firmware building repo but never on the actual
+camera.
+
+**Did:** Found pre-compiled statically-linked dropbear v2025.89 (302 KB)
++ dropbearkey (129 KB) in `research/Hi3516CV610_Firmware_Building/overlay/`.
+Deployed to camera via recv/send_file.py. Generated Ed25519/ECDSA/RSA
+host keys, stored on configfs for persistence. Generated Ed25519 keypair
+on PC (`~/.ssh/id_ed25519`), pushed pubkey to camera. Set root password
+(`chpasswd`), stored hash on configfs. Rewrote `debug.sh` to set up SSH
+at boot: mount SD card, set password, fix devpts, create /etc/shells,
+install authorized_keys, start dropbear.
+
+**Issues resolved during deployment:**
+1. **Root password was empty** (not `sl.x.` as previously documented).
+   Verified with `cryptpw` on camera and passlib locally. Fixed in
+   CAMERA.md credentials table.
+2. **devpts mounted with ptmxmode=000** -- blocked PTY allocation,
+   caused dropbear to accept login then immediately disconnect
+   ("closed by remote host"). Fix: remount with `ptmxmode=666`.
+3. **No `/etc/shells`** on stock rootfs -- dropbear needs it. Fix:
+   create at boot.
+4. **`/root` on read-only squashfs** -- can't write authorized_keys.
+   Fix: mount tmpfs on `/root` at boot.
+5. **SSH key passphrase** -- PowerShell `-N '""'` quoting set literal
+   `""` as passphrase instead of empty. Regenerated key.
+6. **SD card not mounted at debug.sh time** -- superb normally mounts
+   it, but debug.sh runs before superb. Dropbear binary on SD card
+   was inaccessible. Fix: mount SD card in debug.sh.
+7. **Mount point `/progs/rec/00` didn't exist** -- bashrc.sh creates
+   `/progs/rec` as empty tmpfs; the `00` subdir is created by superb.
+   Fix: `mkdir -p` before mount.
+
+**Boot trace** (`set -x` in debug.sh, `/tmp/debug_boot.log`) was
+critical for diagnosing issues #6 and #7. Removed after verification.
+
+**Updated docs:**
+- CAMERA.md: expanded boot sequence (6-line summary -> full 7-stage
+  trace), added debug.sh boot hook section, added configfs layout
+  table, fixed root password (empty not sl.x.), added SSH to security
+  table and process tree.
+- WORKLOG.md: this entry.
+
+**Status:** Complete. SSH survives reboot with key-based auth (no
+password prompt). Password auth also works as fallback.
+
+**What's running after boot:**
+- dropbear :22 (SSH, key + password auth)
+- tcpsvd :9999 (legacy unauthenticated shell, kept as fallback)
+- recv :8888 (fast file transfer)
+- superb (stock camera daemon)
+- mySystem (watchdog)
+
+**Configfs footprint** (`/etc/conf.d/`, 1 MB jffs2):
+- debug.sh (2.6 KB), shadow_root (131 B), dropbear/ (~1.7 KB keys +
+  97 B authorized_keys). ~800 KB free.
+
+**Next:** Consider cross-compiling dropbear with SCP support (it's MIT
+licensed, we have the ARM toolchain). Then Phase 1 (audio) or Phase 2
+(NPU).
