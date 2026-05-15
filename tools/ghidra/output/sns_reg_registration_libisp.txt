@@ -1,0 +1,1854 @@
+SNS REG SYNC PATH DECOMPILATION
+Program: libot_mpi_isp.so
+Total target functions: 19
+======================================================================
+
+======================================================================
+FUNCTION: isp_sensor_ctx_init
+ADDRESS:  000477e4
+SIZE:     80 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 isp_sensor_ctx_init(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  undefined4 uVar1;
+  int iVar2;
+  int iVar3;
+  
+  iVar2 = *(int *)(g_sensor_ctx + param_1 * 4);
+  iVar3 = param_1;
+  if ((iVar2 == 0) && (iVar2 = isp_malloc(0x8f8), iVar2 == 0)) {
+    fprintf(stderr,"[Func]:%s [Line]:%d [Info]:Isp[%d] sensor_ctx malloc memory failed!\n",
+            "isp_sensor_ctx_init",0x27,param_1);
+    uVar1 = 0xa01c8045;
+  }
+  else {
+    memset_s(iVar2,0x8f8,0,0x8f8,iVar3,param_2,param_3);
+    *(int *)(g_sensor_ctx + param_1 * 4) = iVar2;
+    uVar1 = 0;
+  }
+  return uVar1;
+}
+
+
+--- CALLS TO ---
+  -> isp_malloc @ 0004377c
+  -> memset_s @ 00018650
+  -> fprintf @ 00018628
+--- CALLED BY ---
+  <- isp_sensor_reg_callback @ 0004784c
+  <- isp_mem_init_update_ctx @ 00041af8
+
+======================================================================
+FUNCTION: isp_sensor_reg_callback
+ADDRESS:  0004784c
+SIZE:     88 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int isp_sensor_reg_callback(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  int iVar2;
+  
+  iVar1 = isp_sensor_ctx_init();
+  if (iVar1 == 0) {
+    iVar2 = *(int *)(g_sensor_ctx + param_1 * 4);
+    iVar1 = isp_check_pointer_by_line(iVar2,"isp_sensor_reg_callback",0x3f);
+    if (iVar1 == 0) {
+      memcpy_s(iVar2,4,param_2);
+      memcpy_s(iVar2 + 4,0x30,param_3);
+      iVar1 = 0;
+      if (*(code **)(iVar2 + 0xc) != (code *)0x0) {
+        (**(code **)(iVar2 + 0xc))(param_1);
+      }
+    }
+    else {
+      iVar1 = -0x5fe37ff6;
+    }
+  }
+  return iVar1;
+}
+
+
+--- CALLS TO ---
+  -> isp_check_pointer_by_line @ 0004e710
+  -> isp_sensor_ctx_init @ 000477e4
+  -> memcpy_s @ 00018644
+--- CALLED BY ---
+  <- ot_mpi_isp_sensor_reg_callback @ 0004ff54
+
+======================================================================
+FUNCTION: isp_sensor_unreg_callback
+ADDRESS:  000478b4
+SIZE:     30 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_sensor_unreg_callback(int param_1)
+
+{
+  if (*(void **)(g_sensor_ctx + param_1 * 4) != (void *)0x0) {
+    free(*(void **)(g_sensor_ctx + param_1 * 4));
+  }
+  *(undefined4 *)(g_sensor_ctx + param_1 * 4) = 0;
+  return;
+}
+
+
+--- CALLS TO ---
+  -> free @ 000187b4
+--- CALLED BY ---
+  <- ot_mpi_isp_sensor_unreg_callback @ 0005037c
+  <- ot_mpi_isp_mem_init @ 0004eb6c
+
+======================================================================
+FUNCTION: isp_sensor_update_all
+ADDRESS:  000478dc
+SIZE:     102 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 isp_sensor_update_all(int param_1,undefined4 param_2)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  int iVar3;
+  
+  iVar3 = *(int *)(g_sensor_ctx + param_1 * 4);
+  iVar1 = isp_check_pointer_by_line(iVar3,"isp_sensor_update_all",0x5e,g_sensor_ctx,param_1,param_2)
+  ;
+  if (iVar1 == 0) {
+    if (*(code **)(iVar3 + 0x18) == (code *)0x0) {
+      uVar2 = 0xffffffff;
+      fprintf(stderr,"[Func]:%s [Line]:%d [Info]:Get isp[%d] default value error!\n",
+              "isp_sensor_update_all",99,param_1);
+    }
+    else {
+      (**(code **)(iVar3 + 0x18))(param_1,iVar3 + 0x38);
+      uVar2 = 0;
+      if (*(code **)(iVar3 + 0x1c) != (code *)0x0) {
+        (**(code **)(iVar3 + 0x1c))(param_1,iVar3 + 400);
+      }
+    }
+  }
+  else {
+    uVar2 = 0xa01c800a;
+  }
+  return uVar2;
+}
+
+
+--- CALLS TO ---
+  -> isp_check_pointer_by_line @ 0004e710
+  -> fprintf @ 00018628
+--- CALLED BY ---
+  <- isp_init @ 000426c0
+
+======================================================================
+FUNCTION: isp_sensor_update_all_yuv
+ADDRESS:  0004795c
+SIZE:     56 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 isp_sensor_update_all_yuv(int param_1)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  int iVar3;
+  
+  iVar3 = *(int *)(g_sensor_ctx + param_1 * 4);
+  iVar1 = isp_check_pointer_by_line(iVar3,"isp_sensor_update_all_yuv",0x74);
+  if (iVar1 == 0) {
+    uVar2 = isp_get_yuv_default(iVar3 + 0x38);
+    *(undefined4 *)(iVar3 + 0x23c) = 1;
+    *(undefined4 *)(iVar3 + 0x240) = 0x1010101;
+    *(undefined4 *)(iVar3 + 0x244) = 0x1010101;
+  }
+  else {
+    uVar2 = 0xa01c800a;
+  }
+  return uVar2;
+}
+
+
+--- CALLS TO ---
+  -> isp_check_pointer_by_line @ 0004e710
+  -> isp_get_yuv_default @ 0003c5a8
+--- CALLED BY ---
+  <- isp_init @ 000426c0
+
+======================================================================
+FUNCTION: isp_sensor_init_standby_cfg
+ADDRESS:  00047a2c
+SIZE:     114 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_sensor_init_standby_cfg(int param_1)
+
+{
+  int iVar1;
+  code *pcVar2;
+  int iVar3;
+  undefined1 auStack_694 [1664];
+  int local_14;
+  
+  local_14 = __stack_chk_guard;
+  iVar3 = *(int *)(g_sensor_ctx + param_1 * 4);
+  iVar1 = isp_check_pointer_by_line(iVar3,"isp_sensor_init_standby_cfg",0xa3);
+  if (iVar1 == 0) {
+    pcVar2 = *(code **)(iVar3 + 0x30);
+    iVar1 = 0;
+    if (pcVar2 != (code *)0x0) {
+      (*pcVar2)(param_1,auStack_694);
+      iVar1 = isp_get_fd(param_1);
+      iVar1 = ioctl(iVar1,0x4680705c,auStack_694);
+    }
+  }
+  else {
+    iVar1 = -0x5fe37ff6;
+  }
+  if (__stack_chk_guard != local_14) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail(iVar1);
+  }
+  return;
+}
+
+
+--- CALLS TO ---
+  -> isp_check_pointer_by_line @ 0004e710
+  -> __stack_chk_fail @ 000185e4
+  -> ioctl @ 000184e8
+  -> isp_get_fd @ 0004ea2c
+--- CALLED BY ---
+  <- isp_init @ 000426c0
+
+======================================================================
+FUNCTION: ot_mpi_isp_sensor_reg_callback
+ADDRESS:  0004ff54
+SIZE:     204 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int ot_mpi_isp_sensor_reg_callback(undefined4 param_1,undefined4 *param_2,undefined4 *param_3)
+
+{
+  int iVar1;
+  int iVar2;
+  
+  iVar1 = isp_check_pipe();
+  if (iVar1 == 0) {
+    iVar1 = isp_check_pointer(param_3);
+    if ((((iVar1 == 0) && (iVar1 = isp_check_pointer(param_2), iVar1 == 0)) &&
+        (iVar1 = isp_check_pointer(*param_3), iVar1 == 0)) &&
+       (((iVar1 = isp_check_pointer(param_3[5]), iVar1 == 0 &&
+         (iVar1 = isp_check_pointer(param_3[6]), iVar1 == 0)) &&
+        ((iVar1 = isp_check_pointer(param_3[8]), iVar1 == 0 &&
+         (iVar1 = isp_check_pointer(param_3[9]), iVar1 == 0)))))) {
+      iVar1 = isp_get_usr_ctx(param_1);
+      iVar2 = isp_check_pointer();
+      if (iVar2 == 0) {
+        isp_mutex_lock(param_1);
+        if (*(int *)(iVar1 + 4) != 1) {
+          iVar2 = isp_sensor_reg_callback(param_1,param_2,param_3);
+          if (iVar2 == 0) {
+            *(undefined4 *)(iVar1 + 0x1788) = *param_2;
+            *(undefined4 *)(iVar1 + 4) = 1;
+          }
+          isp_mutex_unlock(param_1);
+          return iVar2;
+        }
+        isp_mutex_unlock(param_1);
+        fprintf(stderr,"[Func]:%s [Line]:%d [Info]:Reg ERR! Sensor have registered to ISP[%d]!\n",
+                "ot_mpi_isp_sensor_reg_callback",0x470,param_1);
+        goto LAB_0004fff6;
+      }
+    }
+    iVar1 = -0x5fe37ff6;
+  }
+  else {
+LAB_0004fff6:
+    iVar1 = -0x5fe37ff9;
+  }
+  return iVar1;
+}
+
+
+--- CALLS TO ---
+  -> isp_check_pipe @ 0004e77c
+  -> isp_mutex_lock @ 0004e5a4
+  -> isp_get_usr_ctx @ 0004ea44
+  -> isp_check_pointer @ 0004e7bc
+  -> isp_sensor_reg_callback @ 0004784c
+  -> isp_mutex_unlock @ 0004e5e8
+  -> fprintf @ 00018628
+--- CALLED BY ---
+
+======================================================================
+FUNCTION: ot_mpi_isp_sensor_unreg_callback
+ADDRESS:  0005037c
+SIZE:     224 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 ot_mpi_isp_sensor_unreg_callback(undefined4 param_1,int param_2)
+
+{
+  int iVar1;
+  int *piVar2;
+  undefined4 uVar3;
+  
+  iVar1 = isp_check_pipe();
+  if (iVar1 == 0) {
+    piVar2 = (int *)isp_get_usr_ctx(param_1);
+    iVar1 = isp_check_pointer();
+    if (iVar1 != 0) {
+      return 0xa01c800a;
+    }
+    isp_mutex_lock(param_1);
+    iVar1 = isp_get_usr_ctx(param_1);
+    if ((*(int *)(iVar1 + 4) == 1) || (*(int *)(iVar1 + 8) == 1)) {
+      if (*piVar2 == 1) {
+        isp_mutex_unlock(param_1);
+        fprintf(stderr,
+                "[Func]:%s [Line]:%d [Info]:Unreg sensor failed! Isp should deinit before unreg sensor!\n"
+                ,"ot_mpi_isp_sensor_unreg_callback",0x505);
+        return 0xa01c800c;
+      }
+      if (piVar2[0x5e2] != param_2) {
+        isp_mutex_unlock(param_1);
+        fprintf(stderr,
+                "[Func]:%s [Line]:%d [Info]:UnReg ERR! ISP[%d] Registered sensor is %d, present sensor is %d.\n"
+                ,"ot_mpi_isp_sensor_unreg_callback",0x50c,param_1,piVar2[0x5e2],param_2);
+        goto LAB_00050444;
+      }
+      piVar2[0x5e2] = 0;
+      piVar2[1] = 0;
+      isp_sensor_unreg_callback(param_1);
+      uVar3 = 0;
+    }
+    else {
+      uVar3 = 0xa01c8043;
+      fprintf(stderr,"[Func]:%s [Line]:%d [Info]:Sensor doesn\'t register to ISP[%d]!\n",
+              "ot_mpi_isp_sensor_unreg_callback",0x501,param_1);
+    }
+    isp_mutex_unlock(param_1);
+  }
+  else {
+LAB_00050444:
+    uVar3 = 0xa01c8007;
+  }
+  return uVar3;
+}
+
+
+--- CALLS TO ---
+  -> isp_check_pipe @ 0004e77c
+  -> isp_mutex_lock @ 0004e5a4
+  -> isp_sensor_unreg_callback @ 000478b4
+  -> isp_get_usr_ctx @ 0004ea44
+  -> isp_check_pointer @ 0004e7bc
+  -> fprintf @ 00018628
+  -> isp_mutex_unlock @ 0004e5e8
+--- CALLED BY ---
+
+======================================================================
+FUNCTION: isp_malloc
+ADDRESS:  0004377c
+SIZE:     10 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_malloc(size_t param_1)
+
+{
+  if (param_1 != 0) {
+    malloc(param_1);
+    return;
+  }
+  return;
+}
+
+
+--- CALLS TO ---
+  -> malloc @ 000185b4
+--- CALLED BY ---
+  <- isp_mesh_shading_calibration @ 00028d68
+  <- FUN_0001c54c @ 0001c54c
+  <- FUN_00023d1c @ 00023d1c
+  <- FUN_00022200 @ 00022200
+  <- isp_sensor_ctx_init @ 000477e4
+  <- FUN_0002637c @ 0002637c
+  <- mpi_isp_set_gamma_attr @ 0004ba54
+  <- FUN_0002afe8 @ 0002afe8
+  <- isp_reg_cfg_init @ 0003a618
+  <- FUN_00022f88 @ 00022f88
+  <- FUN_00024958 @ 00024958
+  <- FUN_00027590 @ 00027590
+  <- FUN_00026f4c @ 00026f4c
+  <- FUN_00020240 @ 00020240
+  <- isp_get_lightbox_gain @ 0001e86c
+
+======================================================================
+FUNCTION: memset_s
+ADDRESS:  00018650
+SIZE:     12 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void memset_s(void)
+
+{
+  memset_s();
+  return;
+}
+
+
+--- CALLS TO ---
+  -> memset_s @ 0007b078
+--- CALLED BY ---
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 0005048c
+  <- isp_mesh_shading_calibration @ 00028d68
+  <- FUN_0001c54c @ 0001c54c
+  <- FUN_00023d1c @ 00023d1c
+  <- FUN_00022200 @ 00022200
+  <- isp_sensor_ctx_init @ 000477e4
+  <- isp_exit @ 00043210
+  <- FUN_0002637c @ 0002637c
+  <- FUN_0002afe8 @ 0002afe8
+  <- isp_get_wb_grid_info @ 0002d8f8
+  <- isp_get_af_grid_info @ 0002d6d4
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 000505b8
+  <- isp_mem_info_set @ 00041d58
+  <- isp_reg_cfg_init @ 0003a618
+  <- isp_global_initialize @ 0003d4a4
+  <- FUN_0001c148 @ 0001c148
+  <- FUN_00022f88 @ 00022f88
+  <- FUN_00024958 @ 00024958
+  <- FUN_00027590 @ 00027590
+  <- isp_get_ae_grid_info @ 0002d468
+  <- isp_wdr_cfg_set @ 00041dec
+  <- FUN_00026f4c @ 00026f4c
+  <- FUN_00020240 @ 00020240
+
+======================================================================
+FUNCTION: fprintf
+ADDRESS:  00018628
+SIZE:     12 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+
+int fprintf(FILE *__stream,char *__format,...)
+
+{
+  int iVar1;
+  
+  iVar1 = fprintf(__stream,__format);
+  return iVar1;
+}
+
+
+--- CALLS TO ---
+  -> fprintf @ 0007b06c
+--- CALLED BY ---
+  <- isp_dng_info_init @ 0003dac0
+  <- isp_crosstalk_attr_check @ 00045dd0
+  <- mpi_isp_get_ca_attr @ 0004d41c
+  <- mpi_isp_set_color_tone_attr @ 0004cbb0
+  <- FUN_000277a0 @ 000277a0
+  <- FUN_00020724 @ 00020724
+  <- FUN_00030440 @ 00030440
+  <- ot_mpi_isp_run_once @ 0004f444
+  <- FUN_0001c01c @ 0001c01c
+  <- isp_check_pointer_by_line @ 0004e710
+  <- isp_get_pre_be_vir_addr @ 000354e4
+  <- FUN_000267f8 @ 000267f8
+  <- demosaic_proc_write @ 00022b2c
+  <- isp_get_ae_grid_info @ 0002d468
+  <- FUN_0001f1e0 @ 0001f1e0
+  <- FUN_0003c918 @ 0003c918
+  <- mpi_isp_set_anti_false_color_attr @ 0004d0c4
+  <- FUN_00030c9c @ 00030c9c
+  <- isp_dbg_reg_set @ 0003cd08
+  <- isp_fpn_calibrate_attr_check @ 00046fc4
+  <- mpi_isp_set_ca_attr @ 0004d2f4
+  <- ot_mpi_isp_set_sns_slave_attr @ 0004fcd4
+  <- isp_mem_share_vreg @ 0003c048
+  <- FUN_0001c54c @ 0001c54c
+  <- isp_get_fe_vir_addr @ 000349b0
+  <- FUN_00028c38 @ 00028c38
+  <- sharpen_proc_write @ 0002c1d0
+  <- isp_get_af_grid_info @ 0002d6d4
+  <- FUN_000377dc @ 000377dc
+  <- vreg_release_all @ 0003ba80
+  <- isp_dng_param_check @ 000469f4
+  <- mpi_isp_usr_set_mesh_shading_lut_attr @ 0004c44c
+  <- isp_sensor_update_all @ 000478dc
+  <- isp_block_init @ 0003cab4
+  <- isp_sharpen_auto_attr_arch_check @ 0002e6f0
+  <- mpi_isp_set_module_ctrl @ 000492c4
+  <- mpi_isp_set_drc_attr @ 00049adc
+  <- mpi_isp_get_gamma_attr @ 0004bc30
+  <- ot_mpi_isp_sensor_unreg_callback @ 0005037c
+  <- isp_stt_buf_init @ 000341b4
+  <- isp_alg_register_expander @ 00024000
+  <- isp_update_info_init @ 0003cc20
+  <- isp_csc_reg_update @ 000211f0
+  <- isp_alg_register_mcds @ 000289c0
+  <- isp_check_sns_register @ 00041d10
+  <- FUN_000349f4 @ 000349f4
+  <- ot_mpi_isp_get_sns_slave_attr @ 0004fe9c
+  <- ot_mpi_isp_mem_share_all @ 0004f16c
+  <- FUN_00032cd8 @ 00032cd8
+  <- mpi_isp_set_demosaic_attr @ 0004d1c8
+  <- ot_mpi_isp_mem_init @ 0004eb6c
+  <- ot_mpi_isp_mem_share @ 0004eeb8
+  <- isp_fpn_correction_attr_check @ 00046ec4
+  <- FUN_00030890 @ 00030890
+  <- isp_check_ir_auto_attr @ 00046bf4
+  <- mpi_isp_get_demosaic_attr @ 0004d27c
+  <- isp_blc_dbg_set @ 0003d05c
+  <- isp_statistics_put_buf @ 00048214
+  <- isp_ae_stats_weight_config_check @ 0002dbe8
+  <- isp_dbg_reg_get @ 0003cf50
+  <- FUN_0001a430 @ 0001a430
+  <- isp_proc_write @ 000473b4
+  <- isp_expander_attr_check @ 00046588
+  <- isp_get_motion_stats @ 0002e44c
+  <- isp_alg_register_gamma @ 0002690c
+  <- isp_cfg_be_buf_init @ 000345c8
+  <- isp_drc_attr_arch_check @ 0002e918
+  <- FUN_00026f4c @ 00026f4c
+  <- FUN_00031460 @ 00031460
+  <- FUN_00030ac4 @ 00030ac4
+  <- isp_alg_register_dg @ 000239c4
+  <- isp_sensor_ctx_init @ 000477e4
+  <- isp_run_thread @ 000430b0
+  <- isp_sensor_exit @ 00047f40
+  <- ot_mpi_isp_get_dcf_info @ 00050b9c
+  <- mpi_isp_set_expander_attr @ 0004e2a4
+  <- isp_mesh_shading_calibration_cfg_check @ 000462c8
+  <- isp_ca_attr_arch_check @ 0002eb44
+  <- ot_mpi_isp_set_fpn_attr @ 00051d08
+  <- mpi_isp_set_ai_mode_attr @ 000525f8
+  <- mpi_isp_set_auto_color_shading_attr @ 0004c650
+  <- mpi_isp_get_dng_image_static_info @ 0004dc24
+  <- isp_mesh_shading_calibration @ 00028d68
+  <- isp_alg_register_cac @ 00021008
+  <- vreg_get_virt_addr @ 0003be90
+  <- isp_set_correction_attr @ 000245b0
+  <- isp_anti_false_color_attr_check @ 00045b4c
+  <- isp_proc_exit @ 0004721c
+  <- isp_mesh_shading_gain_lut_attr_check @ 00045fe8
+  <- mpi_isp_set_csc_attr @ 0004bce0
+  <- FUN_0001c148 @ 0001c148
+  <- isp_motion_stats_attr_arch_check @ 0002f030
+  <- FUN_000261b0 @ 000261b0
+  <- mpi_isp_set_crosstalk_attr @ 0004ceb0
+  <- mpi_isp_set_dehaze_attr @ 00049bf4
+  <- ot_mpi_isp_get_vd_time_out @ 00050884
+  <- isp_user_black_level_en_check @ 00045d44
+  <- mpi_isp_fpn_calibrate @ 0004d6fc
+  <- vreg_exit @ 0003b978
+  <- isp_dcf_info_check @ 000468d8
+  <- isp_fswdr_attr_check @ 00045578
+  <- isp_check_pipe_by_line @ 0004e6d8
+  <- mpi_isp_calc_flicker_type @ 0004e130
+  <- isp_sync_cfg_set @ 0003ae9c
+  <- isp_smart_info_param_check @ 00046d3c
+  <- mpi_isp_get_black_level_attr @ 0004d650
+  <- isp_alg_register_fcr @ 0001cb14
+  <- ot_mpi_isp_set_bind_attr @ 000506e4
+  <- isp_sharpen_comm_attr_check @ 00043f7c
+  <- isp_mem_share_all_vreg @ 0003c300
+  <- isp_ldci_attr_check @ 000453c0
+  <- ot_mpi_isp_mem_unshare_all @ 0004f2d8
+  <- FUN_00030b6c @ 00030b6c
+  <- isp_cac_acac_attr_check @ 00044918
+  <- isp_alg_register_fpn @ 00024700
+  <- mpi_isp_get_focus_stats @ 00049f3c
+  <- FUN_00032778 @ 00032778
+  <- isp_reg_cfg_info_init @ 0003a6f8
+  <- ot_mpi_isp_fpn_calibrate @ 00051ca8
+  <- vreg_check_close @ 0003b754
+  <- ot_mpi_isp_get_fpn_attr @ 00051d68
+  <- mpi_isp_set_gamma_attr @ 0004ba54
+  <- isp_sharpen_manual_attr_arch_check @ 0002e50c
+  <- mpi_isp_set_ldci_attr @ 000499d8
+  <- mpi_isp_get_sharpen_attr @ 0004ce24
+  <- isp_reg_cfg_init @ 0003a618
+  <- isp_get_viproc_reg_virt_addr_base @ 0003bc14
+  <- FUN_00048480 @ 00048480
+  <- mpi_isp_set_drc_blend @ 000529dc
+  <- mpi_isp_get_nr_attr @ 0004cb10
+  <- isp_alg_register_csc @ 000216f0
+  <- isp_switch_reg_set @ 0003b214
+  <- isp_trans_info_init @ 000414dc
+  <- FUN_00023d1c @ 00023d1c
+  <- isp_alg_register_ae @ 0001b31c
+  <- isp_nr_wdr_attr_check @ 00045214
+  <- ot_mpi_isp_ae_lib_reg_callback @ 00050038
+  <- FUN_000338dc @ 000338dc
+  <- FUN_0003b494 @ 0003b494
+  <- isp_cac_comm_attr_check @ 00044808
+  <- FUN_0004853c @ 0004853c
+  <- isp_alg_stats_buf_init @ 00034524
+  <- isp_reg_cfg_info_set @ 0003aa20
+  <- FUN_0002afe8 @ 0002afe8
+  <- isp_get_be_buf_first @ 00034704
+  <- isp_alg_register_frame_wdr @ 00025f20
+  <- mpi_isp_get_fswdr_attr @ 00049eb4
+  <- ot_mpi_isp_sensor_reg_callback @ 0004ff54
+  <- FUN_00031c80 @ 00031c80
+  <- isp_get_be_free_buf @ 000347a4
+  <- ot_mpi_isp_set_dcf_info @ 00050a68
+  <- FUN_000305a0 @ 000305a0
+  <- isp_share_mem @ 00041838
+  <- mpi_isp_get_cac_attr @ 0004c944
+  <- mpi_isp_set_stats_cfg @ 0004a560
+  <- mpi_isp_get_check_sum_stats @ 00052efc
+  <- FUN_0001f5b0 @ 0001f5b0
+  <- isp_dng_ext_regs_initialize @ 0003d590
+  <- isp_get_check_sum_stats @ 0002dad4
+  <- isp_mem_unshare_vreg @ 0003c1a4
+  <- isp_check_vreg_permission @ 0004e980
+  <- mpi_isp_get_ldci_attr @ 00049a64
+  <- FUN_000252dc @ 000252dc
+  <- isp_check_bool_by_line @ 0004e744
+  <- isp_get_fe_reg_virt_addr_base @ 0003bcf4
+  <- mpi_isp_set_nr_attr @ 0004ca04
+  <- vreg_get_virt_addr_base @ 0003bd68
+  <- isp_mem_info_set @ 00041d58
+  <- isp_nr_dering_attr_check @ 00044d64
+  <- mpi_isp_usr_get_mesh_shading_lut_attr @ 0004c50c
+  <- isp_ldci_buf_init @ 00034398
+  <- mpi_isp_get_ae_stats @ 0004a174
+  <- isp_nr_attr_arch_check @ 0002ec0c
+  <- isp_alg_register_ca @ 00020120
+  <- isp_proc_init @ 00047104
+  <- isp_alg_register_sharpen @ 0002d328
+  <- mpi_isp_usr_get_mesh_shading_attr @ 0004c3bc
+  <- isp_cfg_be_buf_exit @ 000348bc
+  <- isp_run @ 00042b3c
+  <- isp_get_block_rect @ 0003cbb4
+  <- isp_dehaze_attr_check @ 000458e4
+  <- ot_mpi_isp_ir_auto @ 0005202c
+  <- isp_alg_register_ge @ 00027410
+  <- FUN_00032228 @ 00032228
+  <- FUN_0002637c @ 0002637c
+  <- mpi_isp_set_mesh_shading_gain_lut_attr @ 00052fb4
+  <- FUN_00018944 @ 00018944
+  <- isp_alg_register_lsc @ 000287e8
+  <- isp_blc_dbg_run_bgn @ 0003d11c
+  <- isp_frame_cnt_get @ 00042554
+  <- isp_statistics_init @ 00048004
+  <- isp_demosaic_auto_attr_arch_check @ 0002ef90
+  <- mpi_isp_enable_aiisp @ 00052740
+  <- FUN_0001a910 @ 0001a910
+  <- FUN_0001dbc8 @ 0001dbc8
+  <- mpi_isp_get_crosstalk_attr @ 0004cfc4
+  <- FUN_00022f88 @ 00022f88
+  <- FUN_00030a20 @ 00030a20
+  <- mpi_isp_get_wb_stats @ 0004a3f0
+  <- isp_alg_register_blc @ 0001f848
+  <- mpi_isp_set_fswdr_attr @ 00049e08
+  <- isp_get_lightbox_gain @ 0001e86c
+  <- isp_check_isp_kernel_init @ 0004e62c
+  <- isp_sharpen_manual_attr_check @ 00043c1c
+  <- FUN_0004e540 @ 0004e540
+  <- FUN_000330bc @ 000330bc
+  <- mpi_isp_set_cac_attr @ 0004c828
+  <- mpi_isp_set_mesh_shading_attr @ 0005309c
+  <- FUN_00018c78 @ 00018c78
+  <- FUN_0001c73c @ 0001c73c
+  <- isp_sharpen_common_attr_arch_check @ 0002e4cc
+  <- isp_share_mem_all @ 000419a0
+  <- isp_all_cfgs_be_buf_init @ 00034928
+  <- FUN_00031578 @ 00031578
+  <- FUN_000367e0 @ 000367e0
+  <- isp_expander_attr_update @ 0002e230
+  <- isp_black_level_value_check @ 00045cb8
+  <- isp_demosaic_attr_check @ 00044584
+  <- isp_ldci_buf_exit @ 000342fc
+  <- isp_init @ 000426c0
+  <- isp_exit @ 00043210
+  <- isp_clut_attr_check @ 00045a9c
+  <- mpi_isp_usr_set_mesh_shading_attr @ 0004c2fc
+  <- isp_cac_lcac_attr_check @ 00044bc8
+  <- mpi_isp_disable_aiisp @ 00052854
+  <- isp_alg_register_af @ 0001bf30
+  <- isp_stt_addr_init @ 000342b8
+  <- isp_dynamic_blc_attr_check @ 00045c70
+  <- FUN_00027240 @ 00027240
+  <- FUN_0001c074 @ 0001c074
+  <- mpi_isp_set_pub_attr @ 00048b30
+  <- ot_mpi_isp_init @ 0004ed38
+  <- FUN_00024958 @ 00024958
+  <- isp_get_be_last_buf @ 0003481c
+  <- ot_mpi_isp_mem_unshare @ 0004f03c
+  <- mpi_isp_get_anti_false_color_attr @ 0004d150
+  <- vreg_check_permission @ 0003b800
+  <- isp_statistics_exit @ 000480e0
+  <- ot_mpi_isp_run @ 0004f7d4
+  <- isp_get_wb_grid_info @ 0002d8f8
+  <- isp_proc_print_title @ 000472b8
+  <- isp_alg_en_exit @ 0003a248
+  <- ot_mpi_isp_awb_lib_reg_callback @ 000501ec
+  <- isp_alg_register_demosaic @ 0002358c
+  <- isp_nr_snr_attr_check @ 00044ebc
+  <- FUN_00022584 @ 00022584
+  <- isp_lut2stt_apb_reg @ 0003b358
+  <- mpi_isp_get_dp_dynamic_attr @ 0004c1c4
+  <- isp_get_vicap_chn_reg_virt_addr_base @ 0003bc70
+  <- isp_dp_dynamic_attr_check @ 00046738
+  <- FUN_00020240 @ 00020240
+  <- mpi_isp_set_fpn_attr @ 0004d8d4
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 0005048c
+  <- isp_sharpen_auto_attr_check @ 00043854
+  <- mpi_isp_get_dehaze_attr @ 00049d10
+  <- mpi_isp_set_black_level_attr @ 0004d538
+  <- isp_switch_mode @ 00041f18
+  <- isp_nr_comm_attr_check @ 00045044
+  <- isp_check_pointer @ 0004e7bc
+  <- vreg_init @ 0003b870
+  <- FUN_0001f964 @ 0001f964
+  <- isp_ca_attr_check @ 0004598c
+  <- isp_mem_init_update_ctx @ 00041af8
+  <- isp_check_pipe @ 0004e77c
+  <- ot_mpi_isp_exit @ 0004fa78
+  <- mpi_isp_set_fmw_state @ 00049924
+  <- mpi_isp_get_auto_color_shading_attr @ 0004c774
+  <- isp_mem_unshare_all_vreg @ 0003c454
+  <- isp_wdr_cfg_set @ 00041dec
+  <- mpi_isp_set_dp_dynamic_attr @ 0004c064
+  <- isp_alg_register_awb @ 0001e7c0
+  <- isp_set_pipe_differ_attr @ 0002da6c
+  <- FUN_0004143c @ 0004143c
+  <- FUN_00048854 @ 00048854
+  <- isp_expander_attr_arch_check @ 0002efec
+  <- FUN_0003052c @ 0003052c
+  <- mpi_isp_get_drc_attr @ 00049b7c
+  <- FUN_00022200 @ 00022200
+  <- FUN_000482d0 @ 000482d0
+  <- isp_alg_register_dpc @ 0002282c
+  <- isp_check_bool @ 0004e7f4
+  <- FUN_000416dc @ 000416dc
+  <- mpi_isp_set_be_frame_pos_attr @ 0004e3c8
+  <- isp_unshare_mem_all @ 00041a4c
+  <- isp_demosaic_manual_attr_arch_check @ 0002ef4c
+  <- isp_drc_attr_check @ 000440d0
+  <- mpi_isp_get_expander_attr @ 0004e350
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 000505b8
+  <- isp_get_pipe_differ_attr @ 0002daa0
+  <- isp_mesh_shading_attr_check @ 00045f60
+  <- isp_nr_snr_attr_arch_check @ 0002eb88
+  <- isp_unshare_mem @ 000418ec
+  <- mpi_isp_get_drc_blend @ 00052c80
+  <- isp_check_mem_init_func @ 0004e8e8
+  <- FUN_0001cbc0 @ 0001cbc0
+  <- isp_alg_stats_buf_exit @ 0003457c
+  <- isp_get_be_reg_virt_addr_base @ 0003bbac
+  <- mpi_isp_set_sharpen_attr @ 0004ccd8
+  <- isp_block_update @ 0003cb3c
+
+======================================================================
+FUNCTION: isp_mem_init_update_ctx
+ADDRESS:  00041af8
+SIZE:     424 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int isp_mem_init_update_ctx(undefined4 param_1,int param_2)
+
+{
+  int iVar1;
+  int iVar2;
+  char *__format;
+  char *pcVar3;
+  undefined4 uVar4;
+  undefined4 local_6c [19];
+  int local_20;
+  int local_1c;
+  
+  local_1c = __stack_chk_guard;
+  iVar1 = isp_get_fd();
+  iVar1 = ioctl(iVar1,0xc0087045,param_2 + 0x164c);
+  if (iVar1 == 0) {
+    iVar1 = isp_get_fd(param_1);
+    iVar1 = ioctl(iVar1,0x801c7071,param_2 + 0x176c);
+    if (iVar1 == 0) {
+      iVar1 = isp_get_fd(param_1);
+      iVar1 = ioctl(iVar1,0xc0047041,param_2 + 0x1654);
+      if (iVar1 == 0) {
+        iVar1 = isp_get_fd(param_1);
+        iVar1 = ioctl(iVar1,0x80047023,param_2 + 0x98);
+        if (iVar1 == 0) {
+          iVar1 = isp_get_fd(param_1);
+          iVar1 = ioctl(iVar1,0x80017060,param_2 + 0x78);
+          if (iVar1 == 0) {
+            iVar1 = isp_get_fd(param_1);
+            iVar1 = ioctl(iVar1,0xc0087008,&DAT_0006ece8);
+            if (iVar1 == 0) {
+              iVar1 = isp_block_init(param_1,param_2 + 0x30);
+              if (iVar1 == 0) {
+                *(undefined4 *)(param_2 + 0x2774) = 0xffffffff;
+                *(undefined4 *)(param_2 + 0x2778) = 0xffffffff;
+                *(undefined4 *)(param_2 + 0x2770) = 0;
+                iVar1 = isp_get_fd(param_1);
+                iVar1 = ioctl(iVar1,0x8050703e,local_6c);
+                if (iVar1 == 0) {
+                  *(undefined4 *)(param_2 + 0xa0) = local_6c[0];
+                  if (local_20 != 1) {
+                    if (local_20 == 0) {
+                      *(undefined4 *)(param_2 + 8) = 0;
+                    }
+                    goto LAB_00041b66;
+                  }
+                  *(undefined4 *)(param_2 + 8) = 1;
+                  iVar2 = isp_sensor_ctx_init(param_1);
+                  if (iVar2 == 0) goto LAB_00041b66;
+                }
+                else {
+                  fprintf(stderr,"[Func]:%s [Line]:%d [Info]:ISP[%d] work mode get failed!\n",
+                          "isp_yuv_mode_get",0xab,param_1);
+                  iVar2 = iVar1;
+                }
+                iVar1 = iVar2;
+              }
+            }
+            else {
+              fprintf(stderr,"[Func]:%s [Line]:%d [Info]:register ISP[%d] lib info ec %x!\n",
+                      "isp_get_version",0x76,param_1,iVar1);
+              iVar1 = -0x5fe37ff9;
+            }
+            goto LAB_00041b66;
+          }
+          uVar4 = 0xf1;
+          pcVar3 = "isp_mem_init_update_ctx";
+          __format = "[Func]:%s [Line]:%d [Info]:ISP[%d] get be buf num failed\n";
+        }
+        else {
+          uVar4 = 0xea;
+          pcVar3 = "isp_mem_init_update_ctx";
+          __format = "[Func]:%s [Line]:%d [Info]:ISP[%d] get p2en info failed\n";
+        }
+      }
+      else {
+        uVar4 = 0xdc;
+        pcVar3 = "isp_mem_init_update_ctx";
+        __format = "[Func]:%s [Line]:%d [Info]:ISP[%d] get HDR attr failed\n";
+      }
+    }
+    else {
+      uVar4 = 0xd5;
+      pcVar3 = "isp_mem_init_update_ctx";
+      __format = "[Func]:%s [Line]:%d [Info]:ISP[%d] get stagger failed\n";
+    }
+  }
+  else {
+    uVar4 = 0xc3;
+    pcVar3 = "isp_get_pipe_size";
+    __format = "[Func]:%s [Line]:%d [Info]:ISP[%d] get pipe size failed\n";
+  }
+  fprintf(stderr,__format,pcVar3,uVar4,param_1);
+LAB_00041b66:
+  if (__stack_chk_guard == local_1c) {
+    return iVar1;
+  }
+                    /* WARNING: Subroutine does not return */
+  __stack_chk_fail();
+}
+
+
+--- CALLS TO ---
+  -> isp_sensor_ctx_init @ 000477e4
+  -> isp_block_init @ 0003cab4
+  -> __stack_chk_fail @ 000185e4
+  -> ioctl @ 000184e8
+  -> fprintf @ 00018628
+  -> isp_get_fd @ 0004ea2c
+--- CALLED BY ---
+  <- ot_mpi_isp_mem_init @ 0004eb6c
+
+======================================================================
+FUNCTION: isp_check_pointer_by_line
+ADDRESS:  0004e710
+SIZE:     34 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4
+isp_check_pointer_by_line(int param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+
+{
+  undefined4 uVar1;
+  
+  if (param_1 == 0) {
+    fprintf(stderr,"[Func]:%s [Line]:%d [Info]:Null Pointer!\n",param_2,param_3,param_4);
+    uVar1 = 0xa01c800a;
+  }
+  else {
+    uVar1 = 0;
+  }
+  return uVar1;
+}
+
+
+--- CALLS TO ---
+  -> fprintf @ 00018628
+--- CALLED BY ---
+  <- isp_alg_register_csc @ 000216f0
+  <- isp_switch_reg_set @ 0003b214
+  <- isp_trans_info_init @ 000414dc
+  <- FUN_00023d1c @ 00023d1c
+  <- isp_reset_fe_stt_en @ 0003a188
+  <- isp_alg_register_ae @ 0001b31c
+  <- isp_sensor_update_default @ 00047bd4
+  <- FUN_000338dc @ 000338dc
+  <- isp_reg_cfg_info_set @ 0003aa20
+  <- FUN_0002afe8 @ 0002afe8
+  <- FUN_000277a0 @ 000277a0
+  <- mpi_isp_get_ynet_cfg @ 00052dac
+  <- FUN_00020724 @ 00020724
+  <- isp_get_yuv_default @ 0003c5a8
+  <- isp_alg_register_frame_wdr @ 00025f20
+  <- FUN_00031c80 @ 00031c80
+  <- FUN_000267f8 @ 000267f8
+  <- FUN_0001f1e0 @ 0001f1e0
+  <- FUN_00036454 @ 00036454
+  <- FUN_00025550 @ 00025550
+  <- mpi_isp_get_check_sum_stats @ 00052efc
+  <- FUN_0001f5b0 @ 0001f5b0
+  <- FUN_0001c54c @ 0001c54c
+  <- FUN_00031240 @ 00031240
+  <- isp_sensor_update_all_yuv @ 0004795c
+  <- FUN_000252dc @ 000252dc
+  <- FUN_000377dc @ 000377dc
+  <- isp_dng_param_check @ 000469f4
+  <- isp_expander_attr_read @ 00041270
+  <- isp_sensor_update_all @ 000478dc
+  <- FUN_000355fc @ 000355fc
+  <- isp_alg_register_ca @ 00020120
+  <- isp_alg_register_sharpen @ 0002d328
+  <- FUN_0001ef24 @ 0001ef24
+  <- isp_get_reg_cfg_ctx @ 0003a6ac
+  <- isp_sensor_get_id @ 000479a4
+  <- FUN_00031998 @ 00031998
+  <- FUN_00030db4 @ 00030db4
+  <- FUN_00027a30 @ 00027a30
+  <- FUN_000317fc @ 000317fc
+  <- isp_alg_register_ge @ 00027410
+  <- isp_alg_register_expander @ 00024000
+  <- isp_alg_register_mcds @ 000289c0
+  <- FUN_00032228 @ 00032228
+  <- FUN_0002637c @ 0002637c
+  <- isp_sensor_update_sns_reg @ 00047d94
+  <- mpi_isp_set_mesh_shading_gain_lut_attr @ 00052fb4
+  <- isp_alg_register_lsc @ 000287e8
+  <- FUN_000349f4 @ 000349f4
+  <- isp_sensor_update_blc_clamp_info @ 00047d48
+  <- mpi_isp_set_isp_stitch_transform_info @ 00053184
+  <- isp_sensor_set_pixel_detect @ 00047cb0
+  <- FUN_00032cd8 @ 00032cd8
+  <- FUN_00022f88 @ 00022f88
+  <- isp_sensor_get_sns_reg @ 00047b4c
+  <- isp_alg_register_blc @ 0001f848
+  <- sns_black_level_actual_value_read @ 00040104
+  <- FUN_00031690 @ 00031690
+  <- isp_expander_attr_write @ 000411e0
+  <- isp_dbg_reg_get @ 0003cf50
+  <- mpi_isp_set_ynet_cfg @ 00052d3c
+  <- mpi_isp_get_ai_mode_attr @ 000526ac
+  <- FUN_000330bc @ 000330bc
+  <- isp_expander_attr_check @ 00046588
+  <- isp_sensor_set_wdr_mode @ 00047c20
+  <- mpi_isp_set_mesh_shading_attr @ 0005309c
+  <- isp_user_black_level_read @ 0003fecc
+  <- isp_alg_register_gamma @ 0002690c
+  <- isp_sensor_switch @ 00047e90
+  <- isp_ext_regs_initialize @ 0003d3fc
+  <- FUN_0001faa4 @ 0001faa4
+  <- FUN_00028678 @ 00028678
+  <- FUN_0001c73c @ 0001c73c
+  <- isp_statistics_get_buf @ 00048148
+  <- FUN_000367e0 @ 000367e0
+  <- FUN_00026f4c @ 00026f4c
+  <- isp_sensor_set_image_mode @ 00047c6c
+  <- FUN_0002a148 @ 0002a148
+  <- isp_black_level_value_check @ 00045cb8
+  <- isp_reg_cfg_ctrl @ 0003b078
+  <- isp_alg_register_dg @ 000239c4
+  <- isp_init @ 000426c0
+  <- isp_exit @ 00043210
+  <- FUN_000221b8 @ 000221b8
+  <- isp_sensor_get_max_resolution @ 00047b10
+  <- isp_sensor_exit @ 00047f40
+  <- FUN_00035728 @ 00035728
+  <- isp_alg_register_af @ 0001bf30
+  <- FUN_00027240 @ 00027240
+  <- isp_sensor_get_blc @ 000479dc
+  <- isp_sensor_init @ 00047de0
+  <- FUN_00024958 @ 00024958
+  <- FUN_00031124 @ 00031124
+  <- black_level_actual_value_write @ 0003ff28
+  <- isp_sensor_get_default @ 00047ac0
+  <- FUN_00023478 @ 00023478
+  <- FUN_00026b78 @ 00026b78
+  <- FUN_000313f8 @ 000313f8
+  <- isp_ctrl_param_get @ 00034120
+  <- FUN_00021f30 @ 00021f30
+  <- isp_alg_register_cac @ 00021008
+  <- FUN_0002d208 @ 0002d208
+  <- FUN_00036e1c @ 00036e1c
+  <- FUN_000283b4 @ 000283b4
+  <- FUN_00034030 @ 00034030
+  <- FUN_00021858 @ 00021858
+  <- isp_alg_en_exit @ 0003a248
+  <- isp_sensor_init_standby_cfg @ 00047a2c
+  <- isp_alg_register_demosaic @ 0002358c
+  <- isp_update_dng_image_dynamic_info @ 0003db58
+  <- FUN_000261b0 @ 000261b0
+  <- mpi_isp_get_master_pipe @ 000524c4
+  <- FUN_00022584 @ 00022584
+  <- isp_lut2stt_apb_reg @ 0003b358
+  <- isp_dp_dynamic_attr_check @ 00046738
+  <- FUN_00020240 @ 00020240
+  <- isp_dcf_info_check @ 000468d8
+  <- isp_sensor_update_blc @ 00047b88
+  <- isp_demosaic_param_init @ 00022c80
+  <- isp_switch_mode @ 00041f18
+  <- FUN_00023bc4 @ 00023bc4
+  <- mpi_isp_calc_flicker_type @ 0004e130
+  <- isp_sync_cfg_set @ 0003ae9c
+  <- FUN_0001f964 @ 0001f964
+  <- isp_sensor_reg_callback @ 0004784c
+  <- isp_alg_register_fcr @ 0001cb14
+  <- io_read32_ex @ 0003bf3c
+  <- FUN_00027668 @ 00027668
+  <- ot_mpi_isp_exit @ 0004fa78
+  <- FUN_00020a38 @ 00020a38
+  <- FUN_00035938 @ 00035938
+  <- FUN_000363b8 @ 000363b8
+  <- mpi_isp_register_alg @ 00052428
+  <- FUN_00036f08 @ 00036f08
+  <- isp_alg_register_fpn @ 00024700
+  <- isp_wdr_cfg_set @ 00041dec
+  <- isp_alg_register_awb @ 0001e7c0
+  <- FUN_00032778 @ 00032778
+  <- isp_user_black_level_write @ 0003fdac
+  <- isp_alg_register_dpc @ 0002282c
+  <- FUN_000366bc @ 000366bc
+  <- isp_reg_cfg_info_init @ 0003a6f8
+  <- isp_sensor_get_awb_gain @ 00047cfc
+  <- isp_black_level_actual_value_read @ 00040040
+  <- FUN_0001c8d4 @ 0001c8d4
+  <- mpi_isp_get_drc_blend @ 00052c80
+  <- mpi_isp_set_drc_blend @ 000529dc
+
+======================================================================
+FUNCTION: memcpy_s
+ADDRESS:  00018644
+SIZE:     12 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void memcpy_s(void)
+
+{
+  memcpy_s();
+  return;
+}
+
+
+--- CALLS TO ---
+  -> memcpy_s @ 0007b074
+--- CALLED BY ---
+  <- FUN_00023d1c @ 00023d1c
+  <- isp_reg_cfg_ctrl @ 0003b078
+  <- ot_mpi_isp_get_bind_attr @ 0005082c
+  <- isp_init @ 000426c0
+  <- ot_mpi_isp_ae_lib_reg_callback @ 00050038
+  <- FUN_000487e8 @ 000487e8
+  <- FUN_0004877c @ 0004877c
+  <- isp_get_yuv_default @ 0003c5a8
+  <- ot_mpi_isp_get_dcf_info @ 00050b9c
+  <- ot_mpi_isp_set_dcf_info @ 00050a68
+  <- FUN_00024958 @ 00024958
+  <- FUN_00030638 @ 00030638
+  <- FUN_0001f1e0 @ 0001f1e0
+  <- FUN_0003c918 @ 0003c918
+  <- isp_get_check_sum_stats @ 0002dad4
+  <- FUN_0001c54c @ 0001c54c
+  <- FUN_0001c474 @ 0001c474
+  <- isp_csc_param_init @ 00021584
+  <- FUN_00022948 @ 00022948
+  <- ot_mpi_isp_awb_lib_reg_callback @ 000501ec
+  <- isp_update_dng_image_dynamic_info @ 0003db58
+  <- FUN_000261b0 @ 000261b0
+  <- FUN_0001ef24 @ 0001ef24
+  <- FUN_00020240 @ 00020240
+  <- FUN_00027a30 @ 00027a30
+  <- mpi_isp_fpn_calibrate @ 0004d6fc
+  <- mpi_isp_set_fpn_attr @ 0004d8d4
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 0005048c
+  <- isp_demosaic_param_init @ 00022c80
+  <- isp_switch_mode @ 00041f18
+  <- FUN_00023bc4 @ 00023bc4
+  <- FUN_0002637c @ 0002637c
+  <- isp_sync_cfg_set @ 0003ae9c
+  <- isp_sensor_reg_callback @ 0004784c
+  <- ot_mpi_isp_set_bind_attr @ 000506e4
+  <- FUN_00020a38 @ 00020a38
+  <- FUN_0001dbc8 @ 0001dbc8
+  <- FUN_00022a04 @ 00022a04
+  <- FUN_0001c3a0 @ 0001c3a0
+  <- isp_wdr_cfg_set @ 00041dec
+  <- FUN_000278f4 @ 000278f4
+  <- FUN_00030890 @ 00030890
+  <- FUN_00032778 @ 00032778
+  <- FUN_0001a430 @ 0001a430
+  <- gen_lut_gamma @ 00026a7c
+  <- mpi_isp_set_gamma_attr @ 0004ba54
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 000505b8
+  <- ot_mpi_isp_set_frame_info @ 00050cbc
+  <- FUN_000486a8 @ 000486a8
+  <- FUN_00018c78 @ 00018c78
+  <- FUN_00028904 @ 00028904
+  <- gen_lut_degamma @ 00026ac0
+  <- isp_get_correction_attr @ 00024698
+  <- FUN_00026f4c @ 00026f4c
+  <- FUN_00048710 @ 00048710
+
+======================================================================
+FUNCTION: isp_check_pipe
+ADDRESS:  0004e77c
+SIZE:     42 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 isp_check_pipe(uint param_1,undefined4 param_2)
+
+{
+  undefined4 uVar1;
+  
+  if (param_1 < 4) {
+    uVar1 = 0;
+  }
+  else {
+    fprintf(stderr,"[Func]:%s [Line]:%d [Info]:Err isp pipe %d!\n","isp_check_pipe",0x8b,param_1,
+            param_2);
+    uVar1 = 0xa01c8007;
+  }
+  return uVar1;
+}
+
+
+--- CALLS TO ---
+  -> fprintf @ 00018628
+--- CALLED BY ---
+  <- ot_mpi_isp_get_be_frame_attr @ 000522d8
+  <- ot_mpi_isp_get_sharpen_attr @ 000519a8
+  <- ot_mpi_isp_ae_lib_reg_callback @ 00050038
+  <- ot_mpi_isp_calc_flicker_type @ 000521c8
+  <- ot_mpi_isp_set_auto_color_shading_attr @ 0005166c
+  <- ot_mpi_isp_run_once @ 0004f444
+  <- ot_mpi_isp_set_dehaze_attr @ 000510a4
+  <- ot_mpi_isp_sensor_reg_callback @ 0004ff54
+  <- ot_mpi_isp_set_ca_attr @ 00051b68
+  <- ot_mpi_isp_set_dcf_info @ 00050a68
+  <- ot_mpi_isp_get_pub_attr @ 00050df4
+  <- ot_mpi_isp_get_ldci_attr @ 00050fe4
+  <- ot_mpi_isp_get_demosaic_attr @ 00051b28
+  <- ot_mpi_isp_get_frame_info @ 00050d38
+  <- ot_mpi_isp_get_dng_image_static_info @ 00051f6c
+  <- ot_mpi_isp_get_focus_stats @ 000511a4
+  <- ot_mpi_isp_set_dp_dynamic_attr @ 000514ac
+  <- ot_mpi_isp_get_nr_attr @ 00051888
+  <- ot_mpi_isp_get_gamma_attr @ 0005138c
+  <- ot_mpi_isp_get_dehaze_attr @ 000510e4
+  <- ot_mpi_isp_get_pipe_differ_attr @ 00050e74
+  <- ot_mpi_isp_get_expander_attr @ 00052258
+  <- ot_mpi_isp_set_nr_attr @ 00051848
+  <- ot_mpi_isp_set_demosaic_attr @ 00051ae8
+  <- ot_mpi_isp_get_module_ctrl @ 00050ef4
+  <- ot_mpi_isp_ir_auto @ 0005202c
+  <- ot_mpi_isp_sensor_unreg_callback @ 0005037c
+  <- ot_mpi_isp_set_black_level_attr @ 00051c28
+  <- ot_mpi_isp_mem_share_all @ 0004f16c
+  <- ot_mpi_isp_set_pub_attr @ 00050db4
+  <- ot_mpi_isp_get_dng_color_param @ 00051fec
+  <- ot_mpi_isp_mem_init @ 0004eb6c
+  <- ot_mpi_isp_mem_share @ 0004eeb8
+  <- ot_mpi_isp_get_fmw_state @ 00050f64
+  <- ot_mpi_isp_get_black_level_attr @ 00051c68
+  <- ot_mpi_isp_set_gamma_attr @ 0005134c
+  <- ot_mpi_isp_get_mesh_shading_gain_lut_attr @ 0005162c
+  <- ot_mpi_isp_set_ldci_attr @ 00050fa4
+  <- ot_mpi_isp_set_crosstalk_attr @ 000519e8
+  <- ot_mpi_isp_set_expander_attr @ 00052218
+  <- ot_mpi_isp_get_anti_false_color_attr @ 00051aa8
+  <- ot_mpi_isp_get_cac_attr @ 000517c8
+  <- ot_mpi_isp_get_auto_color_shading_attr @ 000516ac
+  <- ot_mpi_isp_get_fswdr_attr @ 00051164
+  <- ot_mpi_isp_get_debug @ 00051e64
+  <- ot_mpi_isp_get_dp_dynamic_attr @ 000514ec
+  <- ot_mpi_isp_set_module_ctrl @ 00050eb4
+  <- ot_mpi_isp_set_be_frame_attr @ 00052298
+  <- ot_mpi_isp_mesh_shading_calibration @ 00051734
+  <- ot_mpi_isp_set_sharpen_attr @ 00051968
+  <- ot_mpi_isp_set_smart_info @ 00052148
+  <- ot_mpi_isp_get_lightbox_gain @ 000516ec
+  <- ot_mpi_isp_get_bind_attr @ 0005082c
+  <- ot_mpi_isp_set_stats_cfg @ 000512b4
+  <- ot_mpi_isp_get_dcf_info @ 00050b9c
+  <- ot_mpi_isp_set_cac_attr @ 00051788
+  <- ot_mpi_isp_set_anti_false_color_attr @ 00051a68
+  <- mpi_isp_set_expander_attr @ 0004e2a4
+  <- ot_mpi_isp_set_mesh_shading_attr @ 0005156c
+  <- ot_mpi_isp_init @ 0004ed38
+  <- ot_mpi_isp_set_color_tone_attr @ 000518e8
+  <- ot_mpi_isp_mem_unshare @ 0004f03c
+  <- ot_mpi_isp_get_isp_reg_attr @ 00051de4
+  <- ot_mpi_isp_query_inner_state_info @ 00051f2c
+  <- ot_mpi_isp_get_drc_attr @ 00051064
+  <- ot_mpi_isp_get_noise_calibration @ 00052358
+  <- ot_mpi_isp_run @ 0004f7d4
+  <- ot_mpi_isp_set_drc_attr @ 00051024
+  <- ot_mpi_isp_get_motion_stats @ 000523c8
+  <- ot_mpi_isp_awb_lib_reg_callback @ 000501ec
+  <- ot_mpi_isp_get_ca_attr @ 00051ba8
+  <- ot_mpi_isp_get_wb_stats @ 00051254
+  <- ot_mpi_isp_set_mod_param @ 0004eae4
+  <- ot_mpi_isp_get_vd_time_out @ 00050884
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 0005048c
+  <- ot_mpi_isp_set_pipe_differ_attr @ 00050e34
+  <- ot_mpi_isp_set_bind_attr @ 000506e4
+  <- ot_mpi_isp_set_fmw_state @ 00050f34
+  <- ot_mpi_isp_exit @ 0004fa78
+  <- ot_mpi_isp_set_csc_attr @ 000513ec
+  <- ot_mpi_isp_set_dng_color_param @ 00051fac
+  <- ot_mpi_isp_get_color_tone_attr @ 00051928
+  <- ot_mpi_isp_set_ctrl_param @ 00051ea4
+  <- ot_mpi_isp_mem_unshare_all @ 0004f2d8
+  <- ot_mpi_isp_get_mod_param @ 0004eb28
+  <- ot_mpi_isp_set_debug @ 00051e24
+  <- ot_mpi_isp_set_mesh_shading_gain_lut_attr @ 000515ec
+  <- ot_mpi_isp_set_fswdr_attr @ 00051124
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 000505b8
+  <- ot_mpi_isp_set_frame_info @ 00050cbc
+  <- ot_mpi_isp_get_stats_cfg @ 00051300
+  <- ot_mpi_isp_get_ctrl_param @ 00051ee8
+  <- ot_mpi_isp_get_csc_attr @ 0005142c
+  <- ot_mpi_isp_get_smart_info @ 00052188
+  <- ot_mpi_isp_get_ae_stats @ 000511e4
+  <- ot_mpi_isp_get_mesh_shading_attr @ 000515ac
+  <- ot_mpi_isp_set_noise_calibration @ 00052318
+  <- ot_mpi_isp_get_crosstalk_attr @ 00051a28
+
+======================================================================
+FUNCTION: isp_mutex_lock
+ADDRESS:  0004e5a4
+SIZE:     48 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_mutex_lock(int param_1)
+
+{
+  int iVar1;
+  
+  iVar1 = pthread_mutex_lock((pthread_mutex_t *)(&DAT_0007ae70 + param_1 * 0x18));
+  if (iVar1 == 0) {
+    return;
+  }
+  fprintf(stderr,"[Func]:%s [Line]:%d [Info]:pthread_mutex_lock failed!\n","isp_mutex_lock",0x39);
+  return;
+}
+
+
+--- CALLS TO ---
+  -> pthread_mutex_lock @ 00018734
+--- CALLED BY ---
+  <- ot_mpi_isp_get_be_frame_attr @ 000522d8
+  <- ot_mpi_isp_get_sharpen_attr @ 000519a8
+  <- ot_mpi_isp_ae_lib_reg_callback @ 00050038
+  <- mpi_isp_get_ynet_cfg @ 00052dac
+  <- ot_mpi_isp_set_auto_color_shading_attr @ 0005166c
+  <- ot_mpi_isp_run_once @ 0004f444
+  <- ot_mpi_isp_set_dehaze_attr @ 000510a4
+  <- ot_mpi_isp_sensor_reg_callback @ 0004ff54
+  <- ot_mpi_isp_set_ca_attr @ 00051b68
+  <- ot_mpi_isp_set_dcf_info @ 00050a68
+  <- ot_mpi_isp_get_pub_attr @ 00050df4
+  <- ot_mpi_isp_get_ldci_attr @ 00050fe4
+  <- ot_mpi_isp_get_demosaic_attr @ 00051b28
+  <- mpi_isp_get_check_sum_stats @ 00052efc
+  <- ot_mpi_isp_get_dng_image_static_info @ 00051f6c
+  <- ot_mpi_isp_get_focus_stats @ 000511a4
+  <- ot_mpi_isp_set_dp_dynamic_attr @ 000514ac
+  <- ot_mpi_isp_get_nr_attr @ 00051888
+  <- ot_mpi_isp_get_gamma_attr @ 0005138c
+  <- ot_mpi_isp_get_dehaze_attr @ 000510e4
+  <- ot_mpi_isp_get_pipe_differ_attr @ 00050e74
+  <- ot_mpi_isp_get_expander_attr @ 00052258
+  <- ot_mpi_isp_set_nr_attr @ 00051848
+  <- ot_mpi_isp_set_demosaic_attr @ 00051ae8
+  <- ot_mpi_isp_get_module_ctrl @ 00050ef4
+  <- ot_mpi_isp_ir_auto @ 0005202c
+  <- ot_mpi_isp_sensor_unreg_callback @ 0005037c
+  <- mpi_isp_set_check_sum_enable @ 00052e8c
+  <- mpi_isp_set_mesh_shading_gain_lut_attr @ 00052fb4
+  <- ot_mpi_isp_set_black_level_attr @ 00051c28
+  <- mpi_isp_set_isp_stitch_transform_info @ 00053184
+  <- mpi_isp_enable_aiisp @ 00052740
+  <- ot_mpi_isp_set_pub_attr @ 00050db4
+  <- ot_mpi_isp_get_dng_color_param @ 00051fec
+  <- ot_mpi_isp_mem_init @ 0004eb6c
+  <- ot_mpi_isp_get_fmw_state @ 00050f64
+  <- ot_mpi_isp_get_black_level_attr @ 00051c68
+  <- ot_mpi_isp_set_gamma_attr @ 0005134c
+  <- ot_mpi_isp_get_mesh_shading_gain_lut_attr @ 0005162c
+  <- ot_mpi_isp_set_ldci_attr @ 00050fa4
+  <- mpi_isp_set_ynet_cfg @ 00052d3c
+  <- mpi_isp_get_ai_mode_attr @ 000526ac
+  <- ot_mpi_isp_set_crosstalk_attr @ 000519e8
+  <- mpi_isp_set_mesh_shading_attr @ 0005309c
+  <- ot_mpi_isp_set_expander_attr @ 00052218
+  <- ot_mpi_isp_get_anti_false_color_attr @ 00051aa8
+  <- ot_mpi_isp_get_cac_attr @ 000517c8
+  <- ot_mpi_isp_get_auto_color_shading_attr @ 000516ac
+  <- mpi_isp_set_aidrc_dataflow_status @ 0005297c
+  <- ot_mpi_isp_get_fswdr_attr @ 00051164
+  <- ot_mpi_isp_get_debug @ 00051e64
+  <- ot_mpi_isp_get_dp_dynamic_attr @ 000514ec
+  <- mpi_isp_set_algs_update @ 00053204
+  <- ot_mpi_isp_set_module_ctrl @ 00050eb4
+  <- ot_mpi_isp_set_be_frame_attr @ 00052298
+  <- ot_mpi_isp_set_sharpen_attr @ 00051968
+  <- ot_mpi_isp_set_smart_info @ 00052148
+  <- mpi_isp_set_binary_enable @ 00052e1c
+  <- ot_mpi_isp_get_bind_attr @ 0005082c
+  <- isp_run_thread @ 000430b0
+  <- ot_mpi_isp_set_stats_cfg @ 000512b4
+  <- mpi_isp_set_aidrc_mode @ 0005291c
+  <- ot_mpi_isp_get_dcf_info @ 00050b9c
+  <- ot_mpi_isp_set_cac_attr @ 00051788
+  <- ot_mpi_isp_set_anti_false_color_attr @ 00051a68
+  <- mpi_isp_disable_aiisp @ 00052854
+  <- ot_mpi_isp_set_mesh_shading_attr @ 0005156c
+  <- ot_mpi_isp_init @ 0004ed38
+  <- ot_mpi_isp_set_color_tone_attr @ 000518e8
+  <- mpi_isp_set_ai_mode_attr @ 000525f8
+  <- ot_mpi_isp_get_isp_reg_attr @ 00051de4
+  <- ot_mpi_isp_query_inner_state_info @ 00051f2c
+  <- ot_mpi_isp_get_drc_attr @ 00051064
+  <- ot_mpi_isp_get_noise_calibration @ 00052358
+  <- ot_mpi_isp_run @ 0004f7d4
+  <- ot_mpi_isp_set_drc_attr @ 00051024
+  <- ot_mpi_isp_get_motion_stats @ 000523c8
+  <- ot_mpi_isp_awb_lib_reg_callback @ 000501ec
+  <- ot_mpi_isp_get_ca_attr @ 00051ba8
+  <- ot_mpi_isp_get_wb_stats @ 00051254
+  <- mpi_isp_fpn_calibrate @ 0004d6fc
+  <- mpi_isp_set_fpn_attr @ 0004d8d4
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 0005048c
+  <- ot_mpi_isp_set_pipe_differ_attr @ 00050e34
+  <- ot_mpi_isp_set_bind_attr @ 000506e4
+  <- ot_mpi_isp_set_fmw_state @ 00050f34
+  <- ot_mpi_isp_exit @ 0004fa78
+  <- ot_mpi_isp_set_csc_attr @ 000513ec
+  <- ot_mpi_isp_set_dng_color_param @ 00051fac
+  <- ot_mpi_isp_get_color_tone_attr @ 00051928
+  <- ot_mpi_isp_set_debug @ 00051e24
+  <- ot_mpi_isp_set_mesh_shading_gain_lut_attr @ 000515ec
+  <- ot_mpi_isp_set_fswdr_attr @ 00051124
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 000505b8
+  <- ot_mpi_isp_get_stats_cfg @ 00051300
+  <- ot_mpi_isp_get_csc_attr @ 0005142c
+  <- ot_mpi_isp_get_smart_info @ 00052188
+  <- ot_mpi_isp_get_ae_stats @ 000511e4
+  <- ot_mpi_isp_get_mesh_shading_attr @ 000515ac
+  <- ot_mpi_isp_set_noise_calibration @ 00052318
+  <- mpi_isp_get_drc_blend @ 00052c80
+  <- mpi_isp_set_drc_blend @ 000529dc
+  <- FUN_00048ae0 @ 00048ae0
+  <- ot_mpi_isp_get_crosstalk_attr @ 00051a28
+
+======================================================================
+FUNCTION: isp_get_usr_ctx
+ADDRESS:  0004ea44
+SIZE:     18 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined1 * isp_get_usr_ctx(int param_1)
+
+{
+  return g_isp_ctx + param_1 * 0x27e0;
+}
+
+
+--- CALLS TO ---
+--- CALLED BY ---
+  <- isp_alg_register_csc @ 000216f0
+  <- isp_switch_reg_set @ 0003b214
+  <- FUN_0001b982 @ 0001b982
+  <- isp_trans_info_init @ 000414dc
+  <- FUN_00023d1c @ 00023d1c
+  <- isp_reset_fe_stt_en @ 0003a188
+  <- isp_alg_register_ae @ 0001b31c
+  <- isp_dng_info_init @ 0003dac0
+  <- ot_mpi_isp_ae_lib_reg_callback @ 00050038
+  <- FUN_000338dc @ 000338dc
+  <- isp_algs_unregister @ 0003c8ca
+  <- isp_reg_cfg_info_set @ 0003aa20
+  <- FUN_0002afe8 @ 0002afe8
+  <- isp_get_be_buf_first @ 00034704
+  <- isp_alg_register_frame_wdr @ 00025f20
+  <- FUN_00030440 @ 00030440
+  <- ot_mpi_isp_run_once @ 0004f444
+  <- isp_get_pre_be_vir_addr @ 000354e4
+  <- ot_mpi_isp_sensor_reg_callback @ 0004ff54
+  <- FUN_00031c80 @ 00031c80
+  <- isp_get_be_free_buf @ 000347a4
+  <- ot_mpi_isp_set_dcf_info @ 00050a68
+  <- FUN_000305a0 @ 000305a0
+  <- FUN_0001f1e0 @ 0001f1e0
+  <- FUN_00030c9c @ 00030c9c
+  <- FUN_00036454 @ 00036454
+  <- FUN_00025550 @ 00025550
+  <- ot_mpi_isp_get_frame_info @ 00050d38
+  <- FUN_0002179c @ 0002179c
+  <- FUN_0001c54c @ 0001c54c
+  <- FUN_00031240 @ 00031240
+  <- isp_libs_unregister @ 0003c8f2
+  <- FUN_000252dc @ 000252dc
+  <- FUN_000377dc @ 000377dc
+  <- isp_alg_register_agamma @ 0001c2dc
+  <- isp_ldci_buf_init @ 00034398
+  <- FUN_0001d094 @ 0001d094
+  <- FUN_000355fc @ 000355fc
+  <- isp_global_initialize @ 0003d4a4
+  <- isp_alg_register_ca @ 00020120
+  <- isp_alg_register_sharpen @ 0002d328
+  <- FUN_0001ef24 @ 0001ef24
+  <- isp_cfg_be_buf_exit @ 000348bc
+  <- isp_get_reg_cfg_ctx @ 0003a6ac
+  <- FUN_00031998 @ 00031998
+  <- isp_run @ 00042b3c
+  <- FUN_00030db4 @ 00030db4
+  <- FUN_00024378 @ 00024378
+  <- isp_alg_register_ge @ 00027410
+  <- ot_mpi_isp_sensor_unreg_callback @ 0005037c
+  <- isp_stt_buf_init @ 000341b4
+  <- isp_alg_register_expander @ 00024000
+  <- isp_update_info_init @ 0003cc20
+  <- isp_demosaic_set_long_frame_mode @ 00022ac0
+  <- isp_alg_register_mcds @ 000289c0
+  <- FUN_00032228 @ 00032228
+  <- FUN_0002637c @ 0002637c
+  <- isp_dist_trans_pipe @ 0004ea80
+  <- FUN_00018944 @ 00018944
+  <- isp_demosaic_reg_update @ 000230c8
+  <- isp_alg_register_lsc @ 000287e8
+  <- FUN_000414bc @ 000414bc
+  <- get_linear_inter_info @ 000437ec
+  <- FUN_0001cd94 @ 0001cd94
+  <- FUN_000349f4 @ 000349f4
+  <- isp_frame_cnt_get @ 00042554
+  <- FUN_0004149e @ 0004149e
+  <- ot_mpi_isp_mem_share_all @ 0004f16c
+  <- FUN_0001a910 @ 0001a910
+  <- FUN_0001dbc8 @ 0001dbc8
+  <- FUN_00032cd8 @ 00032cd8
+  <- FUN_00030a20 @ 00030a20
+  <- FUN_000219e0 @ 000219e0
+  <- ot_mpi_isp_mem_init @ 0004eb6c
+  <- FUN_0001d6d0 @ 0001d6d0
+  <- FUN_00041480 @ 00041480
+  <- ot_mpi_isp_mem_share @ 0004eeb8
+  <- FUN_0001cf74 @ 0001cf74
+  <- isp_alg_register_blc @ 0001f848
+  <- FUN_0001bdc4 @ 0001bdc4
+  <- FUN_00031690 @ 00031690
+  <- FUN_000330bc @ 000330bc
+  <- FUN_0001a430 @ 0001a430
+  <- isp_alg_register_gamma @ 0002690c
+  <- isp_be_vreg_addr_init @ 00034984
+  <- isp_dehaze_dbg_set @ 0003d254
+  <- isp_cfg_be_buf_init @ 000345c8
+  <- FUN_00018c78 @ 00018c78
+  <- isp_ext_regs_initialize @ 0003d3fc
+  <- FUN_0001faa4 @ 0001faa4
+  <- isp_check_no_fe_pipe @ 0004ea60
+  <- isp_ae_dbg_set @ 0003d1d8
+  <- FUN_0001bcbc @ 0001bcbc
+  <- isp_all_cfgs_be_buf_init @ 00034928
+  <- FUN_00031578 @ 00031578
+  <- FUN_000367e0 @ 000367e0
+  <- FUN_00026f4c @ 00026f4c
+  <- FUN_0002a148 @ 0002a148
+  <- FUN_00031460 @ 00031460
+  <- FUN_00030ac4 @ 00030ac4
+  <- isp_reg_cfg_ctrl @ 0003b078
+  <- isp_alg_register_dg @ 000239c4
+  <- ot_mpi_isp_get_bind_attr @ 0005082c
+  <- isp_awb_dbg_set @ 0003d21c
+  <- isp_run_thread @ 000430b0
+  <- isp_ldci_buf_exit @ 000342fc
+  <- isp_init @ 000426c0
+  <- isp_exit @ 00043210
+  <- isp_dng_info_exit @ 0003db34
+  <- FUN_00035728 @ 00035728
+  <- ot_mpi_isp_get_dcf_info @ 00050b9c
+  <- isp_alg_register_af @ 0001bf30
+  <- FUN_0001c074 @ 0001c074
+  <- mpi_isp_set_pub_attr @ 00048b30
+  <- ot_mpi_isp_init @ 0004ed38
+  <- FUN_00024958 @ 00024958
+  <- isp_get_be_last_buf @ 0003481c
+  <- FUN_0002363c @ 0002363c
+  <- FUN_0001b3c8 @ 0001b3c8
+  <- FUN_00030638 @ 00030638
+  <- FUN_00031124 @ 00031124
+  <- ot_mpi_isp_mem_unshare @ 0004f03c
+  <- FUN_00023478 @ 00023478
+  <- FUN_00026b78 @ 00026b78
+  <- FUN_00021f30 @ 00021f30
+  <- isp_alg_register_cac @ 00021008
+  <- FUN_0002d208 @ 0002d208
+  <- FUN_00036e1c @ 00036e1c
+  <- ot_mpi_isp_run @ 0004f7d4
+  <- FUN_000283b4 @ 000283b4
+  <- FUN_00034030 @ 00034030
+  <- isp_alg_en_exit @ 0003a248
+  <- isp_stt_buf_exit @ 00034148
+  <- ot_mpi_isp_awb_lib_reg_callback @ 000501ec
+  <- isp_alg_register_demosaic @ 0002358c
+  <- isp_update_dng_image_dynamic_info @ 0003db58
+  <- FUN_00022584 @ 00022584
+  <- isp_lut2stt_apb_reg @ 0003b358
+  <- FUN_000237ac @ 000237ac
+  <- FUN_00020240 @ 00020240
+  <- FUN_0001bb44 @ 0001bb44
+  <- FUN_000288c6 @ 000288c6
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 0005048c
+  <- FUN_00023810 @ 00023810
+  <- isp_demosaic_param_init @ 00022c80
+  <- isp_switch_mode @ 00041f18
+  <- FUN_00023bc4 @ 00023bc4
+  <- isp_sync_cfg_set @ 0003ae9c
+  <- isp_alg_register_fcr @ 0001cb14
+  <- ot_mpi_isp_set_bind_attr @ 000506e4
+  <- FUN_00027668 @ 00027668
+  <- ot_mpi_isp_exit @ 0004fa78
+  <- FUN_00020a38 @ 00020a38
+  <- FUN_00035938 @ 00035938
+  <- FUN_000363b8 @ 000363b8
+  <- mpi_isp_register_alg @ 00052428
+  <- ot_mpi_isp_mem_unshare_all @ 0004f2d8
+  <- isp_alg_register_fpn @ 00024700
+  <- isp_wdr_cfg_set @ 00041dec
+  <- isp_alg_register_awb @ 0001e7c0
+  <- FUN_0003052c @ 0003052c
+  <- FUN_00032778 @ 00032778
+  <- isp_alg_register_dpc @ 0002282c
+  <- FUN_000366bc @ 000366bc
+  <- FUN_00029978 @ 00029978
+  <- isp_reg_cfg_info_init @ 0003a6f8
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 000505b8
+  <- ot_mpi_isp_set_frame_info @ 00050cbc
+  <- FUN_000188ea @ 000188ea
+  <- FUN_00028904 @ 00028904
+  <- isp_update_info_exit @ 0003ccac
+  <- FUN_0001c8d4 @ 0001c8d4
+  <- isp_ext_regs_default @ 0003d294
+
+======================================================================
+FUNCTION: isp_check_pointer
+ADDRESS:  0004e7bc
+SIZE:     36 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 isp_check_pointer(int param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+
+{
+  undefined4 uVar1;
+  
+  if (param_1 == 0) {
+    fprintf(stderr,"[Func]:%s [Line]:%d [Info]:Null Pointer!\n","isp_check_pointer",0xb4,param_4);
+    uVar1 = 0xa01c800a;
+  }
+  else {
+    uVar1 = 0;
+  }
+  return uVar1;
+}
+
+
+--- CALLS TO ---
+  -> fprintf @ 00018628
+--- CALLED BY ---
+  <- ot_mpi_isp_get_be_frame_attr @ 000522d8
+  <- ot_mpi_isp_get_sharpen_attr @ 000519a8
+  <- ot_mpi_isp_ae_lib_reg_callback @ 00050038
+  <- ot_mpi_isp_calc_flicker_type @ 000521c8
+  <- ot_mpi_isp_set_auto_color_shading_attr @ 0005166c
+  <- ot_mpi_isp_run_once @ 0004f444
+  <- ot_mpi_isp_set_dehaze_attr @ 000510a4
+  <- ot_mpi_isp_sensor_reg_callback @ 0004ff54
+  <- ot_mpi_isp_set_ca_attr @ 00051b68
+  <- ot_mpi_isp_set_dcf_info @ 00050a68
+  <- ot_mpi_isp_get_pub_attr @ 00050df4
+  <- ot_mpi_isp_get_ldci_attr @ 00050fe4
+  <- ot_mpi_isp_set_sns_slave_attr @ 0004fcd4
+  <- ot_mpi_isp_get_demosaic_attr @ 00051b28
+  <- ot_mpi_isp_get_frame_info @ 00050d38
+  <- ot_mpi_isp_get_dng_image_static_info @ 00051f6c
+  <- ot_mpi_isp_get_focus_stats @ 000511a4
+  <- ot_mpi_isp_set_dp_dynamic_attr @ 000514ac
+  <- ot_mpi_isp_get_nr_attr @ 00051888
+  <- ot_mpi_isp_get_gamma_attr @ 0005138c
+  <- ot_mpi_isp_get_dehaze_attr @ 000510e4
+  <- ot_mpi_isp_get_pipe_differ_attr @ 00050e74
+  <- ot_mpi_isp_get_expander_attr @ 00052258
+  <- ot_mpi_isp_set_nr_attr @ 00051848
+  <- ot_mpi_isp_set_demosaic_attr @ 00051ae8
+  <- ot_mpi_isp_get_module_ctrl @ 00050ef4
+  <- ot_mpi_isp_ir_auto @ 0005202c
+  <- ot_mpi_isp_sensor_unreg_callback @ 0005037c
+  <- ot_mpi_isp_get_sns_slave_attr @ 0004fe9c
+  <- ot_mpi_isp_set_black_level_attr @ 00051c28
+  <- ot_mpi_isp_mem_share_all @ 0004f16c
+  <- ot_mpi_isp_set_pub_attr @ 00050db4
+  <- ot_mpi_isp_get_dng_color_param @ 00051fec
+  <- ot_mpi_isp_mem_init @ 0004eb6c
+  <- ot_mpi_isp_mem_share @ 0004eeb8
+  <- ot_mpi_isp_get_fmw_state @ 00050f64
+  <- ot_mpi_isp_get_black_level_attr @ 00051c68
+  <- ot_mpi_isp_set_gamma_attr @ 0005134c
+  <- ot_mpi_isp_get_mesh_shading_gain_lut_attr @ 0005162c
+  <- ot_mpi_isp_set_ldci_attr @ 00050fa4
+  <- ot_mpi_isp_set_crosstalk_attr @ 000519e8
+  <- ot_mpi_isp_set_expander_attr @ 00052218
+  <- ot_mpi_isp_get_anti_false_color_attr @ 00051aa8
+  <- ot_mpi_isp_get_cac_attr @ 000517c8
+  <- ot_mpi_isp_get_auto_color_shading_attr @ 000516ac
+  <- ot_mpi_isp_get_fswdr_attr @ 00051164
+  <- ot_mpi_isp_get_debug @ 00051e64
+  <- ot_mpi_isp_get_dp_dynamic_attr @ 000514ec
+  <- ot_mpi_isp_set_module_ctrl @ 00050eb4
+  <- ot_mpi_isp_set_be_frame_attr @ 00052298
+  <- ot_mpi_isp_mesh_shading_calibration @ 00051734
+  <- ot_mpi_isp_set_sharpen_attr @ 00051968
+  <- ot_mpi_isp_set_smart_info @ 00052148
+  <- ot_mpi_isp_get_lightbox_gain @ 000516ec
+  <- ot_mpi_isp_get_bind_attr @ 0005082c
+  <- ot_mpi_isp_set_stats_cfg @ 000512b4
+  <- ot_mpi_isp_get_dcf_info @ 00050b9c
+  <- ot_mpi_isp_set_cac_attr @ 00051788
+  <- ot_mpi_isp_set_anti_false_color_attr @ 00051a68
+  <- mpi_isp_set_expander_attr @ 0004e2a4
+  <- ot_mpi_isp_set_mesh_shading_attr @ 0005156c
+  <- mpi_isp_set_pub_attr @ 00048b30
+  <- ot_mpi_isp_init @ 0004ed38
+  <- ot_mpi_isp_set_color_tone_attr @ 000518e8
+  <- ot_mpi_isp_set_fpn_attr @ 00051d08
+  <- ot_mpi_isp_mem_unshare @ 0004f03c
+  <- ot_mpi_isp_get_isp_reg_attr @ 00051de4
+  <- ot_mpi_isp_query_inner_state_info @ 00051f2c
+  <- ot_mpi_isp_get_drc_attr @ 00051064
+  <- ot_mpi_isp_get_noise_calibration @ 00052358
+  <- ot_mpi_isp_run @ 0004f7d4
+  <- ot_mpi_isp_set_drc_attr @ 00051024
+  <- ot_mpi_isp_get_motion_stats @ 000523c8
+  <- ot_mpi_isp_awb_lib_reg_callback @ 000501ec
+  <- ot_mpi_isp_get_ca_attr @ 00051ba8
+  <- ot_mpi_isp_get_wb_stats @ 00051254
+  <- ot_mpi_isp_set_mod_param @ 0004eae4
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 0005048c
+  <- ot_mpi_isp_set_pipe_differ_attr @ 00050e34
+  <- ot_mpi_isp_set_bind_attr @ 000506e4
+  <- ot_mpi_isp_exit @ 0004fa78
+  <- ot_mpi_isp_set_csc_attr @ 000513ec
+  <- ot_mpi_isp_set_dng_color_param @ 00051fac
+  <- ot_mpi_isp_get_color_tone_attr @ 00051928
+  <- ot_mpi_isp_set_ctrl_param @ 00051ea4
+  <- ot_mpi_isp_mem_unshare_all @ 0004f2d8
+  <- ot_mpi_isp_get_mod_param @ 0004eb28
+  <- ot_mpi_isp_set_debug @ 00051e24
+  <- ot_mpi_isp_set_mesh_shading_gain_lut_attr @ 000515ec
+  <- ot_mpi_isp_fpn_calibrate @ 00051ca8
+  <- ot_mpi_isp_set_fswdr_attr @ 00051124
+  <- ot_mpi_isp_get_fpn_attr @ 00051d68
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 000505b8
+  <- ot_mpi_isp_set_frame_info @ 00050cbc
+  <- ot_mpi_isp_get_stats_cfg @ 00051300
+  <- ot_mpi_isp_get_ctrl_param @ 00051ee8
+  <- ot_mpi_isp_get_csc_attr @ 0005142c
+  <- ot_mpi_isp_get_smart_info @ 00052188
+  <- ot_mpi_isp_get_ae_stats @ 000511e4
+  <- ot_mpi_isp_get_mesh_shading_attr @ 000515ac
+  <- ot_mpi_isp_set_noise_calibration @ 00052318
+  <- ot_mpi_isp_get_crosstalk_attr @ 00051a28
+
+======================================================================
+FUNCTION: isp_mutex_unlock
+ADDRESS:  0004e5e8
+SIZE:     48 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_mutex_unlock(int param_1)
+
+{
+  int iVar1;
+  
+  iVar1 = pthread_mutex_unlock((pthread_mutex_t *)(&DAT_0007ae70 + param_1 * 0x18));
+  if (iVar1 == 0) {
+    return;
+  }
+  fprintf(stderr,"[Func]:%s [Line]:%d [Info]:pthread_mutex_unlock failed!\n","isp_mutex_unlock",0x40
+         );
+  return;
+}
+
+
+--- CALLS TO ---
+  -> pthread_mutex_unlock @ 000186d4
+--- CALLED BY ---
+  <- ot_mpi_isp_get_be_frame_attr @ 000522d8
+  <- ot_mpi_isp_get_sharpen_attr @ 000519a8
+  <- ot_mpi_isp_ae_lib_reg_callback @ 00050038
+  <- mpi_isp_get_ynet_cfg @ 00052dac
+  <- ot_mpi_isp_set_auto_color_shading_attr @ 0005166c
+  <- ot_mpi_isp_run_once @ 0004f444
+  <- ot_mpi_isp_set_dehaze_attr @ 000510a4
+  <- ot_mpi_isp_sensor_reg_callback @ 0004ff54
+  <- ot_mpi_isp_set_ca_attr @ 00051b68
+  <- ot_mpi_isp_set_dcf_info @ 00050a68
+  <- ot_mpi_isp_get_pub_attr @ 00050df4
+  <- ot_mpi_isp_get_ldci_attr @ 00050fe4
+  <- ot_mpi_isp_get_demosaic_attr @ 00051b28
+  <- mpi_isp_get_check_sum_stats @ 00052efc
+  <- ot_mpi_isp_get_dng_image_static_info @ 00051f6c
+  <- ot_mpi_isp_get_focus_stats @ 000511a4
+  <- ot_mpi_isp_set_dp_dynamic_attr @ 000514ac
+  <- ot_mpi_isp_get_nr_attr @ 00051888
+  <- ot_mpi_isp_get_gamma_attr @ 0005138c
+  <- ot_mpi_isp_get_dehaze_attr @ 000510e4
+  <- ot_mpi_isp_get_pipe_differ_attr @ 00050e74
+  <- ot_mpi_isp_get_expander_attr @ 00052258
+  <- ot_mpi_isp_set_nr_attr @ 00051848
+  <- ot_mpi_isp_set_demosaic_attr @ 00051ae8
+  <- ot_mpi_isp_get_module_ctrl @ 00050ef4
+  <- ot_mpi_isp_ir_auto @ 0005202c
+  <- ot_mpi_isp_sensor_unreg_callback @ 0005037c
+  <- mpi_isp_set_check_sum_enable @ 00052e8c
+  <- mpi_isp_set_mesh_shading_gain_lut_attr @ 00052fb4
+  <- ot_mpi_isp_set_black_level_attr @ 00051c28
+  <- mpi_isp_set_isp_stitch_transform_info @ 00053184
+  <- mpi_isp_enable_aiisp @ 00052740
+  <- ot_mpi_isp_set_pub_attr @ 00050db4
+  <- ot_mpi_isp_get_dng_color_param @ 00051fec
+  <- ot_mpi_isp_mem_init @ 0004eb6c
+  <- ot_mpi_isp_get_fmw_state @ 00050f64
+  <- ot_mpi_isp_get_black_level_attr @ 00051c68
+  <- ot_mpi_isp_set_gamma_attr @ 0005134c
+  <- ot_mpi_isp_get_mesh_shading_gain_lut_attr @ 0005162c
+  <- ot_mpi_isp_set_ldci_attr @ 00050fa4
+  <- mpi_isp_set_ynet_cfg @ 00052d3c
+  <- mpi_isp_get_ai_mode_attr @ 000526ac
+  <- ot_mpi_isp_set_crosstalk_attr @ 000519e8
+  <- mpi_isp_set_mesh_shading_attr @ 0005309c
+  <- ot_mpi_isp_set_expander_attr @ 00052218
+  <- ot_mpi_isp_get_anti_false_color_attr @ 00051aa8
+  <- ot_mpi_isp_get_cac_attr @ 000517c8
+  <- ot_mpi_isp_get_auto_color_shading_attr @ 000516ac
+  <- mpi_isp_set_aidrc_dataflow_status @ 0005297c
+  <- ot_mpi_isp_get_fswdr_attr @ 00051164
+  <- ot_mpi_isp_get_debug @ 00051e64
+  <- ot_mpi_isp_get_dp_dynamic_attr @ 000514ec
+  <- mpi_isp_set_algs_update @ 00053204
+  <- ot_mpi_isp_set_module_ctrl @ 00050eb4
+  <- ot_mpi_isp_set_be_frame_attr @ 00052298
+  <- ot_mpi_isp_set_sharpen_attr @ 00051968
+  <- ot_mpi_isp_set_smart_info @ 00052148
+  <- mpi_isp_set_binary_enable @ 00052e1c
+  <- ot_mpi_isp_get_bind_attr @ 0005082c
+  <- isp_run_thread @ 000430b0
+  <- ot_mpi_isp_set_stats_cfg @ 000512b4
+  <- mpi_isp_set_aidrc_mode @ 0005291c
+  <- ot_mpi_isp_get_dcf_info @ 00050b9c
+  <- ot_mpi_isp_set_cac_attr @ 00051788
+  <- ot_mpi_isp_set_anti_false_color_attr @ 00051a68
+  <- mpi_isp_disable_aiisp @ 00052854
+  <- ot_mpi_isp_set_mesh_shading_attr @ 0005156c
+  <- ot_mpi_isp_init @ 0004ed38
+  <- ot_mpi_isp_set_color_tone_attr @ 000518e8
+  <- mpi_isp_set_ai_mode_attr @ 000525f8
+  <- ot_mpi_isp_get_isp_reg_attr @ 00051de4
+  <- ot_mpi_isp_query_inner_state_info @ 00051f2c
+  <- ot_mpi_isp_get_drc_attr @ 00051064
+  <- ot_mpi_isp_get_noise_calibration @ 00052358
+  <- ot_mpi_isp_run @ 0004f7d4
+  <- ot_mpi_isp_set_drc_attr @ 00051024
+  <- ot_mpi_isp_get_motion_stats @ 000523c8
+  <- ot_mpi_isp_awb_lib_reg_callback @ 000501ec
+  <- ot_mpi_isp_get_ca_attr @ 00051ba8
+  <- ot_mpi_isp_get_wb_stats @ 00051254
+  <- mpi_isp_fpn_calibrate @ 0004d6fc
+  <- mpi_isp_set_fpn_attr @ 0004d8d4
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 0005048c
+  <- ot_mpi_isp_set_pipe_differ_attr @ 00050e34
+  <- ot_mpi_isp_set_bind_attr @ 000506e4
+  <- ot_mpi_isp_set_fmw_state @ 00050f34
+  <- ot_mpi_isp_exit @ 0004fa78
+  <- ot_mpi_isp_set_csc_attr @ 000513ec
+  <- ot_mpi_isp_set_dng_color_param @ 00051fac
+  <- ot_mpi_isp_get_color_tone_attr @ 00051928
+  <- ot_mpi_isp_set_debug @ 00051e24
+  <- ot_mpi_isp_set_mesh_shading_gain_lut_attr @ 000515ec
+  <- ot_mpi_isp_set_fswdr_attr @ 00051124
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 000505b8
+  <- ot_mpi_isp_get_stats_cfg @ 00051300
+  <- ot_mpi_isp_get_csc_attr @ 0005142c
+  <- ot_mpi_isp_get_smart_info @ 00052188
+  <- ot_mpi_isp_get_ae_stats @ 000511e4
+  <- ot_mpi_isp_get_mesh_shading_attr @ 000515ac
+  <- ot_mpi_isp_set_noise_calibration @ 00052318
+  <- mpi_isp_get_drc_blend @ 00052c80
+  <- mpi_isp_set_drc_blend @ 000529dc
+  <- FUN_00048ae0 @ 00048ae0
+  <- ot_mpi_isp_get_crosstalk_attr @ 00051a28
+

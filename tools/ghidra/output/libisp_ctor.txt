@@ -1,0 +1,86 @@
+LIBOT_MPI_ISP.SO INIT_ARRAY CONSTRUCTOR
+======================================================================
+FUNCTION: _INIT_0
+ADDRESS:  00018888
+SIZE:     72 bytes
+
+
+void _INIT_0(void)
+
+{
+  code *pcVar1;
+  undefined4 in_r3;
+  int iVar2;
+  
+  iVar2 = *(int *)(DAT_000188a8 + 0x18892 + DAT_000188ac);
+  if (iVar2 != 0) {
+    __register_frame_info(DAT_000188b4 + 0x1889e,DAT_000188b0 + 0x1889c,DAT_000188ac,iVar2,in_r3);
+  }
+  iVar2 = (DAT_00018824 + 0x18800) - (DAT_00018820 + 0x187fe);
+  if ((iVar2 >> 2) - (iVar2 >> 0x1f) >> 1 != 0) {
+    pcVar1 = *(code **)(DAT_00018828 + 0x1880c + DAT_0001882c);
+    if (pcVar1 != (code *)0x0) {
+      (*pcVar1)();
+      return;
+    }
+  }
+  return;
+}
+
+
+--- CALLS TO ---
+  -> __register_frame_info @ 0001878c
+  -> _ITM_registerTMCloneTable @ 0007b07c
+
+
+=== Functions named *register* or *init* ===
+  _init @ 000184bc
+  __cxa_finalize @ 00018594
+  __deregister_frame_info @ 00018634
+  isp_alg_register_bayer_nr @ 0001865c
+  isp_alg_register_drc @ 000186bc
+  isp_alg_register_acs @ 000186c8
+  isp_alg_register_ldci @ 00018740
+  isp_alg_register_dehaze @ 00018764
+  __register_frame_info @ 0001878c
+  isp_alg_register_ae @ 0001b31c
+  isp_alg_register_af @ 0001bf30
+  isp_alg_register_agamma @ 0001c2dc
+  isp_alg_register_fcr @ 0001cb14
+  isp_alg_register_awb @ 0001e7c0
+  isp_alg_register_blc @ 0001f848
+  isp_alg_register_ca @ 00020120
+  isp_alg_register_cac @ 00021008
+  isp_alg_register_clut @ 000210b4
+  isp_alg_register_csc @ 000216f0
+  isp_alg_register_dpc @ 0002282c
+  isp_demosaic_set_long_frame_mode @ 00022ac0
+  isp_alg_register_demosaic @ 0002358c
+  isp_alg_register_dg @ 000239c4
+  isp_alg_register_expander @ 00024000
+  isp_alg_register_flicker @ 000240ac
+  isp_alg_register_fpn @ 00024700
+  isp_alg_register_frame_wdr @ 00025f20
+  isp_alg_register_gamma @ 0002690c
+  isp_alg_register_ge @ 00027410
+  isp_alg_register_lsc @ 000287e8
+  isp_alg_register_mcds @ 000289c0
+  isp_alg_register_sharpen @ 0002d328
+  isp_algs_register @ 0003c7e0
+  isp_fe_algs_register @ 0003c888
+  isp_yuv_algs_register @ 0003c8a6
+  isp_algs_unregister @ 0003c8ca
+  isp_libs_unregister @ 0003c8f2
+  isp_dfx_update_frame_edge_info @ 0003d864
+  isp_check_sns_register @ 00041d10
+  isp_frame_cnt_get @ 00042554
+  mpi_isp_set_be_frame_pos_attr @ 0004e3c8
+  mpi_isp_get_be_frame_pos_attr @ 0004e438
+  ot_mpi_isp_set_frame_info @ 00050cbc
+  ot_mpi_isp_get_frame_info @ 00050d38
+  ot_mpi_isp_set_be_frame_attr @ 00052298
+  ot_mpi_isp_get_be_frame_attr @ 000522d8
+  mpi_isp_register_alg @ 00052428
+  __cxa_finalize @ 0007b040
+  __deregister_frame_info @ 0007b070
+  _ITM_registerTMCloneTable @ 0007b07c

@@ -1,0 +1,768 @@
+SC635HAI DRIVER DECOMPILATION
+Program: superb
+Functions: 21
+======================================================================
+
+======================================================================
+FUNCTION: sc235hai_get_obj
+ADDRESS:  00427ea8
+SIZE:     18 bytes
+======================================================================
+
+
+undefined4 sc235hai_get_obj(void)
+
+{
+  return *(undefined4 *)(DAT_00427ebc + 0x427eb2 + DAT_00427ec0);
+}
+
+
+======================================================================
+FUNCTION: cmos_sc235hai_set_custom_i2c_addr
+ADDRESS:  00427ec4
+SIZE:     56 bytes
+======================================================================
+
+
+undefined4
+cmos_sc235hai_set_custom_i2c_addr
+          (uint param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+
+{
+  undefined4 uVar1;
+  
+  if (param_1 < 4) {
+    uVar1 = sc235hai_set_custom_i2c_addr
+                      (param_1 * 0x5d4 + DAT_00427f04 + 0x427ed8,param_2,0x5d4,param_4);
+    return uVar1;
+  }
+  fprintf((FILE *)**(undefined4 **)(DAT_00427f00 + 0x427ece + DAT_00427f08),
+          (char *)(DAT_00427f0c + 0x427ef2),DAT_00427f10 + 0x427ef4,0x68c);
+  return DAT_00427efc;
+}
+
+
+======================================================================
+FUNCTION: sc235hai_linear_2m30_10bit_init
+ADDRESS:  004280c4
+SIZE:     98 bytes
+======================================================================
+
+
+int sc235hai_linear_2m30_10bit_init(undefined4 *param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  char *__s;
+  
+  iVar1 = DAT_00428128;
+  iVar2 = DAT_0042812c + 0x4280ce;
+  if (param_1 == (undefined4 *)0x0) {
+    fprintf((FILE *)**(undefined4 **)(iVar2 + DAT_00428130),(char *)(DAT_00428138 + 0x4280de),
+            DAT_00428134 + 0x4280dc,0x46);
+  }
+  else {
+    iVar1 = FUN_00427f14(param_1,DAT_0042813c + 0x4280ee);
+    if (iVar1 == 0) {
+      __s = (char *)(DAT_00428148 + 0x428110);
+      puts(__s);
+      printf((char *)(DAT_0042814c + 0x42811c),*param_1);
+      puts(__s);
+    }
+    else {
+      fprintf((FILE *)**(undefined4 **)(iVar2 + DAT_00428130),(char *)(DAT_00428144 + 0x428104),
+              DAT_00428140 + 0x428102,0x4b);
+    }
+  }
+  return iVar1;
+}
+
+
+======================================================================
+FUNCTION: sc235hai_vc_wdr_2t1_2m30_10bit_init
+ADDRESS:  00428150
+SIZE:     98 bytes
+======================================================================
+
+
+int sc235hai_vc_wdr_2t1_2m30_10bit_init(undefined4 *param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  
+  iVar1 = DAT_004281b4;
+  iVar2 = DAT_004281b8 + 0x42815a;
+  if (param_1 == (undefined4 *)0x0) {
+    fprintf((FILE *)**(undefined4 **)(iVar2 + DAT_004281bc),(char *)(DAT_004281c4 + 0x42816a),
+            DAT_004281c0 + 0x428168,0x5c);
+  }
+  else {
+    iVar1 = FUN_00427f14(param_1,DAT_004281c8 + 0x42817a);
+    if (iVar1 == 0) {
+      puts((char *)(DAT_004281d4 + 0x42819c));
+      printf((char *)(DAT_004281d8 + 0x4281a6),*param_1);
+      puts((char *)(DAT_004281dc + 0x4281ae));
+    }
+    else {
+      fprintf((FILE *)**(undefined4 **)(iVar2 + DAT_004281bc),(char *)(DAT_004281d0 + 0x428190),
+              DAT_004281cc + 0x42818e,0x61);
+    }
+  }
+  return iVar1;
+}
+
+
+======================================================================
+FUNCTION: sc235hai_get_standby_cfg
+ADDRESS:  004281e0
+SIZE:     62 bytes
+======================================================================
+
+
+undefined4 sc235hai_get_standby_cfg(int param_1,int param_2,undefined4 param_3,undefined4 param_4)
+
+{
+  undefined4 uVar1;
+  undefined4 uVar2;
+  
+  if (param_1 == 0) {
+    fprintf((FILE *)**(undefined4 **)(DAT_00428224 + 0x4281e8 + DAT_00428228),
+            (char *)(DAT_0042822c + 0x4281f6),DAT_00428230 + 0x4281f8,0x6f,param_4);
+    uVar1 = DAT_00428220;
+  }
+  else {
+    uVar2 = *(undefined4 *)(param_1 + 0x5c8);
+    *(undefined4 *)(param_2 + 4) = 1;
+    uVar1 = 0;
+    *(char *)(param_2 + 0x22) = (char)uVar2;
+    *(undefined4 *)(param_2 + 0x30) = 1;
+    *(undefined4 *)(param_2 + 0x28) = 2;
+    *(undefined4 *)(param_2 + 0x24) = 0x100;
+    *(undefined4 *)(param_2 + 0x2c) = 0;
+  }
+  return uVar1;
+}
+
+
+======================================================================
+FUNCTION: sc235hai_set_custom_i2c_addr
+ADDRESS:  00428234
+SIZE:     60 bytes
+======================================================================
+
+
+undefined4
+sc235hai_set_custom_i2c_addr(int *param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+
+{
+  undefined4 uVar1;
+  int iVar2;
+  
+  if (param_1 == (int *)0x0) {
+    fprintf((FILE *)**(undefined4 **)(DAT_00428274 + 0x42823e + DAT_00428278),
+            (char *)(DAT_0042827c + 0x42824c),DAT_00428280 + 0x42824e,0x7f);
+    uVar1 = DAT_00428270;
+  }
+  else {
+    iVar2 = *param_1;
+    *(undefined4 *)(DAT_00428284 + 0x42825e + iVar2 * 4) = param_2;
+    printf((char *)(DAT_00428288 + 0x42826a),iVar2,param_2,param_1[0x172],param_4);
+    uVar1 = 0;
+  }
+  return uVar1;
+}
+
+
+======================================================================
+FUNCTION: sc235hai_slave_set_slave_registers
+ADDRESS:  0042a408
+SIZE:     268 bytes
+======================================================================
+
+
+void sc235hai_slave_set_slave_registers(uint param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  byte bVar1;
+  undefined4 *puVar2;
+  int iVar3;
+  undefined4 uVar4;
+  uint uVar5;
+  int iVar6;
+  int iVar7;
+  undefined4 uVar8;
+  int iVar9;
+  int iVar10;
+  int iVar11;
+  
+  iVar7 = DAT_0042a518 + 0x42a416;
+  if (param_1 < 4) {
+    iVar10 = param_1 * 0x5d4 + DAT_0042a51c + 0x42a422;
+    iVar11 = *(int *)(iVar10 + 0x574);
+    if (iVar11 == 0) {
+      puVar2 = *(undefined4 **)(iVar7 + DAT_0042a520);
+      uVar4 = 0x5e0;
+      iVar10 = DAT_0042a524 + 0x42a43e;
+      iVar7 = DAT_0042a528 + 0x42a440;
+    }
+    else {
+      bVar1 = *(byte *)(iVar11 + 8);
+      iVar9 = *(int *)(iVar7 + DAT_0042a534);
+      iVar6 = param_1 * 0x1c + iVar9;
+      uVar8 = *(undefined4 *)(*(int *)(iVar7 + DAT_0042a538) + param_1 * 4);
+      uVar4 = *(undefined4 *)(DAT_0042a53c + 0x42a47c + param_1 * 4);
+      ot_mpi_isp_get_sns_slave_attr(uVar8,iVar6,uVar4,DAT_0042a53c + 0x42a47c,param_1,uVar4,param_3)
+      ;
+      *(byte *)(iVar6 + 3) = *(byte *)(iVar6 + 3) & 0x3f;
+      *(undefined4 *)(iVar6 + 0x18) = uVar4;
+      ot_mpi_isp_set_sns_slave_attr(uVar8,iVar6);
+      iVar3 = cis_i2c_init(iVar10);
+      if (iVar3 == 0) {
+        printf((char *)(DAT_0042a548 + 0x42a4c0),param_1,(int)*(char *)(iVar10 + 0x570));
+        ot_mpi_isp_get_sns_slave_attr(uVar8,iVar6);
+        uVar5 = *(uint *)(iVar11 + 0x674);
+        if (uVar5 == 0) {
+          uVar5 = VectorFloatToUnsigned
+                            (*(undefined4 *)
+                              ((uint)bVar1 * 0x30 + *(int *)(iVar7 + DAT_0042a54c) + 8),3);
+        }
+        iVar7 = iVar9 + param_1 * 0x1c;
+        *(undefined4 *)(iVar9 + param_1 * 0x1c) = DAT_0042a514;
+        *(uint *)(iVar7 + 4) = uVar5;
+        *(uint *)(iVar7 + 8) = uVar5;
+        *(uint *)(iVar7 + 0xc) = uVar5 >> 1;
+        *(uint *)(iVar7 + 0x10) = uVar5 >> 1;
+        *(undefined4 *)(iVar7 + 0x14) = 100;
+        *(undefined4 *)(iVar7 + 0x18) = 0;
+        ot_mpi_isp_set_sns_slave_attr(uVar8,iVar6);
+        return;
+      }
+      puVar2 = *(undefined4 **)(iVar7 + DAT_0042a520);
+      uVar4 = 0x5ec;
+      iVar10 = DAT_0042a540 + 0x42a4b2;
+      iVar7 = DAT_0042a544 + 0x42a4b4;
+    }
+  }
+  else {
+    puVar2 = *(undefined4 **)(iVar7 + DAT_0042a520);
+    uVar4 = 0x5dd;
+    iVar10 = DAT_0042a52c + 0x42a450;
+    iVar7 = DAT_0042a530 + 0x42a452;
+  }
+  (*(code *)PTR_fprintf_0076812c)(*puVar2,iVar7,iVar10,uVar4);
+  return;
+}
+
+
+======================================================================
+FUNCTION: sc235hai_slave_get_obj
+ADDRESS:  0042a6d8
+SIZE:     18 bytes
+======================================================================
+
+
+undefined4 sc235hai_slave_get_obj(void)
+
+{
+  return *(undefined4 *)(DAT_0042a6ec + 0x42a6e2 + DAT_0042a6f0);
+}
+
+
+======================================================================
+FUNCTION: sc235hai_slave_linear_2m30_10bit_init
+ADDRESS:  0042a81c
+SIZE:     146 bytes
+======================================================================
+
+
+int sc235hai_slave_linear_2m30_10bit_init(uint *param_1)
+
+{
+  undefined4 *puVar1;
+  char *pcVar2;
+  int iVar3;
+  undefined4 uVar4;
+  int iVar5;
+  
+  iVar3 = DAT_0042a8b0;
+  iVar5 = DAT_0042a8b4 + 0x42a826;
+  if (param_1 == (uint *)0x0) {
+    puVar1 = *(undefined4 **)(iVar5 + DAT_0042a8b8);
+    uVar4 = 0x35;
+    iVar5 = DAT_0042a8bc + 0x42a834;
+    pcVar2 = (char *)(DAT_0042a8c0 + 0x42a836);
+  }
+  else {
+    if (param_1[0x15d] != 0) {
+      if (*(char *)(param_1[0x15d] + 8) != '\0') {
+        return -1;
+      }
+      if (*param_1 < 2) {
+        iVar3 = DAT_0042a8d8 + 0x42a88c;
+      }
+      else {
+        iVar3 = DAT_0042a8cc + 0x42a866;
+      }
+      iVar3 = FUN_0042a6f4(param_1,iVar3,0x89);
+      if (iVar3 != 0) {
+        fprintf((FILE *)**(undefined4 **)(iVar5 + DAT_0042a8b8),(char *)(DAT_0042a8d4 + 0x42a880),
+                DAT_0042a8d0 + 0x42a87e,0x46);
+        return iVar3;
+      }
+      pcVar2 = (char *)(DAT_0042a8dc + 0x42a892);
+      puts(pcVar2);
+      printf((char *)(DAT_0042a8e0 + 0x42a89e),*param_1);
+      puts(pcVar2);
+      return 0;
+    }
+    puVar1 = *(undefined4 **)(iVar5 + DAT_0042a8b8);
+    uVar4 = 0x37;
+    iVar5 = DAT_0042a8c4 + 0x42a854;
+    pcVar2 = (char *)(DAT_0042a8c8 + 0x42a856);
+  }
+  fprintf((FILE *)*puVar1,pcVar2,iVar5,uVar4);
+  return iVar3;
+}
+
+
+======================================================================
+FUNCTION: sc235hai_slave_vc_wdr_2t1_2m30_10bit_init
+ADDRESS:  0042a8e4
+SIZE:     134 bytes
+======================================================================
+
+
+int sc235hai_slave_vc_wdr_2t1_2m30_10bit_init(undefined4 *param_1)
+
+{
+  undefined4 *puVar1;
+  int iVar2;
+  char *pcVar3;
+  undefined4 uVar4;
+  int iVar5;
+  
+  iVar2 = DAT_0042a96c;
+  iVar5 = DAT_0042a970 + 0x42a8ee;
+  if (param_1 == (undefined4 *)0x0) {
+    puVar1 = *(undefined4 **)(iVar5 + DAT_0042a974);
+    uVar4 = 0x58;
+    iVar5 = DAT_0042a978 + 0x42a8fc;
+    pcVar3 = (char *)(DAT_0042a97c + 0x42a8fe);
+  }
+  else {
+    if (param_1[0x15d] != 0) {
+      if (*(char *)(param_1[0x15d] + 8) != '\x01') {
+        return -1;
+      }
+      iVar2 = FUN_0042a6f4(param_1,DAT_0042a988 + 0x42a92c,0x82);
+      if (iVar2 != 0) {
+        fprintf((FILE *)**(undefined4 **)(iVar5 + DAT_0042a974),(char *)(DAT_0042a990 + 0x42a942),
+                DAT_0042a98c + 0x42a940,100);
+        return iVar2;
+      }
+      pcVar3 = (char *)(DAT_0042a994 + 0x42a94e);
+      puts(pcVar3);
+      printf((char *)(DAT_0042a998 + 0x42a95a),*param_1);
+      puts(pcVar3);
+      return 0;
+    }
+    puVar1 = *(undefined4 **)(iVar5 + DAT_0042a974);
+    uVar4 = 0x5a;
+    iVar5 = DAT_0042a980 + 0x42a91c;
+    pcVar3 = (char *)(DAT_0042a984 + 0x42a91e);
+  }
+  fprintf((FILE *)*puVar1,pcVar3,iVar5,uVar4);
+  return iVar2;
+}
+
+
+======================================================================
+FUNCTION: sc635hai_get_obj
+ADDRESS:  00432e9c
+SIZE:     18 bytes
+======================================================================
+
+
+undefined4 sc635hai_get_obj(void)
+
+{
+  return *(undefined4 *)(DAT_00432eb0 + 0x432ea6 + DAT_00432eb4);
+}
+
+
+======================================================================
+FUNCTION: sc635hai_linear_6m30_10bit_init
+ADDRESS:  00432f80
+SIZE:     102 bytes
+======================================================================
+
+
+int sc635hai_linear_6m30_10bit_init(undefined4 *param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  char *__s;
+  
+  iVar1 = DAT_00432fe8;
+  iVar2 = DAT_00432fec + 0x432f8a;
+  if (param_1 == (undefined4 *)0x0) {
+    fprintf((FILE *)**(undefined4 **)(iVar2 + DAT_00432ff0),(char *)(DAT_00432ff8 + 0x432f9a),
+            DAT_00432ff4 + 0x432f98,0x35);
+  }
+  else {
+    iVar1 = FUN_00432eb8(param_1,DAT_00432ffc + 0x432fae,0x109);
+    if (iVar1 == 0) {
+      __s = (char *)(DAT_00433008 + 0x432fd0);
+      puts(__s);
+      printf((char *)(DAT_0043300c + 0x432fdc),*param_1);
+      puts(__s);
+    }
+    else {
+      fprintf((FILE *)**(undefined4 **)(iVar2 + DAT_00432ff0),(char *)(DAT_00433004 + 0x432fc4),
+              DAT_00433000 + 0x432fc2,0x3a);
+    }
+  }
+  return iVar1;
+}
+
+
+======================================================================
+FUNCTION: sc635hai_vc_wdr_2t1_6m30_10bit_init
+ADDRESS:  00433010
+SIZE:     102 bytes
+======================================================================
+
+
+int sc635hai_vc_wdr_2t1_6m30_10bit_init(undefined4 *param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  
+  iVar1 = DAT_00433078;
+  iVar2 = DAT_0043307c + 0x43301a;
+  if (param_1 == (undefined4 *)0x0) {
+    fprintf((FILE *)**(undefined4 **)(iVar2 + DAT_00433080),(char *)(DAT_00433088 + 0x43302a),
+            DAT_00433084 + 0x433028,0x4b);
+  }
+  else {
+    iVar1 = FUN_00432eb8(param_1,DAT_0043308c + 0x43303e,0x113);
+    if (iVar1 == 0) {
+      puts((char *)(DAT_00433098 + 0x433060));
+      printf((char *)(DAT_0043309c + 0x43306a),*param_1);
+      puts((char *)(DAT_004330a0 + 0x433072));
+    }
+    else {
+      fprintf((FILE *)**(undefined4 **)(iVar2 + DAT_00433080),(char *)(DAT_00433094 + 0x433054),
+              DAT_00433090 + 0x433052,0x50);
+    }
+  }
+  return iVar1;
+}
+
+
+======================================================================
+FUNCTION: sc635hai_get_standby_cfg
+ADDRESS:  004330a4
+SIZE:     30 bytes
+======================================================================
+
+
+void sc635hai_get_standby_cfg(int param_1)
+
+{
+  *(undefined4 *)(param_1 + 4) = 1;
+  *(undefined1 *)(param_1 + 0x22) = 0x60;
+  *(undefined4 *)(param_1 + 0x30) = 1;
+  *(undefined4 *)(param_1 + 0x28) = 2;
+  *(undefined4 *)(param_1 + 0x24) = 0x100;
+  *(undefined4 *)(param_1 + 0x2c) = 0;
+  return;
+}
+
+
+======================================================================
+FUNCTION: sc635hai_slave_set_slave_registers
+ADDRESS:  004395c8
+SIZE:     258 bytes
+======================================================================
+
+
+void sc635hai_slave_set_slave_registers(uint param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  byte bVar1;
+  undefined4 *puVar2;
+  int iVar3;
+  undefined4 uVar4;
+  uint uVar5;
+  int iVar6;
+  int iVar7;
+  int iVar8;
+  undefined4 uVar9;
+  int iVar10;
+  int iVar11;
+  
+  iVar7 = DAT_004396d0 + 0x4395d6;
+  if (param_1 < 4) {
+    iVar8 = param_1 * 0x5d4 + DAT_004396d4 + 0x4395e0;
+    iVar11 = *(int *)(iVar8 + 0x574);
+    if (iVar11 == 0) {
+      puVar2 = *(undefined4 **)(iVar7 + DAT_004396d8);
+      uVar4 = 0x5b7;
+      iVar8 = DAT_004396dc + 0x4395fc;
+      iVar7 = DAT_004396e0 + 0x4395fe;
+    }
+    else {
+      bVar1 = *(byte *)(iVar11 + 8);
+      iVar10 = *(int *)(iVar7 + DAT_004396ec);
+      iVar6 = param_1 * 0x1c + iVar10;
+      uVar9 = *(undefined4 *)(*(int *)(iVar7 + DAT_004396f0) + param_1 * 4);
+      uVar4 = *(undefined4 *)(DAT_004396f4 + 0x43963a + param_1 * 4);
+      ot_mpi_isp_get_sns_slave_attr(uVar9,iVar6,uVar4,DAT_004396f4 + 0x43963a,param_1,uVar4,param_3)
+      ;
+      *(byte *)(iVar6 + 3) = *(byte *)(iVar6 + 3) & 0x3f;
+      *(undefined4 *)(iVar6 + 0x18) = uVar4;
+      ot_mpi_isp_set_sns_slave_attr(uVar9,iVar6);
+      iVar3 = cis_i2c_init(iVar8);
+      if (iVar3 == 0) {
+        printf((char *)(DAT_00439700 + 0x43967e),param_1,(int)*(char *)(iVar8 + 0x570));
+        ot_mpi_isp_get_sns_slave_attr(uVar9,iVar6);
+        uVar5 = *(uint *)(iVar11 + 0x674);
+        if (uVar5 == 0) {
+          uVar5 = VectorFloatToUnsigned
+                            (*(undefined4 *)
+                              ((uint)bVar1 * 0x30 + *(int *)(iVar7 + DAT_00439704) + 8),3);
+        }
+        iVar7 = iVar10 + param_1 * 0x1c;
+        *(undefined4 *)(iVar10 + param_1 * 0x1c) = DAT_004396cc;
+        *(uint *)(iVar7 + 4) = uVar5;
+        *(uint *)(iVar7 + 0xc) = uVar5 >> 1;
+        *(undefined4 *)(iVar7 + 0x18) = 0;
+        ot_mpi_isp_set_sns_slave_attr(uVar9,iVar6);
+        return;
+      }
+      puVar2 = *(undefined4 **)(iVar7 + DAT_004396d8);
+      uVar4 = 0x5c3;
+      iVar8 = DAT_004396f8 + 0x439670;
+      iVar7 = DAT_004396fc + 0x439672;
+    }
+  }
+  else {
+    puVar2 = *(undefined4 **)(iVar7 + DAT_004396d8);
+    uVar4 = 0x5b4;
+    iVar8 = DAT_004396e4 + 0x43960e;
+    iVar7 = DAT_004396e8 + 0x439610;
+  }
+  (*(code *)PTR_fprintf_0076812c)(*puVar2,iVar7,iVar8,uVar4);
+  return;
+}
+
+
+======================================================================
+FUNCTION: sc635hai_slave_get_obj
+ADDRESS:  004397f8
+SIZE:     18 bytes
+======================================================================
+
+
+undefined4 sc635hai_slave_get_obj(void)
+
+{
+  return *(undefined4 *)(DAT_0043980c + 0x439802 + DAT_00439810);
+}
+
+
+======================================================================
+FUNCTION: sc635hai_slave_set_i2c_addr
+ADDRESS:  00439814
+SIZE:     44 bytes
+======================================================================
+
+
+void sc635hai_slave_set_i2c_addr(int param_1,undefined4 param_2)
+
+{
+  int iVar1;
+  
+  iVar1 = DAT_00439840 + 0x439826;
+  printf((char *)(DAT_00439848 + 0x439836),DAT_00439844 + 0x43982e,0x736,param_1,
+         *(undefined4 *)(iVar1 + param_1 * 4),param_2);
+  *(undefined4 *)(iVar1 + param_1 * 4) = param_2;
+  return;
+}
+
+
+======================================================================
+FUNCTION: sc635hai_slave_set_single_mipi_mode
+ADDRESS:  0043984c
+SIZE:     24 bytes
+======================================================================
+
+
+void sc635hai_slave_set_single_mipi_mode(undefined4 param_1)
+
+{
+  int iVar1;
+  
+  iVar1 = DAT_00439868 + 0x439858;
+  *(undefined4 *)(DAT_00439864 + 0x439856) = param_1;
+  (*(code *)PTR_printf_00768080)(DAT_0043986c + 0x439862,iVar1,0x73d,param_1);
+  return;
+}
+
+
+======================================================================
+FUNCTION: sc635hai_slave_get_single_mipi_mode
+ADDRESS:  00439870
+SIZE:     10 bytes
+======================================================================
+
+
+void sc635hai_slave_get_single_mipi_mode(undefined4 *param_1)
+
+{
+  *param_1 = *(undefined4 *)(DAT_0043987c + 0x439876);
+  return;
+}
+
+
+======================================================================
+FUNCTION: sc635hai_slave_linear_6m30_10bit_init
+ADDRESS:  0043997c
+SIZE:     240 bytes
+======================================================================
+
+
+int sc635hai_slave_linear_6m30_10bit_init(uint *param_1)
+
+{
+  undefined4 *puVar1;
+  char *pcVar2;
+  int iVar3;
+  undefined4 uVar4;
+  uint uVar5;
+  int iVar6;
+  uint *local_18;
+  int local_14;
+  
+  iVar3 = DAT_00439a6c;
+  iVar6 = DAT_00439a78 + 0x43998e;
+  local_14 = **(int **)(DAT_00439a70 + 0x439984 + DAT_00439a74);
+  if (param_1 == (uint *)0x0) {
+    puVar1 = *(undefined4 **)(iVar6 + DAT_00439a7c);
+    uVar4 = 0x37;
+    iVar6 = DAT_00439a80 + 0x4399a4;
+    pcVar2 = (char *)(DAT_00439a84 + 0x4399a6);
+  }
+  else {
+    uVar5 = param_1[0x15d];
+    if (uVar5 != 0) {
+      local_18 = (uint *)0x0;
+      sc635hai_slave_get_single_mipi_mode(&local_18);
+      printf((char *)(DAT_00439a98 + 0x4399f2),DAT_00439a94 + 0x4399ee,0x3d,local_18);
+      if (*(char *)(uVar5 + 8) == '\0') {
+        uVar5 = *param_1;
+        if (local_18 == (uint *)0x0) {
+          if (uVar5 < 2) {
+            iVar3 = DAT_00439a9c + 0x439a0a;
+          }
+          else {
+            iVar3 = DAT_00439aac + 0x439a3e;
+          }
+        }
+        else if (uVar5 == 0) {
+          iVar3 = DAT_00439ab0 + 0x439a44;
+        }
+        else {
+          iVar3 = 0;
+          if (uVar5 == 1) {
+            iVar3 = DAT_00439aa8 + 0x439a38;
+          }
+        }
+        iVar3 = FUN_00439880(param_1,iVar3,0x10f);
+        if (iVar3 == 0) {
+          pcVar2 = (char *)(DAT_00439ab4 + 0x439a4a);
+          puts(pcVar2);
+          printf((char *)(DAT_00439ab8 + 0x439a56),*param_1);
+          puts(pcVar2);
+        }
+        else {
+          fprintf((FILE *)**(undefined4 **)(iVar6 + DAT_00439a7c),(char *)(DAT_00439aa4 + 0x439a26),
+                  DAT_00439aa0 + 0x439a24,0x56);
+        }
+      }
+      else {
+        iVar3 = -1;
+      }
+      goto LAB_004399ac;
+    }
+    puVar1 = *(undefined4 **)(iVar6 + DAT_00439a7c);
+    uVar4 = 0x39;
+    iVar6 = DAT_00439a8c + 0x4399d8;
+    pcVar2 = (char *)(DAT_00439a90 + 0x4399da);
+  }
+  local_18 = param_1;
+  fprintf((FILE *)*puVar1,pcVar2,iVar6,uVar4);
+LAB_004399ac:
+  if (**(int **)(DAT_00439a88 + 0x4399b4 + DAT_00439a74) != local_14) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return iVar3;
+}
+
+
+======================================================================
+FUNCTION: sc635hai_slave_vc_wdr_2t1_6m30_10bit_init
+ADDRESS:  00439abc
+SIZE:     136 bytes
+======================================================================
+
+
+int sc635hai_slave_vc_wdr_2t1_6m30_10bit_init(undefined4 *param_1)
+
+{
+  undefined4 *puVar1;
+  int iVar2;
+  char *__format;
+  undefined4 uVar3;
+  int iVar4;
+  
+  iVar2 = DAT_00439b44;
+  iVar4 = DAT_00439b48 + 0x439ac6;
+  if (param_1 == (undefined4 *)0x0) {
+    puVar1 = *(undefined4 **)(iVar4 + DAT_00439b4c);
+    uVar3 = 0x69;
+    iVar4 = DAT_00439b50 + 0x439ad4;
+    __format = (char *)(DAT_00439b54 + 0x439ad6);
+  }
+  else {
+    if (param_1[0x15d] != 0) {
+      if (*(char *)(param_1[0x15d] + 8) != '\x01') {
+        return -1;
+      }
+      iVar2 = FUN_00439880(param_1,DAT_00439b60 + 0x439b06,0x113);
+      if (iVar2 != 0) {
+        fprintf((FILE *)**(undefined4 **)(iVar4 + DAT_00439b4c),(char *)(DAT_00439b68 + 0x439b1c),
+                DAT_00439b64 + 0x439b1a,0x76);
+        return iVar2;
+      }
+      puts((char *)(DAT_00439b6c + 0x439b28));
+      printf((char *)(DAT_00439b70 + 0x439b32),*param_1);
+      puts((char *)(DAT_00439b74 + 0x439b3a));
+      return 0;
+    }
+    puVar1 = *(undefined4 **)(iVar4 + DAT_00439b4c);
+    uVar3 = 0x6b;
+    iVar4 = DAT_00439b58 + 0x439af4;
+    __format = (char *)(DAT_00439b5c + 0x439af6);
+  }
+  fprintf((FILE *)*puVar1,__format,iVar4,uVar3);
+  return iVar2;
+}
+
+

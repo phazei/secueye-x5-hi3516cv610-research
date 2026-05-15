@@ -1,0 +1,4508 @@
+SNS REG SYNC PATH DECOMPILATION
+Program: superb
+Total target functions: 24
+======================================================================
+
+======================================================================
+FUNCTION: sample_comm_isp_run
+ADDRESS:  002c43f2
+SIZE:     86 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+/* WARNING: Removing unreachable block (ram,0x002c4438) */
+
+int sample_comm_isp_run(void *param_1)
+
+{
+  int iVar1;
+  
+  iVar1 = pthread_create((pthread_t *)(&DAT_00869fa4 + (int)param_1 * 4),(pthread_attr_t *)0x0,
+                         (__start_routine *)0x2c4379,param_1);
+  if (iVar1 != 0) {
+    printf("create isp running thread failed!, error: %d\r\n",iVar1);
+  }
+  return iVar1;
+}
+
+
+--- CALLS TO ---
+  -> printf @ 00161350
+  -> pthread_attr_destroy @ 00162924
+  -> pthread_create @ 00161510
+--- CALLED BY ---
+  <- sample_comm_vi_start_one_pipe_isp @ 002d159a
+
+======================================================================
+FUNCTION: sample_comm_vi_get_isp_run_state
+ADDRESS:  002d1724
+SIZE:     190 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 sample_comm_vi_get_isp_run_state(int param_1,uint param_2)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  
+  if (param_1 == 0) {
+    printf("[%s]-%d: ","sample_comm_vi_get_isp_run_state",0x8fb);
+    puts("isp_states is NULL");
+    uVar2 = 0xffffffff;
+  }
+  else if (param_2 < 4) {
+    printf("[%s]-%d: ","sample_comm_vi_get_isp_run_state",0x8ff);
+    printf("array size smaller than %d\n",4);
+    uVar2 = 0xffffffff;
+  }
+  else {
+    iVar1 = memcpy_s(param_1,param_2 << 2,&DAT_0086a4f0,0x10);
+    if (iVar1 == 0) {
+      uVar2 = 0;
+    }
+    else {
+      printf("[%s]-%d: ","sample_comm_vi_get_isp_run_state",0x904);
+      printf("memcpy_s isp states fail %x\n",iVar1);
+      uVar2 = 0xffffffff;
+    }
+  }
+  return uVar2;
+}
+
+
+--- CALLS TO ---
+  -> printf @ 00161350
+  -> puts @ 00161640
+  -> memcpy_s @ 00394b72
+--- CALLED BY ---
+  <- FUN_002bdbf4 @ 002bdbf4
+  <- FUN_002bdaa0 @ 002bdaa0
+
+======================================================================
+FUNCTION: hi_mpi_isp_run
+ADDRESS:  003c7134
+SIZE:     4 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int hi_mpi_isp_run(int param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  int iVar3;
+  char *pcVar4;
+  char *pcVar5;
+  undefined4 uVar6;
+  int iStack_5c;
+  undefined8 uStack_58;
+  undefined8 uStack_50;
+  undefined8 uStack_48;
+  undefined8 uStack_40;
+  undefined8 uStack_38;
+  int iStack_30;
+  undefined4 uStack_2c;
+  undefined4 uStack_28;
+  int iStack_24;
+  
+  iStack_24 = __stack_chk_guard;
+  iStack_30 = 0;
+  uStack_58 = 0;
+  uStack_50 = 0;
+  uStack_48 = 0;
+  uStack_40 = 0;
+  uStack_38 = 0;
+  uStack_2c = 0;
+  uStack_28 = 0;
+  iVar1 = isp_check_pipe();
+  if (iVar1 != 0) {
+    iVar1 = -0x5fe37ff9;
+    goto LAB_003d91ee;
+  }
+  iVar2 = isp_get_usr_ctx(param_1);
+  iVar1 = isp_check_pointer();
+  if (iVar1 != 0) {
+    iVar1 = -0x5fe37ff6;
+    goto LAB_003d91ee;
+  }
+  isp_mutex_lock(param_1);
+  iVar1 = isp_check_dev_open(param_1);
+  if (iVar1 == 0) {
+    iVar1 = isp_get_fd(param_1);
+    iVar1 = ioctl(iVar1,0x8034703b,&uStack_58);
+    if (iVar1 == 0) {
+      if ((param_1 - 2U < 2) && (iStack_30 != 1)) {
+        iVar1 = isp_get_usr_ctx(param_1);
+        if (*(int *)(iVar1 + 0x27a4) == 1) goto LAB_003d913a;
+        uVar6 = 0xf7;
+        pcVar5 = "isp_check_run_be_pipe_return";
+        pcVar4 = 
+        "[Func]:%s [Line]:%d [Info]:pipe %d is virt pipe, only wake by be end support isp run \n";
+LAB_003d9130:
+        iVar1 = -0x5fe37ff4;
+        fprintf((FILE *)0x0,pcVar4,pcVar5,uVar6,param_1);
+      }
+      else {
+LAB_003d913a:
+        iVar1 = isp_get_usr_ctx(param_1);
+        if ((*(int *)(iVar1 + 4) == 1) || (*(int *)(iVar1 + 8) == 1)) {
+          iVar1 = isp_check_mem_init_func(param_1);
+          if (iVar1 == 0) {
+            iVar3 = isp_get_usr_ctx(param_1);
+            if (*(int *)(iVar3 + 0x18) == 1) {
+              if (((7 < *(int *)(iVar2 + 0x1660) - 1U) || (*(int *)(iVar2 + 0x165c) == 1)) &&
+                 (iVar1 = isp_check_vreg_permission(param_1), iVar1 == 0)) {
+                if (*(int *)(iVar2 + 0x84) == 1) {
+                  isp_mutex_unlock(param_1);
+                  uVar6 = 0x3bc;
+                  pcVar4 = "[Func]:%s [Line]:%d [Info]:isp[%d] run failed, is_exit is true\n";
+                }
+                else {
+                  if (*(int *)(iVar2 + 0x80) == 1) {
+                    uVar6 = 0x3c0;
+                    pcVar5 = "ot_mpi_isp_run";
+                    pcVar4 = 
+                    "[Func]:%s [Line]:%d [Info]:isp[%d] run already, no need to run repeatedly\n";
+                    goto LAB_003d9130;
+                  }
+                  iStack_5c = 1;
+                  iVar3 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x40047007,&iStack_5c);
+                  if (-1 < iVar3) {
+                    *(undefined4 *)(iVar2 + 0x80) = 1;
+                    isp_mutex_unlock(param_1);
+                    isp_run_thread(param_1,iVar2);
+                    isp_mutex_lock(param_1);
+                    iStack_5c = iVar1;
+                    iVar3 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x40047007,&iStack_5c);
+                    if (iVar3 < 0) {
+                      fprintf((FILE *)0x0,
+                              "[Func]:%s [Line]:%d [Info]:Disable ISP[%d] interrupt failed!\n",
+                              "ot_mpi_isp_run",0x3d3,param_1);
+                    }
+                    *(undefined4 *)(iVar2 + 0x80) = 0;
+                    goto LAB_003d9166;
+                  }
+                  isp_mutex_unlock(param_1);
+                  uVar6 = 0x3c9;
+                  pcVar4 = "[Func]:%s [Line]:%d [Info]:Enable ISP[%d] interrupt failed!\n";
+                }
+                iVar1 = -1;
+                fprintf((FILE *)0x0,pcVar4,"ot_mpi_isp_run",uVar6,param_1);
+                goto LAB_003d91ee;
+              }
+            }
+            else {
+              iVar1 = -0x5fe37fc0;
+              fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] doesn\'t initialized!\n",
+                      "ot_mpi_isp_run",0x3b5,param_1);
+            }
+          }
+        }
+        else {
+          iVar1 = -0x5fe37fbd;
+          fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Sensor doesn\'t register to ISP[%d]!\n",
+                  "ot_mpi_isp_run",0x3b3,param_1);
+        }
+      }
+    }
+    else {
+      iVar1 = -0x5fe37ff9;
+    }
+  }
+LAB_003d9166:
+  isp_mutex_unlock(param_1);
+LAB_003d91ee:
+  if (__stack_chk_guard != iStack_24) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return iVar1;
+}
+
+
+--- CALLS TO ---
+--- CALLED BY ---
+  <- FUN_002c4378 @ 002c4378
+
+======================================================================
+FUNCTION: hi_mpi_isp_run_once
+ADDRESS:  003c7138
+SIZE:     4 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int hi_mpi_isp_run_once(int param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  int iVar3;
+  int iVar4;
+  char *pcVar5;
+  char *pcVar6;
+  undefined4 uVar7;
+  
+  iVar1 = isp_check_pipe();
+  if (iVar1 != 0) {
+    return -0x5fe37ff9;
+  }
+  iVar1 = isp_get_usr_ctx(param_1);
+  iVar2 = isp_check_pointer();
+  if (iVar2 != 0) {
+    return -0x5fe37ff6;
+  }
+  isp_mutex_lock(param_1);
+  iVar2 = isp_check_dev_open(param_1);
+  if (iVar2 != 0) goto LAB_003d8d5c;
+  if (((*(int *)(iVar1 + 8) == 0) && (iVar2 = isp_get_usr_ctx(param_1), *(int *)(iVar2 + 4) != 1))
+     && (*(int *)(iVar2 + 8) != 1)) {
+    iVar2 = -0x5fe37fbd;
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Sensor doesn\'t register to ISP[%d]!\n",
+            "ot_mpi_isp_run_once",0x375,param_1);
+    goto LAB_003d8d5c;
+  }
+  iVar2 = isp_check_mem_init_func(param_1);
+  if (iVar2 != 0) goto LAB_003d8d5c;
+  iVar3 = isp_get_usr_ctx(param_1);
+  if (*(int *)(iVar3 + 0x18) != 1) {
+    iVar2 = -0x5fe37fc0;
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] doesn\'t initialized!\n",
+            "ot_mpi_isp_run_once",0x378,param_1);
+    goto LAB_003d8d5c;
+  }
+  if (((*(int *)(iVar1 + 0x1660) - 1U < 8) && (*(int *)(iVar1 + 0x165c) != 1)) ||
+     (iVar2 = isp_check_vreg_permission(param_1), iVar2 != 0)) goto LAB_003d8d5c;
+  if (*(int *)(iVar1 + 0x27a4) == 1) {
+    uVar7 = 0x37f;
+    pcVar5 = "[Func]:%s [Line]:%d [Info]:ISP[%d] distribute enable, not support runonce\n";
+  }
+  else {
+    if (*(int *)(iVar1 + 0x84) == 1) {
+      isp_mutex_unlock(param_1);
+      fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] run failed, isp_exit is true!\n",
+              "ot_mpi_isp_run_once",0x386,param_1);
+      return -1;
+    }
+    if (*(int *)(iVar1 + 0x80) != 1) {
+      *(undefined4 *)(iVar1 + 0x80) = 1;
+      isp_mutex_unlock(param_1);
+      if (*(int *)(iVar1 + 8) == 0) {
+        iVar3 = isp_get_usr_ctx(param_1);
+        if ((*(int *)(iVar3 + 0x60) == 1) || (*(int *)(iVar3 + 0x60) == 4)) {
+          uVar7 = 0x341;
+          pcVar5 = "ot_isp_run_once";
+          goto LAB_003d8e6a;
+        }
+        iVar2 = isp_check_mem_init_func(param_1);
+        if (iVar2 == 0) {
+          iVar2 = isp_switch_mode(param_1);
+          if (iVar2 == 0) {
+            *(undefined4 *)(iVar3 + 0x25b8) = 1;
+            iVar2 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x40047054,iVar3 + 0x25b8);
+            if (iVar2 == 0) {
+              isp_run(param_1);
+              iVar2 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x7050);
+              if (iVar2 == 0) goto LAB_003d8f20;
+            }
+            else {
+              fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] set runonce info failed!\n",
+                      "ot_isp_run_once",0x355,param_1);
+            }
+            iVar4 = *(int *)(g_isp_fd + param_1 * 4);
+            *(undefined4 *)(iVar3 + 0x25b8) = 0;
+            iVar3 = ioctl(iVar4,0x40047054,iVar3 + 0x25b8);
+            if (iVar3 == 0) goto LAB_003d8f20;
+            uVar7 = 0x365;
+            pcVar6 = "ot_isp_run_once";
+            pcVar5 = "[Func]:%s [Line]:%d [Info]:ISP[%d] set runonce info failed!\n";
+          }
+          else {
+            uVar7 = 0x34e;
+            pcVar6 = "ot_isp_run_once";
+            pcVar5 = "[Func]:%s [Line]:%d [Info]:ISP[%d] switch mode failed!\n";
+          }
+LAB_003d8e9c:
+          fprintf((FILE *)0x0,pcVar5,pcVar6,uVar7,param_1);
+        }
+      }
+      else {
+        iVar3 = isp_get_usr_ctx(param_1);
+        if ((*(int *)(iVar3 + 0x60) != 1) && (*(int *)(iVar3 + 0x60) != 4)) {
+          iVar2 = isp_check_mem_init_func(param_1);
+          if (iVar2 == 0) {
+            iVar2 = io_read16("_Z17rtsp_auth_processP14rtsp_server_uaPKcP21http_digest_auth_info" +
+                              param_1 * 0x20000 + 0x25);
+            *(byte *)(iVar3 + 0xa5) = (byte)((uint)(iVar2 << 0x16) >> 0x1a);
+            *(undefined4 *)(iVar3 + 0x25b8) = 1;
+            iVar2 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x40047052,iVar3 + 0x25b8);
+            if (iVar2 != 0) {
+              *(undefined4 *)(iVar3 + 0x25b8) = 0;
+              pcVar6 = "ot_isp_yuv_run_once";
+              uVar7 = 0x326;
+              pcVar5 = "[Func]:%s [Line]:%d [Info]:ISP[%d] set runonce info failed!\n";
+              goto LAB_003d8e9c;
+            }
+            isp_run(param_1);
+            iVar2 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x7053);
+            if (iVar2 != 0) {
+              fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] kernel runonce  failed!\n",
+                      "ot_isp_yuv_run_once",0x32e,param_1);
+              iVar4 = *(int *)(g_isp_fd + param_1 * 4);
+              *(undefined4 *)(iVar3 + 0x25b8) = 0;
+              ioctl(iVar4,0x40047052,iVar3 + 0x25b8);
+            }
+          }
+          goto LAB_003d8f20;
+        }
+        uVar7 = 0x316;
+        pcVar5 = "ot_isp_yuv_run_once";
+LAB_003d8e6a:
+        iVar2 = -0x5fe37ff4;
+        fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] run_once not support for online!\n",
+                pcVar5,uVar7,param_1);
+      }
+LAB_003d8f20:
+      isp_mutex_lock(param_1);
+      *(undefined4 *)(iVar1 + 0x80) = 0;
+      goto LAB_003d8d5c;
+    }
+    uVar7 = 0x38a;
+    pcVar5 = "[Func]:%s [Line]:%d [Info]:isp[%d] run already, no need to run repeatedly\n";
+  }
+  iVar2 = -0x5fe37ff4;
+  fprintf((FILE *)0x0,pcVar5,"ot_mpi_isp_run_once",uVar7,param_1);
+LAB_003d8d5c:
+  isp_mutex_unlock(param_1);
+  return iVar2;
+}
+
+
+--- CALLS TO ---
+--- CALLED BY ---
+
+======================================================================
+FUNCTION: ss_mpi_isp_run
+ADDRESS:  003c733c
+SIZE:     4 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int ss_mpi_isp_run(int param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  int iVar3;
+  char *pcVar4;
+  char *pcVar5;
+  undefined4 uVar6;
+  int iStack_5c;
+  undefined8 uStack_58;
+  undefined8 uStack_50;
+  undefined8 uStack_48;
+  undefined8 uStack_40;
+  undefined8 uStack_38;
+  int iStack_30;
+  undefined4 uStack_2c;
+  undefined4 uStack_28;
+  int iStack_24;
+  
+  iStack_24 = __stack_chk_guard;
+  iStack_30 = 0;
+  uStack_58 = 0;
+  uStack_50 = 0;
+  uStack_48 = 0;
+  uStack_40 = 0;
+  uStack_38 = 0;
+  uStack_2c = 0;
+  uStack_28 = 0;
+  iVar1 = isp_check_pipe();
+  if (iVar1 != 0) {
+    iVar1 = -0x5fe37ff9;
+    goto LAB_003d91ee;
+  }
+  iVar2 = isp_get_usr_ctx(param_1);
+  iVar1 = isp_check_pointer();
+  if (iVar1 != 0) {
+    iVar1 = -0x5fe37ff6;
+    goto LAB_003d91ee;
+  }
+  isp_mutex_lock(param_1);
+  iVar1 = isp_check_dev_open(param_1);
+  if (iVar1 == 0) {
+    iVar1 = isp_get_fd(param_1);
+    iVar1 = ioctl(iVar1,0x8034703b,&uStack_58);
+    if (iVar1 == 0) {
+      if ((param_1 - 2U < 2) && (iStack_30 != 1)) {
+        iVar1 = isp_get_usr_ctx(param_1);
+        if (*(int *)(iVar1 + 0x27a4) == 1) goto LAB_003d913a;
+        uVar6 = 0xf7;
+        pcVar5 = "isp_check_run_be_pipe_return";
+        pcVar4 = 
+        "[Func]:%s [Line]:%d [Info]:pipe %d is virt pipe, only wake by be end support isp run \n";
+LAB_003d9130:
+        iVar1 = -0x5fe37ff4;
+        fprintf((FILE *)0x0,pcVar4,pcVar5,uVar6,param_1);
+      }
+      else {
+LAB_003d913a:
+        iVar1 = isp_get_usr_ctx(param_1);
+        if ((*(int *)(iVar1 + 4) == 1) || (*(int *)(iVar1 + 8) == 1)) {
+          iVar1 = isp_check_mem_init_func(param_1);
+          if (iVar1 == 0) {
+            iVar3 = isp_get_usr_ctx(param_1);
+            if (*(int *)(iVar3 + 0x18) == 1) {
+              if (((7 < *(int *)(iVar2 + 0x1660) - 1U) || (*(int *)(iVar2 + 0x165c) == 1)) &&
+                 (iVar1 = isp_check_vreg_permission(param_1), iVar1 == 0)) {
+                if (*(int *)(iVar2 + 0x84) == 1) {
+                  isp_mutex_unlock(param_1);
+                  uVar6 = 0x3bc;
+                  pcVar4 = "[Func]:%s [Line]:%d [Info]:isp[%d] run failed, is_exit is true\n";
+                }
+                else {
+                  if (*(int *)(iVar2 + 0x80) == 1) {
+                    uVar6 = 0x3c0;
+                    pcVar5 = "ot_mpi_isp_run";
+                    pcVar4 = 
+                    "[Func]:%s [Line]:%d [Info]:isp[%d] run already, no need to run repeatedly\n";
+                    goto LAB_003d9130;
+                  }
+                  iStack_5c = 1;
+                  iVar3 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x40047007,&iStack_5c);
+                  if (-1 < iVar3) {
+                    *(undefined4 *)(iVar2 + 0x80) = 1;
+                    isp_mutex_unlock(param_1);
+                    isp_run_thread(param_1,iVar2);
+                    isp_mutex_lock(param_1);
+                    iStack_5c = iVar1;
+                    iVar3 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x40047007,&iStack_5c);
+                    if (iVar3 < 0) {
+                      fprintf((FILE *)0x0,
+                              "[Func]:%s [Line]:%d [Info]:Disable ISP[%d] interrupt failed!\n",
+                              "ot_mpi_isp_run",0x3d3,param_1);
+                    }
+                    *(undefined4 *)(iVar2 + 0x80) = 0;
+                    goto LAB_003d9166;
+                  }
+                  isp_mutex_unlock(param_1);
+                  uVar6 = 0x3c9;
+                  pcVar4 = "[Func]:%s [Line]:%d [Info]:Enable ISP[%d] interrupt failed!\n";
+                }
+                iVar1 = -1;
+                fprintf((FILE *)0x0,pcVar4,"ot_mpi_isp_run",uVar6,param_1);
+                goto LAB_003d91ee;
+              }
+            }
+            else {
+              iVar1 = -0x5fe37fc0;
+              fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] doesn\'t initialized!\n",
+                      "ot_mpi_isp_run",0x3b5,param_1);
+            }
+          }
+        }
+        else {
+          iVar1 = -0x5fe37fbd;
+          fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Sensor doesn\'t register to ISP[%d]!\n",
+                  "ot_mpi_isp_run",0x3b3,param_1);
+        }
+      }
+    }
+    else {
+      iVar1 = -0x5fe37ff9;
+    }
+  }
+LAB_003d9166:
+  isp_mutex_unlock(param_1);
+LAB_003d91ee:
+  if (__stack_chk_guard != iStack_24) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return iVar1;
+}
+
+
+--- CALLS TO ---
+--- CALLED BY ---
+
+======================================================================
+FUNCTION: ss_mpi_isp_run_once
+ADDRESS:  003c7340
+SIZE:     4 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int ss_mpi_isp_run_once(int param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  int iVar3;
+  int iVar4;
+  char *pcVar5;
+  char *pcVar6;
+  undefined4 uVar7;
+  
+  iVar1 = isp_check_pipe();
+  if (iVar1 != 0) {
+    return -0x5fe37ff9;
+  }
+  iVar1 = isp_get_usr_ctx(param_1);
+  iVar2 = isp_check_pointer();
+  if (iVar2 != 0) {
+    return -0x5fe37ff6;
+  }
+  isp_mutex_lock(param_1);
+  iVar2 = isp_check_dev_open(param_1);
+  if (iVar2 != 0) goto LAB_003d8d5c;
+  if (((*(int *)(iVar1 + 8) == 0) && (iVar2 = isp_get_usr_ctx(param_1), *(int *)(iVar2 + 4) != 1))
+     && (*(int *)(iVar2 + 8) != 1)) {
+    iVar2 = -0x5fe37fbd;
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Sensor doesn\'t register to ISP[%d]!\n",
+            "ot_mpi_isp_run_once",0x375,param_1);
+    goto LAB_003d8d5c;
+  }
+  iVar2 = isp_check_mem_init_func(param_1);
+  if (iVar2 != 0) goto LAB_003d8d5c;
+  iVar3 = isp_get_usr_ctx(param_1);
+  if (*(int *)(iVar3 + 0x18) != 1) {
+    iVar2 = -0x5fe37fc0;
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] doesn\'t initialized!\n",
+            "ot_mpi_isp_run_once",0x378,param_1);
+    goto LAB_003d8d5c;
+  }
+  if (((*(int *)(iVar1 + 0x1660) - 1U < 8) && (*(int *)(iVar1 + 0x165c) != 1)) ||
+     (iVar2 = isp_check_vreg_permission(param_1), iVar2 != 0)) goto LAB_003d8d5c;
+  if (*(int *)(iVar1 + 0x27a4) == 1) {
+    uVar7 = 0x37f;
+    pcVar5 = "[Func]:%s [Line]:%d [Info]:ISP[%d] distribute enable, not support runonce\n";
+  }
+  else {
+    if (*(int *)(iVar1 + 0x84) == 1) {
+      isp_mutex_unlock(param_1);
+      fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] run failed, isp_exit is true!\n",
+              "ot_mpi_isp_run_once",0x386,param_1);
+      return -1;
+    }
+    if (*(int *)(iVar1 + 0x80) != 1) {
+      *(undefined4 *)(iVar1 + 0x80) = 1;
+      isp_mutex_unlock(param_1);
+      if (*(int *)(iVar1 + 8) == 0) {
+        iVar3 = isp_get_usr_ctx(param_1);
+        if ((*(int *)(iVar3 + 0x60) == 1) || (*(int *)(iVar3 + 0x60) == 4)) {
+          uVar7 = 0x341;
+          pcVar5 = "ot_isp_run_once";
+          goto LAB_003d8e6a;
+        }
+        iVar2 = isp_check_mem_init_func(param_1);
+        if (iVar2 == 0) {
+          iVar2 = isp_switch_mode(param_1);
+          if (iVar2 == 0) {
+            *(undefined4 *)(iVar3 + 0x25b8) = 1;
+            iVar2 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x40047054,iVar3 + 0x25b8);
+            if (iVar2 == 0) {
+              isp_run(param_1);
+              iVar2 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x7050);
+              if (iVar2 == 0) goto LAB_003d8f20;
+            }
+            else {
+              fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] set runonce info failed!\n",
+                      "ot_isp_run_once",0x355,param_1);
+            }
+            iVar4 = *(int *)(g_isp_fd + param_1 * 4);
+            *(undefined4 *)(iVar3 + 0x25b8) = 0;
+            iVar3 = ioctl(iVar4,0x40047054,iVar3 + 0x25b8);
+            if (iVar3 == 0) goto LAB_003d8f20;
+            uVar7 = 0x365;
+            pcVar6 = "ot_isp_run_once";
+            pcVar5 = "[Func]:%s [Line]:%d [Info]:ISP[%d] set runonce info failed!\n";
+          }
+          else {
+            uVar7 = 0x34e;
+            pcVar6 = "ot_isp_run_once";
+            pcVar5 = "[Func]:%s [Line]:%d [Info]:ISP[%d] switch mode failed!\n";
+          }
+LAB_003d8e9c:
+          fprintf((FILE *)0x0,pcVar5,pcVar6,uVar7,param_1);
+        }
+      }
+      else {
+        iVar3 = isp_get_usr_ctx(param_1);
+        if ((*(int *)(iVar3 + 0x60) != 1) && (*(int *)(iVar3 + 0x60) != 4)) {
+          iVar2 = isp_check_mem_init_func(param_1);
+          if (iVar2 == 0) {
+            iVar2 = io_read16("_Z17rtsp_auth_processP14rtsp_server_uaPKcP21http_digest_auth_info" +
+                              param_1 * 0x20000 + 0x25);
+            *(byte *)(iVar3 + 0xa5) = (byte)((uint)(iVar2 << 0x16) >> 0x1a);
+            *(undefined4 *)(iVar3 + 0x25b8) = 1;
+            iVar2 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x40047052,iVar3 + 0x25b8);
+            if (iVar2 != 0) {
+              *(undefined4 *)(iVar3 + 0x25b8) = 0;
+              pcVar6 = "ot_isp_yuv_run_once";
+              uVar7 = 0x326;
+              pcVar5 = "[Func]:%s [Line]:%d [Info]:ISP[%d] set runonce info failed!\n";
+              goto LAB_003d8e9c;
+            }
+            isp_run(param_1);
+            iVar2 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x7053);
+            if (iVar2 != 0) {
+              fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] kernel runonce  failed!\n",
+                      "ot_isp_yuv_run_once",0x32e,param_1);
+              iVar4 = *(int *)(g_isp_fd + param_1 * 4);
+              *(undefined4 *)(iVar3 + 0x25b8) = 0;
+              ioctl(iVar4,0x40047052,iVar3 + 0x25b8);
+            }
+          }
+          goto LAB_003d8f20;
+        }
+        uVar7 = 0x316;
+        pcVar5 = "ot_isp_yuv_run_once";
+LAB_003d8e6a:
+        iVar2 = -0x5fe37ff4;
+        fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] run_once not support for online!\n",
+                pcVar5,uVar7,param_1);
+      }
+LAB_003d8f20:
+      isp_mutex_lock(param_1);
+      *(undefined4 *)(iVar1 + 0x80) = 0;
+      goto LAB_003d8d5c;
+    }
+    uVar7 = 0x38a;
+    pcVar5 = "[Func]:%s [Line]:%d [Info]:isp[%d] run already, no need to run repeatedly\n";
+  }
+  iVar2 = -0x5fe37ff4;
+  fprintf((FILE *)0x0,pcVar5,"ot_mpi_isp_run_once",uVar7,param_1);
+LAB_003d8d5c:
+  isp_mutex_unlock(param_1);
+  return iVar2;
+}
+
+
+--- CALLS TO ---
+--- CALLED BY ---
+
+======================================================================
+FUNCTION: isp_sync_cfg_set
+ADDRESS:  003d32ec
+SIZE:     426 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int isp_sync_cfg_set(int param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  int iVar3;
+  char *__format;
+  uint uVar4;
+  undefined4 uVar5;
+  int local_28;
+  int local_24;
+  
+  local_24 = __stack_chk_guard;
+  local_28 = 0;
+  iVar1 = isp_get_usr_ctx();
+  if (*(int *)(iVar1 + 0x1670) == 1) {
+    param_1 = (int)*(char *)(iVar1 + 0x1679);
+  }
+  isp_get_usr_ctx(param_1);
+  iVar1 = isp_get_regcfg_ctx(param_1);
+  iVar2 = isp_check_pointer_by_line(iVar1,"isp_sync_cfg_set",0x1bad);
+  if (iVar2 != 0) {
+    iVar2 = -0x5fe37ff6;
+    goto LAB_003d3450;
+  }
+  iVar2 = isp_check_dev_open(param_1);
+  if ((iVar2 != 0) || (iVar3 = isp_sensor_update_sns_reg(param_1), iVar3 != 0)) goto LAB_003d3450;
+  isp_sensor_get_sns_reg(param_1,&local_28);
+  memcpy_s(iVar1 + 0x1276c,0x680,local_28);
+  uVar4 = *(uint *)((int)DWORD_ARRAY_00010174 + iVar1 + 0x25f8);
+  if (uVar4 < 2) {
+    uVar4 = *(uint *)((int)DWORD_ARRAY_00010174 + iVar1 + 0x25fc);
+    if (0x32 < uVar4) {
+      uVar5 = 0x1b16;
+      __format = "[Func]:%s [Line]:%d [Info]:senor\'s regs info invalid, reg_num %u\n";
+      goto LAB_003d3394;
+    }
+  }
+  else {
+    uVar5 = 0x1b11;
+    __format = "[Func]:%s [Line]:%d [Info]:senor\'s regs info invalid, sns_type %d\n";
+LAB_003d3394:
+    fprintf((FILE *)0x0,__format,"isp_sns_regs_info_check",uVar5,uVar4);
+  }
+  memcpy_s(iVar1 + 0x12df0,0x58,iVar1 + 0x18);
+  memcpy_s(iVar1 + 0x12e84,0x10,iVar1 + 0xa64);
+  memcpy_s(iVar1 + 0x12e94,0x12,iVar1 + 0xa74);
+  memcpy_s(iVar1 + 0x12e5c,0x28,iVar1 + 0x3510);
+  memcpy_s(iVar1 + 0x12e48,0x14,iVar1 + 0x4ab8);
+  memcpy_s(iVar1 + 0x13060,0x148,iVar1 + 0x7d48);
+  memcpy_s(iVar1 + 0x12eac,0x1b4,iVar1 + 0x7ed4);
+  memcpy_s(iVar1 + 0x131a8,0x14,iVar1 + 0x7c6c);
+  uVar5 = *(undefined4 *)(iVar1 + 0xbb4);
+  *(undefined4 *)((int)DWORD_ARRAY_00010174 + iVar1 + 0x25ec) = 1;
+  *(undefined4 *)((int)DWORD_ARRAY_00010174 + iVar1 + 0x2d34) = uVar5;
+  iVar2 = isp_get_fd(param_1);
+  iVar2 = ioctl(iVar2,0x4a60701e,iVar1 + 0x12760);
+  if (iVar2 == 0) {
+    *(undefined4 *)(local_28 + 0x67c) = 1;
+  }
+LAB_003d3450:
+  if (__stack_chk_guard != local_24) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return iVar2;
+}
+
+
+--- CALLS TO ---
+  -> isp_get_regcfg_ctx @ 003cc554
+  -> isp_get_fd @ 003d82dc
+  -> __stack_chk_fail @ 00161978
+  -> isp_sensor_get_sns_reg @ 003d75e0
+  -> memcpy_s @ 00394b72
+  -> fprintf @ 00161568
+  -> ioctl @ 001617c4
+  -> isp_get_usr_ctx @ 003d82f4
+  -> isp_check_dev_open @ 003d80e4
+  -> isp_sensor_update_sns_reg @ 003d7828
+  -> isp_check_pointer_by_line @ 003d7fc0
+--- CALLED BY ---
+  <- isp_run @ 003d5e94
+
+======================================================================
+FUNCTION: isp_check_sns_register
+ADDRESS:  003d5064
+SIZE:     52 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 isp_check_sns_register(undefined4 param_1,int param_2)
+
+{
+  undefined4 uVar1;
+  
+  if ((*(int *)(param_2 + 4) == 1) || (*(int *)(param_2 + 8) == 1)) {
+    uVar1 = 0;
+  }
+  else {
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Sensor doesn\'t register to ISP[%d]!\n",
+            "isp_check_sns_register",0x10c,param_1,param_2);
+    uVar1 = 0xa01c8043;
+  }
+  return uVar1;
+}
+
+
+--- CALLS TO ---
+  -> fprintf @ 00161568
+--- CALLED BY ---
+  <- ot_mpi_isp_mem_init @ 003d841c
+
+======================================================================
+FUNCTION: isp_run
+ADDRESS:  003d5e94
+SIZE:     1294 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int isp_run(int param_1)
+
+{
+  char cVar1;
+  int iVar2;
+  int iVar3;
+  int iVar4;
+  uint uVar5;
+  char *pcVar6;
+  char *pcVar7;
+  undefined2 *puVar8;
+  undefined2 *puVar9;
+  undefined4 uVar10;
+  undefined4 *puVar11;
+  uint uVar12;
+  int iVar13;
+  int *piVar14;
+  undefined4 local_40;
+  undefined4 local_3c [4];
+  int local_2c;
+  
+  local_2c = __stack_chk_guard;
+  local_40 = 0;
+  iVar2 = isp_get_usr_ctx();
+  iVar3 = isp_get_be_free_buf(param_1);
+  iVar4 = iVar3;
+  if (iVar3 != 0) goto LAB_003d5fec;
+  iVar4 = isp_statistics_get_buf(param_1,&local_40);
+  if (iVar4 == 0) {
+    *(undefined4 *)(iVar2 + 0x25b4) = 1;
+  }
+  else {
+    if (*(int *)(iVar2 + 0xa8) != 0) goto LAB_003d5fec;
+    *(undefined4 *)(iVar2 + 0x25b4) = 0;
+  }
+  iVar13 = (param_1 + 8) * 0x20000;
+  iVar4 = io_read32(iVar13 + 0x7c);
+  io_write32(iVar13 + 0x7c,0);
+  if (iVar4 == 1) {
+    local_3c[0] = io_read32(iVar13 + 0x48);
+    iVar4 = isp_dbg_reg_get(param_1,local_3c);
+    if (iVar4 == 0) {
+      switch(local_3c[0]) {
+      case 0:
+        iVar4 = isp_ae_dbg_set(param_1,local_3c);
+        break;
+      case 1:
+        iVar4 = isp_awb_dbg_set(param_1,local_3c);
+        break;
+      case 2:
+        iVar4 = isp_blc_dbg_set(param_1,local_3c);
+        break;
+      case 3:
+        iVar4 = isp_dehaze_dbg_set(param_1,local_3c);
+        break;
+      default:
+        uVar10 = 0x19e;
+        pcVar6 = "[Func]:%s [Line]:%d [Info]:invalid debug_type.\n";
+        goto LAB_003d5f3c;
+      }
+      if (iVar4 == 0) goto LAB_003d5f82;
+    }
+    else {
+      uVar10 = 400;
+      pcVar6 = "[Func]:%s [Line]:%d [Info]:isp_dbg_reg_get failed\n";
+LAB_003d5f3c:
+      fprintf((FILE *)0x0,pcVar6,"isp_read_debug_ext_regs",uVar10);
+    }
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:set debug reg failure\n","isp_run",0x747);
+  }
+LAB_003d5f82:
+  iVar4 = isp_get_usr_ctx(param_1);
+  uVar10 = io_read32(iVar13 + 0x20);
+  uVar5 = io_read8(iVar13 + 0x38);
+  *(uint *)(iVar4 + 0x88) = uVar5 & 1;
+  uVar5 = io_read16(iVar13 + 0x18);
+  *(undefined4 *)(iVar4 + 0x25c8) = uVar10;
+  *(uint *)(iVar4 + 0x25c4) = uVar5 & 1;
+  uVar10 = io_read32(iVar13 + 0x28);
+  *(undefined4 *)(iVar4 + 0x25cc) = uVar10;
+  uVar10 = io_read32(iVar13 + 0x24);
+  *(undefined4 *)(iVar4 + 0x25d0) = uVar10;
+  uVar10 = io_read32(iVar13 + 0x2b4);
+  iVar13 = *(int *)(iVar2 + 0x88);
+  *(undefined4 *)(iVar4 + 0x74) = uVar10;
+  if (iVar13 != 0) {
+    isp_reg_cfg_info_set();
+    iVar4 = iVar3;
+    goto LAB_003d5fec;
+  }
+  iVar4 = isp_get_usr_ctx(param_1);
+  iVar3 = isp_get_fd(param_1);
+  iVar4 = ioctl(iVar3,0x8004702c,iVar4 + 0x23a4);
+  if (iVar4 != 0) {
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:pipe:%d get update pos %x!\n",
+            "isp_update_pos_get",0x4de,param_1,iVar4);
+    goto LAB_003d5fec;
+  }
+  iVar4 = isp_get_usr_ctx(param_1);
+  if ((*(int *)(iVar4 + 0x2770) != 0) &&
+     (((*(int *)(iVar4 + 0x2770) != 1 || (param_1 != *(int *)(iVar4 + 0x2778))) &&
+      (param_1 == *(int *)(iVar4 + 0x2774))))) {
+    iVar3 = isp_get_usr_ctx(*(undefined4 *)(iVar4 + 0x2778));
+    uVar12 = *(uint *)(iVar3 + 0x25a4);
+    iVar13 = isp_get_usr_ctx(param_1);
+    uVar5 = *(uint *)(iVar13 + 0x25a4);
+    if (uVar12 < uVar5) {
+      cVar1 = -((char)uVar5 - (char)uVar12);
+LAB_003d61f4:
+      uVar5 = (uint)(byte)(*(byte *)(iVar13 + 0x25a8) + cVar1);
+    }
+    else {
+      if (uVar12 == uVar5) {
+        cVar1 = -1;
+        goto LAB_003d61f4;
+      }
+      uVar5 = ((*(byte *)(iVar13 + 0x25a8) - 1) + uVar12) - uVar5 & 0xff;
+    }
+    if (*(int *)(iVar13 + 0x23a4) != 0) {
+      uVar5 = uVar5 - 1 & 0xff;
+    }
+    if (4 < uVar5) {
+      uVar5 = 5;
+    }
+    iVar13 = iVar3 + uVar5 * 4;
+    uVar5 = *(uint *)(iVar13 + 0x24f8);
+    *(uint *)(iVar4 + 0x2338) = uVar5;
+    iVar13 = *(int *)(iVar13 + 0x2510);
+    *(int *)(iVar4 + 0x2308) = iVar13;
+    if (iVar13 == 0) {
+      iVar13 = 1;
+    }
+    uVar10 = __aeabi_uldivmod(uVar5 << 8,uVar5 >> 0x18,iVar13,0);
+    *(undefined4 *)(iVar4 + 0x2340) = uVar10;
+    iVar13 = isp_get_usr_ctx(param_1);
+    if (*(uint *)(iVar13 + 0x25a4) < uVar12) {
+      uVar5 = (uVar12 - 1) - *(uint *)(iVar13 + 0x25a4) & 0xff;
+    }
+    else {
+      uVar5 = 0;
+    }
+    if (4 < uVar5) {
+      uVar5 = 5;
+    }
+    *(undefined4 *)(iVar4 + 0x237c) = *(undefined4 *)(iVar3 + (uVar5 + 0x249) * 0x10 + 8);
+    iVar13 = iVar3 + uVar5 * 0x10;
+    *(undefined4 *)(iVar4 + 0x2380) = *(undefined4 *)(iVar13 + 0x249c);
+    *(undefined4 *)(iVar4 + 0x2384) = *(undefined4 *)(iVar13 + 0x24a0);
+    *(undefined4 *)(iVar4 + 0x2388) = *(undefined4 *)(iVar13 + 0x24a4);
+    puVar8 = (undefined2 *)(iVar4 + 0x238c);
+    puVar11 = (undefined4 *)(uVar5 * 0x24 + iVar3 + 0x23c0);
+    do {
+      puVar9 = puVar8 + 1;
+      *puVar8 = (short)*puVar11;
+      puVar8 = puVar9;
+      puVar11 = puVar11 + 1;
+    } while ((undefined2 *)(iVar4 + 0x239e) != puVar9);
+    *(undefined4 *)(iVar4 + 0x2378) = *(undefined4 *)(iVar3 + (uVar5 + 0x8e8) * 4 + 8);
+  }
+  *(int *)(iVar2 + 0xa8) = *(int *)(iVar2 + 0xa8) + 1;
+  isp_blc_dbg_run_bgn(iVar2 + 0x25c4);
+  uVar10 = local_40;
+  local_3c[0] = 0;
+  isp_get_reg_cfg_ctx(param_1,local_3c);
+  isp_algs_run(iVar2 + 0x1900,param_1,uVar10,local_3c[0],0);
+  isp_proc_write(iVar2 + 0x1900,param_1);
+  iVar3 = isp_get_usr_ctx(param_1);
+  iVar4 = isp_check_dev_open(param_1);
+  if (iVar4 == 0) {
+    piVar14 = (int *)(iVar3 + 0x1900);
+    do {
+      if ((*piVar14 != 0) && ((code *)piVar14[4] != (code *)0x0)) {
+        (*(code *)piVar14[4])(param_1,0x1f49,iVar3 + 0x2634);
+      }
+      piVar14 = piVar14 + 10;
+    } while (piVar14 != (int *)(iVar3 + 0x2300));
+    iVar4 = isp_get_fd(param_1);
+    iVar4 = ioctl(iVar4,0x401c705a,iVar3 + 0x2634);
+    if (iVar4 != 0) {
+      fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] set dcf updateinfo failed\n",
+              "isp_update_info",0x13d,param_1);
+    }
+    iVar3 = isp_get_usr_ctx(param_1);
+    iVar4 = isp_check_dev_open(param_1);
+    if (iVar4 == 0) {
+      iVar4 = isp_get_fd(param_1);
+      iVar4 = ioctl(iVar4,0x40bc7034,iVar3 + 0x2650);
+      if (iVar4 != 0) {
+        fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] set frameinfo failed\n",
+                "isp_update_frame_info",0x14d,param_1);
+      }
+      iVar4 = isp_get_usr_ctx(param_1);
+      if (*(int *)(iVar4 + 0x262c) == 0) {
+        uVar10 = 0x15b;
+        pcVar7 = "isp_update_attach_info";
+        pcVar6 = "[Func]:%s [Line]:%d [Info]:pipe:%d the isp attach info hasn\'t init!\n";
+      }
+      else {
+        piVar14 = (int *)(iVar4 + 0x1900);
+        do {
+          if ((*piVar14 != 0) && ((code *)piVar14[4] != (code *)0x0)) {
+            (*(code *)piVar14[4])(param_1,0x1f4b,*(undefined4 *)(iVar4 + 0x262c));
+          }
+          piVar14 = piVar14 + 10;
+        } while ((int *)(iVar4 + 0x2300) != piVar14);
+        iVar4 = isp_get_usr_ctx(param_1);
+        if (*(int *)(iVar4 + 0x2630) != 0) {
+          piVar14 = (int *)(iVar4 + 0x1900);
+          do {
+            if ((*piVar14 != 0) && ((code *)piVar14[4] != (code *)0x0)) {
+              (*(code *)piVar14[4])(param_1,0x1f4c,*(undefined4 *)(iVar4 + 0x2630));
+            }
+            piVar14 = piVar14 + 10;
+          } while ((int *)(iVar4 + 0x2300) != piVar14);
+          isp_blc_dbg_run_end(param_1,iVar2 + 0x25c4,*(undefined4 *)(iVar2 + 0xa8));
+          if (*(int *)(iVar2 + 0x25b4) == 1) {
+            isp_statistics_put_buf(param_1);
+          }
+          iVar4 = isp_reg_cfg_info_set(param_1);
+          if (iVar4 == 0) {
+            uVar5 = (uint)*(byte *)(iVar2 + 0x236c);
+            *(undefined1 *)(iVar2 + 0x276c) = 0;
+            if (uVar5 == 0) {
+              uVar5 = 1;
+            }
+            if ((*(uint *)(iVar2 + 0xa8) == uVar5 * (*(uint *)(iVar2 + 0xa8) / uVar5)) &&
+               (*(int *)(iVar2 + 0x2304) == 0)) {
+              isp_sync_cfg_set(param_1);
+            }
+            isp_update_dng_image_dynamic_info(param_1);
+          }
+          goto LAB_003d5fec;
+        }
+        uVar10 = 0x173;
+        pcVar7 = "isp_update_color_gamut_info";
+        pcVar6 = "[Func]:%s [Line]:%d [Info]:pipe:%d the isp color gamut info hasn\'t init!\n";
+      }
+      iVar4 = -1;
+      fprintf((FILE *)0x0,pcVar6,pcVar7,uVar10,param_1);
+    }
+  }
+LAB_003d5fec:
+  if (__stack_chk_guard == local_2c) {
+    return iVar4;
+  }
+                    /* WARNING: Subroutine does not return */
+  __stack_chk_fail();
+}
+
+
+--- CALLS TO ---
+  -> isp_get_usr_ctx @ 003d82f4
+  -> __aeabi_uldivmod @ 00161298
+  -> isp_ae_dbg_set @ 003dfa80
+  -> isp_reg_cfg_info_set @ 003d2e70
+  -> isp_blc_dbg_run_bgn @ 003df9c4
+  -> isp_statistics_put_buf @ 003d7ca8
+  -> isp_blc_dbg_set @ 003df904
+  -> isp_check_dev_open @ 003d80e4
+  -> isp_awb_dbg_set @ 003dfac4
+  -> io_read8 @ 003d43e0
+  -> isp_dehaze_dbg_set @ 003dfafc
+  -> io_write32 @ 003d43cc
+  -> __stack_chk_fail @ 00161978
+  -> isp_get_fd @ 003d82dc
+  -> isp_algs_run @ 003df048
+  -> isp_sync_cfg_set @ 003d32ec
+  -> fprintf @ 00161568
+  -> ioctl @ 001617c4
+  -> io_read32 @ 003d437c
+  -> isp_dbg_reg_get @ 003df7f8
+  -> isp_get_reg_cfg_ctx @ 003d2afc
+  -> isp_proc_write @ 003d6e48
+  -> isp_update_dng_image_dynamic_info @ 003e0400
+  -> isp_get_be_free_buf @ 003ccbf0
+  -> io_read16 @ 003d4422
+  -> isp_statistics_get_buf @ 003d7bdc
+  -> isp_blc_dbg_run_end @ 003dfa3c
+--- CALLED BY ---
+  <- isp_run_thread @ 003d6408
+  <- ot_mpi_isp_run_once @ 003d8cf4
+
+======================================================================
+FUNCTION: isp_run_thread
+ADDRESS:  003d6408
+SIZE:     308 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_run_thread(undefined4 param_1,int param_2)
+
+{
+  undefined4 uVar1;
+  int iVar2;
+  undefined4 extraout_r1;
+  undefined8 local_40;
+  undefined4 uStack_38;
+  undefined4 local_34;
+  undefined4 uStack_30;
+  int local_2c;
+  
+  local_2c = __stack_chk_guard;
+  do {
+    isp_dfx_get_lock_time(param_2);
+    isp_mutex_lock(param_1);
+    if (*(int *)(param_2 + 0x84) != 0) {
+      if (__stack_chk_guard == local_2c) {
+        isp_mutex_unlock(param_1,extraout_r1,0,0);
+        return;
+      }
+LAB_003d645e:
+                    /* WARNING: Subroutine does not return */
+      __stack_chk_fail();
+    }
+    isp_mutex_unlock(param_1);
+    isp_dfx_get_unlock_time(param_2);
+    local_40 = 0;
+    uStack_38 = 0;
+    local_34 = 0;
+    uStack_30 = 0;
+    uVar1 = isp_get_usr_ctx(param_1);
+    iVar2 = isp_switch_mode(param_1);
+    if (iVar2 != 0) {
+      fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] switch mode failed!\n",
+              "isp_run_thread_proc",0x7b8,param_1);
+      if (__stack_chk_guard == local_2c) {
+        return;
+      }
+      goto LAB_003d645e;
+    }
+    isp_dfx_update_frame_edge_info(uVar1,&local_40);
+    iVar2 = isp_get_fd(param_1);
+    iVar2 = ioctl(iVar2,0xc0147001,&local_40);
+    if (iVar2 == 0) {
+      isp_dfx_get_run_begin_time(uVar1);
+      if ((int)local_40 << 1 < 0) {
+        iVar2 = isp_get_usr_ctx();
+        if (*(int *)(iVar2 + 0x1670) == 0) {
+          isp_run(param_1);
+          iVar2 = isp_get_fd(param_1);
+          iVar2 = ioctl(iVar2,0x7051);
+          if (iVar2 != 0) {
+            fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] strigger failed!\n",
+                    "isp_run_by_be_end",0x7a8,param_1);
+          }
+        }
+      }
+      else {
+        isp_run(param_1);
+      }
+      isp_dfx_get_run_end_time(uVar1);
+    }
+  } while( true );
+}
+
+
+--- CALLS TO ---
+  -> isp_dfx_get_lock_time @ 003e00d8
+  -> __stack_chk_fail @ 00161978
+  -> isp_dfx_get_unlock_time @ 003e00ea
+  -> isp_get_fd @ 003d82dc
+  -> fprintf @ 00161568
+  -> ioctl @ 001617c4
+  -> isp_run @ 003d5e94
+  -> isp_get_usr_ctx @ 003d82f4
+  -> isp_mutex_lock @ 003d7e54
+  -> isp_switch_mode @ 003d5270
+  -> isp_dfx_update_frame_edge_info @ 003e010c
+  -> isp_dfx_get_run_end_time @ 003e0148
+  -> isp_mutex_unlock @ 003d7e98
+  -> isp_dfx_get_run_begin_time @ 003e0136
+--- CALLED BY ---
+  <- ot_mpi_isp_run @ 003d9084
+
+======================================================================
+FUNCTION: isp_sensor_init_standby_cfg
+ADDRESS:  003d74c0
+SIZE:     114 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_sensor_init_standby_cfg(int param_1)
+
+{
+  int iVar1;
+  code *pcVar2;
+  int iVar3;
+  undefined1 auStack_694 [1664];
+  int local_14;
+  
+  local_14 = __stack_chk_guard;
+  iVar3 = *(int *)(g_sensor_ctx + param_1 * 4);
+  iVar1 = isp_check_pointer_by_line(iVar3,"isp_sensor_init_standby_cfg",0xa0);
+  if (iVar1 == 0) {
+    pcVar2 = *(code **)(iVar3 + 0x30);
+    iVar1 = 0;
+    if (pcVar2 != (code *)0x0) {
+      (*pcVar2)(param_1,auStack_694);
+      iVar1 = isp_get_fd(param_1);
+      iVar1 = ioctl(iVar1,0x4680705c,auStack_694);
+    }
+  }
+  else {
+    iVar1 = -0x5fe37ff6;
+  }
+  if (__stack_chk_guard != local_14) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail(iVar1);
+  }
+  return;
+}
+
+
+--- CALLS TO ---
+  -> isp_get_fd @ 003d82dc
+  -> __stack_chk_fail @ 00161978
+  -> ioctl @ 001617c4
+  -> isp_check_pointer_by_line @ 003d7fc0
+--- CALLED BY ---
+  <- isp_init @ 003d5a18
+
+======================================================================
+FUNCTION: isp_sensor_get_sns_reg
+ADDRESS:  003d75e0
+SIZE:     42 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 isp_sensor_get_sns_reg(int param_1,int *param_2,undefined4 param_3,undefined4 param_4)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  int iVar3;
+  
+  iVar3 = *(int *)(g_sensor_ctx + param_1 * 4);
+  iVar1 = isp_check_pointer_by_line(iVar3,"isp_sensor_get_sns_reg",0xd3,g_sensor_ctx,param_4);
+  if (iVar1 == 0) {
+    *param_2 = iVar3 + 0x268;
+    uVar2 = 0;
+  }
+  else {
+    uVar2 = 0xa01c800a;
+  }
+  return uVar2;
+}
+
+
+--- CALLS TO ---
+  -> isp_check_pointer_by_line @ 003d7fc0
+--- CALLED BY ---
+  <- isp_sensor_exit @ 003d79d4
+  <- isp_sensor_init @ 003d7874
+  <- isp_bayernr_reg_update @ 0041c048
+  <- isp_drc_reg_update @ 00419548
+  <- isp_sync_cfg_set @ 003d32ec
+  <- isp_init @ 003d5a18
+  <- isp_switch_mode @ 003d5270
+  <- isp_sensor_switch @ 003d7924
+  <- FUN_003f9e14 @ 003f9e14
+
+======================================================================
+FUNCTION: isp_sensor_update_sns_reg
+ADDRESS:  003d7828
+SIZE:     60 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 isp_sensor_update_sns_reg(int param_1)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  int iVar3;
+  
+  iVar3 = *(int *)(g_sensor_ctx + param_1 * 4);
+  iVar1 = isp_check_pointer_by_line(iVar3,"isp_sensor_update_sns_reg",0x1d2);
+  if (iVar1 == 0) {
+    if (*(code **)(iVar3 + 0x24) == (code *)0x0) {
+      uVar2 = 0xffffffff;
+    }
+    else {
+      (**(code **)(iVar3 + 0x24))(param_1,iVar3 + 0x268);
+      uVar2 = 0;
+    }
+  }
+  else {
+    uVar2 = 0xa01c800a;
+  }
+  return uVar2;
+}
+
+
+--- CALLS TO ---
+  -> isp_check_pointer_by_line @ 003d7fc0
+--- CALLED BY ---
+  <- isp_sensor_exit @ 003d79d4
+  <- isp_sensor_init @ 003d7874
+  <- isp_sync_cfg_set @ 003d32ec
+  <- isp_switch_mode @ 003d5270
+  <- isp_sensor_switch @ 003d7924
+
+======================================================================
+FUNCTION: isp_sensor_init
+ADDRESS:  003d7874
+SIZE:     146 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int isp_sensor_init(int *param_1)
+
+{
+  char cVar1;
+  int *piVar2;
+  int iVar3;
+  code *pcVar4;
+  int iVar5;
+  int *local_18;
+  int local_14;
+  
+  local_14 = __stack_chk_guard;
+  iVar5 = *(int *)(g_sensor_ctx + (int)param_1 * 4);
+  local_18 = param_1;
+  piVar2 = (int *)isp_check_pointer_by_line(iVar5,"isp_sensor_init",0xe1);
+  if (piVar2 != (int *)0x0) {
+    iVar3 = -0x5fe37ff6;
+    goto LAB_003d78d0;
+  }
+  local_18 = piVar2;
+  iVar3 = isp_sensor_update_sns_reg(param_1);
+  if ((iVar3 != 0) || (iVar3 = isp_sensor_get_sns_reg(param_1,&local_18), iVar3 != 0))
+  goto LAB_003d78d0;
+  cVar1 = (char)((int)((uint)*(byte *)(local_18 + 6) << 0x1c) >> 0x1c);
+  if (*local_18 == 0) {
+    cVar1 = (char)local_18[6];
+LAB_003d78cc:
+    if (cVar1 == -1) goto LAB_003d78d0;
+  }
+  else if (*local_18 == 1) goto LAB_003d78cc;
+  pcVar4 = *(code **)(iVar5 + 4);
+  if (pcVar4 == (code *)0x0) {
+    iVar3 = -1;
+  }
+  else {
+    (*pcVar4)(param_1);
+  }
+LAB_003d78d0:
+  if (__stack_chk_guard != local_14) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return iVar3;
+}
+
+
+--- CALLS TO ---
+  -> __stack_chk_fail @ 00161978
+  -> isp_sensor_get_sns_reg @ 003d75e0
+  -> isp_sensor_update_sns_reg @ 003d7828
+  -> isp_check_pointer_by_line @ 003d7fc0
+--- CALLED BY ---
+  <- isp_init @ 003d5a18
+
+======================================================================
+FUNCTION: isp_sensor_switch
+ADDRESS:  003d7924
+SIZE:     148 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int isp_sensor_switch(int *param_1)
+
+{
+  char cVar1;
+  int *piVar2;
+  int iVar3;
+  code *pcVar4;
+  int iVar5;
+  int *local_18;
+  int local_14;
+  
+  local_14 = __stack_chk_guard;
+  iVar5 = *(int *)(g_sensor_ctx + (int)param_1 * 4);
+  local_18 = param_1;
+  piVar2 = (int *)isp_check_pointer_by_line(iVar5,"isp_sensor_switch",0x10c);
+  if (piVar2 != (int *)0x0) {
+    iVar3 = -0x5fe37ff6;
+    goto LAB_003d7982;
+  }
+  local_18 = piVar2;
+  iVar3 = isp_sensor_update_sns_reg(param_1);
+  if ((iVar3 != 0) || (iVar3 = isp_sensor_get_sns_reg(param_1,&local_18), iVar3 != 0))
+  goto LAB_003d7982;
+  cVar1 = (char)((int)((uint)*(byte *)(local_18 + 6) << 0x1c) >> 0x1c);
+  if (*local_18 == 0) {
+    cVar1 = (char)local_18[6];
+LAB_003d797e:
+    if (cVar1 == -1) goto LAB_003d7982;
+  }
+  else if (*local_18 == 1) goto LAB_003d797e;
+  pcVar4 = *(code **)(iVar5 + 4);
+  if (pcVar4 == (code *)0x0) {
+    iVar3 = -1;
+  }
+  else {
+    (*pcVar4)(param_1);
+  }
+LAB_003d7982:
+  if (__stack_chk_guard != local_14) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return iVar3;
+}
+
+
+--- CALLS TO ---
+  -> __stack_chk_fail @ 00161978
+  -> isp_sensor_get_sns_reg @ 003d75e0
+  -> isp_sensor_update_sns_reg @ 003d7828
+  -> isp_check_pointer_by_line @ 003d7fc0
+--- CALLED BY ---
+  <- isp_switch_mode @ 003d5270
+
+======================================================================
+FUNCTION: ot_mpi_isp_run_once
+ADDRESS:  003d8cf4
+SIZE:     776 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int ot_mpi_isp_run_once(int param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  int iVar3;
+  int iVar4;
+  char *pcVar5;
+  char *pcVar6;
+  undefined4 uVar7;
+  
+  iVar1 = isp_check_pipe();
+  if (iVar1 != 0) {
+    return -0x5fe37ff9;
+  }
+  iVar1 = isp_get_usr_ctx(param_1);
+  iVar2 = isp_check_pointer();
+  if (iVar2 != 0) {
+    return -0x5fe37ff6;
+  }
+  isp_mutex_lock(param_1);
+  iVar2 = isp_check_dev_open(param_1);
+  if (iVar2 != 0) goto LAB_003d8d5c;
+  if (((*(int *)(iVar1 + 8) == 0) && (iVar2 = isp_get_usr_ctx(param_1), *(int *)(iVar2 + 4) != 1))
+     && (*(int *)(iVar2 + 8) != 1)) {
+    iVar2 = -0x5fe37fbd;
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Sensor doesn\'t register to ISP[%d]!\n",
+            "ot_mpi_isp_run_once",0x375,param_1);
+    goto LAB_003d8d5c;
+  }
+  iVar2 = isp_check_mem_init_func(param_1);
+  if (iVar2 != 0) goto LAB_003d8d5c;
+  iVar3 = isp_get_usr_ctx(param_1);
+  if (*(int *)(iVar3 + 0x18) != 1) {
+    iVar2 = -0x5fe37fc0;
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] doesn\'t initialized!\n",
+            "ot_mpi_isp_run_once",0x378,param_1);
+    goto LAB_003d8d5c;
+  }
+  if (((*(int *)(iVar1 + 0x1660) - 1U < 8) && (*(int *)(iVar1 + 0x165c) != 1)) ||
+     (iVar2 = isp_check_vreg_permission(param_1), iVar2 != 0)) goto LAB_003d8d5c;
+  if (*(int *)(iVar1 + 0x27a4) == 1) {
+    uVar7 = 0x37f;
+    pcVar5 = "[Func]:%s [Line]:%d [Info]:ISP[%d] distribute enable, not support runonce\n";
+  }
+  else {
+    if (*(int *)(iVar1 + 0x84) == 1) {
+      isp_mutex_unlock(param_1);
+      fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] run failed, isp_exit is true!\n",
+              "ot_mpi_isp_run_once",0x386,param_1);
+      return -1;
+    }
+    if (*(int *)(iVar1 + 0x80) != 1) {
+      *(undefined4 *)(iVar1 + 0x80) = 1;
+      isp_mutex_unlock(param_1);
+      if (*(int *)(iVar1 + 8) == 0) {
+        iVar3 = isp_get_usr_ctx(param_1);
+        if ((*(int *)(iVar3 + 0x60) == 1) || (*(int *)(iVar3 + 0x60) == 4)) {
+          uVar7 = 0x341;
+          pcVar5 = "ot_isp_run_once";
+          goto LAB_003d8e6a;
+        }
+        iVar2 = isp_check_mem_init_func(param_1);
+        if (iVar2 == 0) {
+          iVar2 = isp_switch_mode(param_1);
+          if (iVar2 == 0) {
+            *(undefined4 *)(iVar3 + 0x25b8) = 1;
+            iVar2 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x40047054,iVar3 + 0x25b8);
+            if (iVar2 == 0) {
+              isp_run(param_1);
+              iVar2 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x7050);
+              if (iVar2 == 0) goto LAB_003d8f20;
+            }
+            else {
+              fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] set runonce info failed!\n",
+                      "ot_isp_run_once",0x355,param_1);
+            }
+            iVar4 = *(int *)(g_isp_fd + param_1 * 4);
+            *(undefined4 *)(iVar3 + 0x25b8) = 0;
+            iVar3 = ioctl(iVar4,0x40047054,iVar3 + 0x25b8);
+            if (iVar3 == 0) goto LAB_003d8f20;
+            uVar7 = 0x365;
+            pcVar6 = "ot_isp_run_once";
+            pcVar5 = "[Func]:%s [Line]:%d [Info]:ISP[%d] set runonce info failed!\n";
+          }
+          else {
+            uVar7 = 0x34e;
+            pcVar6 = "ot_isp_run_once";
+            pcVar5 = "[Func]:%s [Line]:%d [Info]:ISP[%d] switch mode failed!\n";
+          }
+LAB_003d8e9c:
+          fprintf((FILE *)0x0,pcVar5,pcVar6,uVar7,param_1);
+        }
+      }
+      else {
+        iVar3 = isp_get_usr_ctx(param_1);
+        if ((*(int *)(iVar3 + 0x60) != 1) && (*(int *)(iVar3 + 0x60) != 4)) {
+          iVar2 = isp_check_mem_init_func(param_1);
+          if (iVar2 == 0) {
+            iVar2 = io_read16("_Z17rtsp_auth_processP14rtsp_server_uaPKcP21http_digest_auth_info" +
+                              param_1 * 0x20000 + 0x25);
+            *(byte *)(iVar3 + 0xa5) = (byte)((uint)(iVar2 << 0x16) >> 0x1a);
+            *(undefined4 *)(iVar3 + 0x25b8) = 1;
+            iVar2 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x40047052,iVar3 + 0x25b8);
+            if (iVar2 != 0) {
+              *(undefined4 *)(iVar3 + 0x25b8) = 0;
+              pcVar6 = "ot_isp_yuv_run_once";
+              uVar7 = 0x326;
+              pcVar5 = "[Func]:%s [Line]:%d [Info]:ISP[%d] set runonce info failed!\n";
+              goto LAB_003d8e9c;
+            }
+            isp_run(param_1);
+            iVar2 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x7053);
+            if (iVar2 != 0) {
+              fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] kernel runonce  failed!\n",
+                      "ot_isp_yuv_run_once",0x32e,param_1);
+              iVar4 = *(int *)(g_isp_fd + param_1 * 4);
+              *(undefined4 *)(iVar3 + 0x25b8) = 0;
+              ioctl(iVar4,0x40047052,iVar3 + 0x25b8);
+            }
+          }
+          goto LAB_003d8f20;
+        }
+        uVar7 = 0x316;
+        pcVar5 = "ot_isp_yuv_run_once";
+LAB_003d8e6a:
+        iVar2 = -0x5fe37ff4;
+        fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] run_once not support for online!\n",
+                pcVar5,uVar7,param_1);
+      }
+LAB_003d8f20:
+      isp_mutex_lock(param_1);
+      *(undefined4 *)(iVar1 + 0x80) = 0;
+      goto LAB_003d8d5c;
+    }
+    uVar7 = 0x38a;
+    pcVar5 = "[Func]:%s [Line]:%d [Info]:isp[%d] run already, no need to run repeatedly\n";
+  }
+  iVar2 = -0x5fe37ff4;
+  fprintf((FILE *)0x0,pcVar5,"ot_mpi_isp_run_once",uVar7,param_1);
+LAB_003d8d5c:
+  isp_mutex_unlock(param_1);
+  return iVar2;
+}
+
+
+--- CALLS TO ---
+  -> isp_check_pointer @ 003d806c
+  -> fprintf @ 00161568
+  -> isp_check_vreg_permission @ 003d8230
+  -> ioctl @ 001617c4
+  -> isp_run @ 003d5e94
+  -> isp_get_usr_ctx @ 003d82f4
+  -> isp_mutex_lock @ 003d7e54
+  -> isp_switch_mode @ 003d5270
+  -> isp_check_mem_init_func @ 003d8198
+  -> io_read16 @ 003d4422
+  -> isp_check_dev_open @ 003d80e4
+  -> isp_check_pipe @ 003d802c
+  -> isp_mutex_unlock @ 003d7e98
+--- CALLED BY ---
+
+======================================================================
+FUNCTION: ot_mpi_isp_run
+ADDRESS:  003d9084
+SIZE:     568 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int ot_mpi_isp_run(int param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  int iVar3;
+  char *pcVar4;
+  char *pcVar5;
+  undefined4 uVar6;
+  int local_5c;
+  undefined8 local_58;
+  undefined8 uStack_50;
+  undefined8 local_48;
+  undefined8 local_40;
+  undefined8 local_38;
+  int local_30;
+  undefined4 uStack_2c;
+  undefined4 uStack_28;
+  int local_24;
+  
+  local_24 = __stack_chk_guard;
+  local_30 = 0;
+  local_58 = 0;
+  uStack_50 = 0;
+  local_48 = 0;
+  local_40 = 0;
+  local_38 = 0;
+  uStack_2c = 0;
+  uStack_28 = 0;
+  iVar1 = isp_check_pipe();
+  if (iVar1 != 0) {
+    iVar1 = -0x5fe37ff9;
+    goto LAB_003d91ee;
+  }
+  iVar2 = isp_get_usr_ctx(param_1);
+  iVar1 = isp_check_pointer();
+  if (iVar1 != 0) {
+    iVar1 = -0x5fe37ff6;
+    goto LAB_003d91ee;
+  }
+  isp_mutex_lock(param_1);
+  iVar1 = isp_check_dev_open(param_1);
+  if (iVar1 == 0) {
+    iVar1 = isp_get_fd(param_1);
+    iVar1 = ioctl(iVar1,0x8034703b,&local_58);
+    if (iVar1 == 0) {
+      if ((param_1 - 2U < 2) && (local_30 != 1)) {
+        iVar1 = isp_get_usr_ctx(param_1);
+        if (*(int *)(iVar1 + 0x27a4) == 1) goto LAB_003d913a;
+        uVar6 = 0xf7;
+        pcVar5 = "isp_check_run_be_pipe_return";
+        pcVar4 = 
+        "[Func]:%s [Line]:%d [Info]:pipe %d is virt pipe, only wake by be end support isp run \n";
+LAB_003d9130:
+        iVar1 = -0x5fe37ff4;
+        fprintf((FILE *)0x0,pcVar4,pcVar5,uVar6,param_1);
+      }
+      else {
+LAB_003d913a:
+        iVar1 = isp_get_usr_ctx(param_1);
+        if ((*(int *)(iVar1 + 4) == 1) || (*(int *)(iVar1 + 8) == 1)) {
+          iVar1 = isp_check_mem_init_func(param_1);
+          if (iVar1 == 0) {
+            iVar3 = isp_get_usr_ctx(param_1);
+            if (*(int *)(iVar3 + 0x18) == 1) {
+              if (((7 < *(int *)(iVar2 + 0x1660) - 1U) || (*(int *)(iVar2 + 0x165c) == 1)) &&
+                 (iVar1 = isp_check_vreg_permission(param_1), iVar1 == 0)) {
+                if (*(int *)(iVar2 + 0x84) == 1) {
+                  isp_mutex_unlock(param_1);
+                  uVar6 = 0x3bc;
+                  pcVar4 = "[Func]:%s [Line]:%d [Info]:isp[%d] run failed, is_exit is true\n";
+                }
+                else {
+                  if (*(int *)(iVar2 + 0x80) == 1) {
+                    uVar6 = 0x3c0;
+                    pcVar5 = "ot_mpi_isp_run";
+                    pcVar4 = 
+                    "[Func]:%s [Line]:%d [Info]:isp[%d] run already, no need to run repeatedly\n";
+                    goto LAB_003d9130;
+                  }
+                  local_5c = 1;
+                  iVar3 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x40047007,&local_5c);
+                  if (-1 < iVar3) {
+                    *(undefined4 *)(iVar2 + 0x80) = 1;
+                    isp_mutex_unlock(param_1);
+                    isp_run_thread(param_1,iVar2);
+                    isp_mutex_lock(param_1);
+                    local_5c = iVar1;
+                    iVar3 = ioctl(*(int *)(g_isp_fd + param_1 * 4),0x40047007,&local_5c);
+                    if (iVar3 < 0) {
+                      fprintf((FILE *)0x0,
+                              "[Func]:%s [Line]:%d [Info]:Disable ISP[%d] interrupt failed!\n",
+                              "ot_mpi_isp_run",0x3d3,param_1);
+                    }
+                    *(undefined4 *)(iVar2 + 0x80) = 0;
+                    goto LAB_003d9166;
+                  }
+                  isp_mutex_unlock(param_1);
+                  uVar6 = 0x3c9;
+                  pcVar4 = "[Func]:%s [Line]:%d [Info]:Enable ISP[%d] interrupt failed!\n";
+                }
+                iVar1 = -1;
+                fprintf((FILE *)0x0,pcVar4,"ot_mpi_isp_run",uVar6,param_1);
+                goto LAB_003d91ee;
+              }
+            }
+            else {
+              iVar1 = -0x5fe37fc0;
+              fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] doesn\'t initialized!\n",
+                      "ot_mpi_isp_run",0x3b5,param_1);
+            }
+          }
+        }
+        else {
+          iVar1 = -0x5fe37fbd;
+          fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Sensor doesn\'t register to ISP[%d]!\n",
+                  "ot_mpi_isp_run",0x3b3,param_1);
+        }
+      }
+    }
+    else {
+      iVar1 = -0x5fe37ff9;
+    }
+  }
+LAB_003d9166:
+  isp_mutex_unlock(param_1);
+LAB_003d91ee:
+  if (__stack_chk_guard != local_24) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return iVar1;
+}
+
+
+--- CALLS TO ---
+  -> isp_check_pointer @ 003d806c
+  -> isp_check_mem_init_func @ 003d8198
+  -> isp_run_thread @ 003d6408
+  -> isp_check_pipe @ 003d802c
+  -> __stack_chk_fail @ 00161978
+  -> fprintf @ 00161568
+  -> isp_mutex_unlock @ 003d7e98
+  -> isp_check_dev_open @ 003d80e4
+  -> isp_get_fd @ 003d82dc
+  -> ioctl @ 001617c4
+  -> isp_mutex_lock @ 003d7e54
+  -> isp_check_vreg_permission @ 003d8230
+  -> isp_get_usr_ctx @ 003d82f4
+--- CALLED BY ---
+
+======================================================================
+FUNCTION: isp_check_pointer_by_line
+ADDRESS:  003d7fc0
+SIZE:     34 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4
+isp_check_pointer_by_line(int param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+
+{
+  undefined4 uVar1;
+  
+  if (param_1 == 0) {
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Null Pointer!\n",param_2,param_3,param_4);
+    uVar1 = 0xa01c800a;
+  }
+  else {
+    uVar1 = 0;
+  }
+  return uVar1;
+}
+
+
+--- CALLS TO ---
+  -> fprintf @ 00161568
+--- CALLED BY ---
+  <- FUN_003f843c @ 003f843c
+  <- mpi_isp_get_drc_blend @ 003dc530
+  <- isp_statistics_get_buf @ 003d7bdc
+  <- FUN_003f41a4 @ 003f41a4
+  <- isp_init @ 003d5a18
+  <- FUN_003c9adc @ 003c9adc
+  <- FUN_003cec2c @ 003cec2c
+  <- isp_alg_register_ge @ 003fbcd4
+  <- FUN_003fcc78 @ 003fcc78
+  <- FUN_003cc47c @ 003cc47c
+  <- isp_update_dng_image_dynamic_info @ 003e0400
+  <- mpi_isp_set_mesh_shading_attr @ 003dc94c
+  <- isp_sensor_get_blc @ 003d7470
+  <- isp_reg_cfg_info_set @ 003d2e70
+  <- FUN_003cf268 @ 003cf268
+  <- FUN_0041a360 @ 0041a360
+  <- FUN_0041e8ac @ 0041e8ac
+  <- isp_dng_param_check @ 003e7100
+  <- FUN_003fac40 @ 003fac40
+  <- FUN_0041ee1c @ 0041ee1c
+  <- mpi_isp_get_check_sum_stats @ 003dc7ac
+  <- isp_sensor_exit @ 003d79d4
+  <- FUN_003f6ef4 @ 003f6ef4
+  <- isp_wdr_cfg_set @ 003d5140
+  <- isp_expander_attr_read @ 003e3b18
+  <- isp_sync_cfg_set @ 003d32ec
+  <- isp_user_black_level_read @ 003e2774
+  <- isp_alg_register_awb @ 003f38fc
+  <- isp_sensor_update_default @ 003d7668
+  <- FUN_003f717c @ 003f717c
+  <- isp_alg_register_af @ 003f106c
+  <- FUN_00419380 @ 00419380
+  <- isp_dbg_reg_get @ 003df7f8
+  <- isp_dehaze_ctrl @ 00415590
+  <- isp_sensor_update_all_yuv @ 003d73f0
+  <- FUN_0041a604 @ 0041a604
+  <- FUN_003cb124 @ 003cb124
+  <- isp_alg_register_blc @ 003f480c
+  <- mpi_isp_calc_flicker_type @ 003ed670
+  <- isp_sensor_update_blc @ 003d761c
+  <- isp_alg_register_fpn @ 003dd2d0
+  <- FUN_003c9570 @ 003c9570
+  <- isp_ext_regs_initialize @ 003dfca4
+  <- FUN_003f8ce0 @ 003f8ce0
+  <- io_read32_ex @ 003d438c
+  <- mpi_isp_set_mesh_shading_gain_lut_attr @ 003dc864
+  <- FUN_003fee24 @ 003fee24
+  <- isp_alg_register_dehaze @ 00416a5c
+  <- isp_sensor_update_all @ 003d7370
+  <- FUN_0041694c @ 0041694c
+  <- isp_bayernr_param_init @ 0041ba14
+  <- FUN_003f1878 @ 003f1878
+  <- black_level_actual_value_write @ 003e27d0
+  <- isp_sensor_switch @ 003d7924
+  <- isp_exit @ 003d6568
+  <- calc_flicker_type @ 0041d8b4
+  <- FUN_003fc064 @ 003fc064
+  <- isp_sensor_set_image_mode @ 003d7700
+  <- isp_sensor_init @ 003d7874
+  <- mpi_isp_register_alg @ 003dbcd8
+  <- isp_drc_param_init @ 004188a4
+  <- FUN_003acdcc @ 003acdcc
+  <- FUN_003f4a68 @ 003f4a68
+  <- FUN_003cb508 @ 003cb508
+  <- FUN_003f7548 @ 003f7548
+  <- isp_lut2stt_apb_reg @ 003d37a8
+  <- isp_dp_dynamic_attr_check @ 003e6e44
+  <- FUN_003c968c @ 003c968c
+  <- isp_dcf_info_check @ 003e6fe4
+  <- isp_sensor_get_sns_reg @ 003d75e0
+  <- FUN_003fbb04 @ 003fbb04
+  <- FUN_003c9de4 @ 003c9de4
+  <- isp_alg_register_bayer_nr @ 0041d6c0
+  <- isp_switch_reg_set @ 003d3664
+  <- isp_alg_register_dg @ 003f8988
+  <- mpi_isp_set_drc_blend @ 003dc28c
+  <- isp_be_stats_estimate @ 00416b5c
+  <- FUN_003fb810 @ 003fb810
+  <- FUN_003fcf3c @ 003fcf3c
+  <- FUN_003ce8a0 @ 003ce8a0
+  <- FUN_003f4928 @ 003f4928
+  <- isp_get_reg_cfg_ctx @ 003d2afc
+  <- FUN_003faa74 @ 003faa74
+  <- FUN_003cfc28 @ 003cfc28
+  <- isp_reg_cfg_ctrl @ 003d34c8
+  <- FUN_003fdf84 @ 003fdf84
+  <- mpi_isp_set_isp_stitch_transform_info @ 003dca34
+  <- isp_reg_cfg_info_init @ 003d2b48
+  <- FUN_003ca674 @ 003ca674
+  <- isp_alg_register_csc @ 003f66b4
+  <- FUN_003f59fc @ 003f59fc
+  <- isp_alg_register_sharpen @ 00401164
+  <- sns_black_level_actual_value_read @ 003e29ac
+  <- FUN_003f1a10 @ 003f1a10
+  <- isp_trans_info_init @ 003e3d84
+  <- isp_alg_register_drc @ 00419db4
+  <- isp_set_ldci_image_size @ 0041a9cc
+  <- isp_alg_register_acs @ 0041fb38
+  <- FUN_003f1688 @ 003f1688
+  <- FUN_003f681c @ 003f681c
+  <- FUN_003f56e8 @ 003f56e8
+  <- FUN_003f921c @ 003f921c
+  <- isp_sensor_get_max_resolution @ 003d75a4
+  <- isp_sensor_set_wdr_mode @ 003d76b4
+  <- dehaze_reg_update @ 00415774
+  <- FUN_0041e9f0 @ 0041e9f0
+  <- FUN_003cf354 @ 003cf354
+  <- FUN_003fc2f4 @ 003fc2f4
+  <- isp_alg_en_exit @ 003d2698
+  <- FUN_003c9c48 @ 003c9c48
+  <- isp_black_level_actual_value_read @ 003e28e8
+  <- isp_bayernr_reg_update @ 0041c048
+  <- FUN_003f7f4c @ 003f7f4c
+  <- FUN_003cce40 @ 003cce40
+  <- FUN_00401044 @ 00401044
+  <- mpi_isp_get_ynet_cfg @ 003dc65c
+  <- FUN_003ce804 @ 003ce804
+  <- isp_expander_attr_write @ 003e3a88
+  <- FUN_003fb0bc @ 003fb0bc
+  <- FUN_003cda48 @ 003cda48
+  <- FUN_003ca0cc @ 003ca0cc
+  <- mpi_isp_set_ynet_cfg @ 003dc5ec
+  <- isp_alg_register_fcr @ 003f1c50
+  <- isp_alg_register_dpc @ 003f77f0
+  <- FUN_00419ed0 @ 00419ed0
+  <- FUN_003f9ba0 @ 003f9ba0
+  <- isp_sensor_update_sns_reg @ 003d7828
+  <- isp_sensor_init_standby_cfg @ 003d74c0
+  <- isp_switch_mode @ 003d5270
+  <- isp_alg_register_gamma @ 003fb1d0
+  <- isp_sensor_update_blc_clamp_info @ 003d77dc
+  <- isp_alg_register_ca @ 003f50e4
+  <- FUN_003f8b88 @ 003f8b88
+  <- isp_dehaze_param_init @ 00415158
+  <- isp_reset_fe_stt_en @ 003d25d4
+  <- isp_alg_register_demosaic @ 003f8550
+  <- isp_alg_register_lsc @ 003fd0ac
+  <- FUN_004153ac @ 004153ac
+  <- FUN_003f9e14 @ 003f9e14
+  <- ot_mpi_isp_exit @ 003d9328
+  <- isp_sensor_get_default @ 003d7554
+  <- FUN_003cdb74 @ 003cdb74
+  <- FUN_0041d478 @ 0041d478
+  <- FUN_003fbf2c @ 003fbf2c
+  <- isp_sensor_set_pixel_detect @ 003d7744
+  <- isp_demosaic_param_init @ 003f7c44
+  <- isp_black_level_value_check @ 003e63c4
+  <- FUN_003cbd28 @ 003cbd28
+  <- isp_alg_register_ae @ 003f0458
+  <- isp_get_yuv_default @ 003def00
+  <- isp_alg_register_cac @ 003f5fcc
+  <- isp_sensor_reg_callback @ 003d72e0
+  <- isp_alg_register_frame_wdr @ 003fa7e4
+  <- isp_alg_register_expander @ 003f8fc4
+  <- isp_alg_register_mcds @ 003fd284
+  <- FUN_003f4574 @ 003f4574
+  <- FUN_0041bf08 @ 0041bf08
+  <- isp_expander_attr_check @ 003e6c94
+  <- isp_sensor_get_awb_gain @ 003d7790
+  <- FUN_00419c08 @ 00419c08
+  <- mpi_isp_get_ai_mode_attr @ 003dbf5c
+  <- isp_ctrl_param_get @ 003cc56c
+  <- FUN_003c9200 @ 003c9200
+  <- FUN_003c9844 @ 003c9844
+  <- mpi_isp_get_master_pipe @ 003dbd74
+  <- FUN_003cabc4 @ 003cabc4
+  <- FUN_0041a0f8 @ 0041a0f8
+  <- FUN_003f3ee8 @ 003f3ee8
+  <- FUN_003fb43c @ 003fb43c
+  <- isp_sensor_get_id @ 003d7438
+  <- isp_user_black_level_write @ 003e2654
+  <- FUN_0041932c @ 0041932c
+  <- FUN_003cdd84 @ 003cdd84
+  <- FUN_003ceb08 @ 003ceb08
+  <- isp_alg_register_ldci @ 0041af40
+  <- FUN_003f5204 @ 003f5204
+
+======================================================================
+FUNCTION: isp_sensor_exit
+ADDRESS:  003d79d4
+SIZE:     158 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_sensor_exit(int param_1)
+
+{
+  char cVar1;
+  int iVar2;
+  code *pcVar3;
+  int iVar4;
+  int *local_18;
+  int local_14;
+  
+  local_14 = __stack_chk_guard;
+  local_18 = (int *)0x0;
+  iVar4 = *(int *)(g_sensor_ctx + param_1 * 4);
+  iVar2 = isp_check_pointer_by_line(iVar4,"isp_sensor_exit",0x138);
+  if (((iVar2 != 0) || (iVar2 = isp_sensor_update_sns_reg(param_1), iVar2 != 0)) ||
+     (iVar2 = isp_sensor_get_sns_reg(param_1,&local_18), iVar2 != 0)) goto LAB_003d7a30;
+  if (*local_18 == 0) {
+    cVar1 = (char)local_18[6];
+LAB_003d7a24:
+    if (cVar1 == -1) goto LAB_003d7a30;
+  }
+  else if (*local_18 == 1) {
+    cVar1 = (char)((int)((uint)*(byte *)(local_18 + 6) << 0x1c) >> 0x1c);
+    goto LAB_003d7a24;
+  }
+  pcVar3 = *(code **)(iVar4 + 8);
+  if (pcVar3 == (code *)0x0) {
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:pfn_cmos_sns_exit is null!\n","isp_sensor_exit",
+            0x151);
+  }
+  else {
+    (*pcVar3)(param_1);
+  }
+LAB_003d7a30:
+  if (__stack_chk_guard != local_14) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return;
+}
+
+
+--- CALLS TO ---
+  -> isp_sensor_get_sns_reg @ 003d75e0
+  -> __stack_chk_fail @ 00161978
+  -> fprintf @ 00161568
+  -> isp_sensor_update_sns_reg @ 003d7828
+  -> isp_check_pointer_by_line @ 003d7fc0
+--- CALLED BY ---
+  <- isp_init @ 003d5a18
+  <- isp_exit @ 003d6568
+
+======================================================================
+FUNCTION: isp_bayernr_reg_update
+ADDRESS:  0041c048
+SIZE:     4980 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_bayernr_reg_update(int param_1,int param_2,int param_3)
+
+{
+  undefined1 uVar1;
+  undefined2 uVar2;
+  int iVar3;
+  int iVar4;
+  undefined4 uVar5;
+  undefined4 uVar6;
+  int iVar7;
+  undefined4 uVar8;
+  ushort *puVar9;
+  undefined4 extraout_r0;
+  undefined4 extraout_r0_00;
+  float extraout_r0_01;
+  float extraout_r0_02;
+  float extraout_r0_03;
+  float extraout_r0_04;
+  float extraout_r0_05;
+  float extraout_r0_06;
+  undefined2 *puVar10;
+  uint *puVar11;
+  undefined4 extraout_r1;
+  undefined4 extraout_r1_00;
+  char cVar12;
+  ushort uVar13;
+  uint uVar14;
+  int iVar15;
+  undefined1 *puVar16;
+  byte *pbVar17;
+  undefined4 uVar18;
+  byte bVar19;
+  ushort *puVar20;
+  int iVar21;
+  int iVar22;
+  byte bVar23;
+  uint in_fpscr;
+  uint uVar24;
+  undefined4 in_cr0;
+  undefined4 in_cr3;
+  undefined4 in_cr4;
+  undefined4 in_cr7;
+  undefined4 in_cr8;
+  undefined4 in_cr9;
+  undefined4 extraout_s0;
+  float fVar25;
+  float fVar26;
+  undefined4 extraout_s1;
+  undefined4 extraout_s1_00;
+  undefined4 extraout_s1_01;
+  double dVar27;
+  float extraout_s7;
+  float fVar28;
+  float fVar29;
+  float fVar30;
+  float fVar31;
+  float fVar32;
+  double unaff_d8;
+  float fVar33;
+  float fVar34;
+  float fVar35;
+  float fVar36;
+  double dVar37;
+  double dVar38;
+  double dVar39;
+  uint local_a0;
+  short local_98;
+  uint local_90;
+  int local_8c;
+  undefined1 *local_88;
+  undefined4 local_78;
+  undefined4 local_74;
+  float local_70;
+  int local_6c;
+  
+  local_6c = __stack_chk_guard;
+  iVar3 = isp_get_usr_ctx();
+  uVar13 = *(ushort *)(param_2 + 0x7e04);
+  *(undefined2 *)(param_3 + 0xc0) = *(undefined2 *)(param_2 + 0x7e72);
+  *(ushort *)(param_3 + 0xac) = uVar13;
+  *(ushort *)(param_3 + 0xae) = uVar13 >> 1;
+  iVar4 = memcpy_s(param_3 + 0xb0,0xc,iVar3 + 0x2348);
+  if (iVar4 == 0) {
+    if (*(byte *)(iVar3 + 0xa5) - 2 < 3) {
+      *(undefined4 *)(param_3 + 0xb4) = *(undefined4 *)(param_3 + 0xb0);
+      uVar1 = 2;
+    }
+    else if (*(byte *)(iVar3 + 0xa5) - 5 < 2) {
+      uVar1 = 3;
+    }
+    else {
+      uVar1 = 1;
+    }
+    *(undefined1 *)(param_3 + 4) = uVar1;
+    if (*(int *)(iVar3 + 0x2370) - 1U < 2) {
+      *(undefined1 *)(param_3 + 4) = 1;
+    }
+  }
+  if (*(int *)(iVar3 + 0x60) - 1U < 2) {
+    if (*(char *)(iVar3 + 0x25a8) < '\x01') {
+      uVar14 = 0;
+    }
+    else if (*(char *)(iVar3 + 0x25a8) < '\a') {
+      uVar14 = *(byte *)(iVar3 + 0x25a8) - 1 & 0xff;
+    }
+    else {
+      uVar14 = 5;
+    }
+    iVar15 = iVar3 + uVar14 * 4;
+    iVar4 = *(int *)(iVar15 + 0x2510);
+    uVar14 = *(uint *)(iVar15 + 0x24f8);
+    if (iVar4 == 0) {
+      iVar4 = 1;
+    }
+    local_a0 = __aeabi_uldivmod(uVar14 << 8,uVar14 >> 0x18,iVar4,0);
+    if (local_a0 < 100) {
+      local_a0 = 100;
+    }
+  }
+  else {
+    local_a0 = *(uint *)(iVar3 + 0x2340);
+  }
+  uVar18 = *(undefined4 *)(iVar3 + 0x2338);
+  local_78 = 0;
+  isp_sensor_get_default(param_1,&local_78);
+  iVar4 = isp_get_usr_ctx(param_1);
+  iVar15 = isp_check_pointer_by_line(local_78,"ot_isp_bayernr_fw",0x581);
+  if (iVar15 != 0) goto LAB_0041c954;
+  iVar15 = get_iso_index(uVar18);
+  local_98._0_1_ = (char)iVar15;
+  if ((char)local_98 < '\x02') {
+    local_90 = 0;
+  }
+  else {
+    local_90 = iVar15 - 1U & 0xff;
+  }
+  uVar5 = get_iso(local_90);
+  uVar6 = get_iso(iVar15);
+  local_70 = 0.0;
+  isp_sensor_get_sns_reg(param_1,&local_70);
+  iVar7 = isp_check_pointer_by_line(local_70,"isp_bayernr_get_sync_framethr",0x529);
+  dVar27 = (double)CONCAT44(extraout_s1,extraout_s0);
+  if (iVar7 == 0) {
+    bVar23 = *(byte *)(iVar4 + 0xa5);
+    bVar19 = *(byte *)((int)local_70 + 8);
+    uVar14 = (uint)bVar19;
+    if ((*(int *)(iVar4 + 0x60) == 0) || (*(int *)(iVar4 + 0x60) - 3U < 2)) {
+      if (((bVar23 & 0xfd) == 4) || (bVar23 == 8)) goto LAB_0041c1be;
+      if (5 < uVar14) {
+        bVar19 = 6;
+      }
+      bVar19 = bVar19 + 1;
+LAB_0041c206:
+      uVar14 = (uint)bVar19;
+    }
+    else if (((bVar23 & 0xfd) == 4) || (bVar23 == 8)) {
+      if ((char)bVar19 < '\x01') {
+        uVar14 = 0;
+      }
+      else {
+        if ((char)bVar19 < '\t') {
+          bVar19 = bVar19 - 1;
+          goto LAB_0041c206;
+        }
+        uVar14 = 7;
+      }
+    }
+    else {
+LAB_0041c1be:
+      if (6 < uVar14) {
+        uVar14 = 7;
+      }
+    }
+    iVar4 = param_3;
+    do {
+      iVar7 = iVar4 + -0xc;
+      *(undefined2 *)(iVar4 + 0x6c) = *(undefined2 *)(iVar4 + 0x60);
+      *(undefined2 *)(iVar4 + 0x6e) = *(undefined2 *)(iVar4 + 0x62);
+      *(undefined2 *)(iVar4 + 0x70) = *(undefined2 *)(iVar4 + 100);
+      *(undefined2 *)(iVar4 + 0x72) = *(undefined2 *)(iVar4 + 0x66);
+      iVar4 = iVar7;
+    } while (param_3 + -0x54 != iVar7);
+    iVar4 = (param_1 + 8) * 0x20000;
+    memmove((void *)(param_3 + 0x7c),(void *)(param_3 + 0x78),0x1c);
+    uVar2 = io_read16(iVar4 + 0x1340);
+    *(undefined2 *)(param_3 + 0x18) = uVar2;
+    uVar2 = io_read16(iVar4 + 0x1342);
+    *(undefined2 *)(param_3 + 0x1a) = uVar2;
+    uVar2 = io_read16(iVar4 + 0x1340);
+    *(undefined2 *)(param_3 + 0x1c) = uVar2;
+    uVar2 = io_read16(iVar4 + 0x1342);
+    *(undefined2 *)(param_3 + 0x1e) = uVar2;
+    uVar8 = io_read8(iVar4 + 0x1303);
+    *(undefined4 *)(param_3 + 0x78) = uVar8;
+    uVar8 = memcpy_s(param_3 + 0xc,0xc,uVar14 * 0xc + param_3 + 0x18);
+    dVar27 = (double)CONCAT44(extraout_s1_00,uVar8);
+    *(undefined4 *)(param_3 + 8) = *(undefined4 *)(param_3 + (uVar14 + 0x1e) * 4);
+  }
+  dVar39 = *(double *)(param_3 + 0x7f0);
+  dVar37 = *(double *)(param_3 + 0x798);
+  in_fpscr = in_fpscr & 0xfffffff;
+  uVar14 = in_fpscr | (uint)(dVar39 < 0.0) << 0x1f | (uint)(dVar39 == 0.0) << 0x1e;
+  uVar24 = uVar14 | (uint)NAN(dVar39) << 0x1c;
+  dVar38 = (double)VectorUnsignedToFloat(local_a0,(byte)(uVar24 >> 0x15) & 3);
+  bVar23 = (byte)(uVar14 >> 0x18);
+  if ((bool)(bVar23 >> 6 & 1) || bVar23 >> 7 != ((byte)(uVar24 >> 0x1c) & 1)) {
+    if (dVar38 <= dVar37) {
+      unaff_d8 = *(double *)(param_3 + 0x7e8);
+      dVar39 = *(double *)(param_3 + 0x7d8);
+      dVar37 = *(double *)(param_3 + 0x7e0);
+    }
+    else {
+      dVar39 = *(double *)(param_3 + 0x7b0);
+      dVar37 = *(double *)(param_3 + 0x7b8);
+      unaff_d8 = *(double *)(param_3 + 0x7c0);
+    }
+    dVar37 = dVar37 * dVar38 + dVar39 * dVar38 * dVar38 + unaff_d8;
+  }
+  else {
+    uVar14 = in_fpscr | (uint)(dVar37 < dVar38) << 0x1f;
+    uVar24 = uVar14 | (uint)(NAN(dVar37) || NAN(dVar38)) << 0x1c;
+    bVar23 = -(char)((int)uVar14 >> 0x1f);
+    if (bVar23 == ((byte)(uVar24 >> 0x1c) & 1)) {
+      unaff_d8 = dVar38 * *(double *)(param_3 + 0x7e0) +
+                 dVar38 * *(double *)(param_3 + 0x7d8) * dVar38;
+      dVar37 = unaff_d8 + *(double *)(param_3 + 0x7e8);
+      in_fpscr = uVar24;
+    }
+    else if ((bVar23 == 0) ||
+            (uVar14 = in_fpscr | (uint)(dVar39 < dVar38) << 0x1f | (uint)(dVar39 == dVar38) << 0x1e,
+            uVar24 = uVar14 | (uint)(NAN(dVar39) || NAN(dVar38)) << 0x1c,
+            bVar23 = (byte)(uVar14 >> 0x18),
+            (bool)(bVar23 >> 6 & 1) || bVar23 >> 7 != ((byte)(uVar24 >> 0x1c) & 1))) {
+      unaff_d8 = dVar38 / dVar39;
+      dVar37 = (*(double *)(param_3 + 0x7c0) +
+               dVar39 * *(double *)(param_3 + 0x7b0) * dVar39 +
+               dVar39 * *(double *)(param_3 + 0x7b8)) * unaff_d8 * unaff_d8;
+      in_fpscr = uVar24;
+    }
+    else {
+      dVar37 = *(double *)(param_3 + 0x7c0) +
+               *(double *)(param_3 + 0x7b8) * dVar38 +
+               *(double *)(param_3 + 0x7b0) * dVar38 * dVar38;
+      in_fpscr = uVar24;
+    }
+  }
+  coprocessor_function(0xb,0xf,7,in_cr7,in_cr7,in_cr3);
+  *(uint *)(param_3 + 0xcc) = local_a0;
+  *(uint *)(param_3 + 0xc4) = local_a0;
+  coprocessor_function(0xb,0xf,7,in_cr7,in_cr7,in_cr0);
+  *(uint *)(param_3 + 200) = local_a0;
+  if (*(char *)(param_3 + 0x6e1) != '\0') {
+    iVar4 = (int)*(short *)(param_3 + 0x6e2);
+    if ((-0x101 < iVar4) && (iVar4 < 0x101)) {
+      VectorSignedToFloat(iVar4,(byte)(in_fpscr >> 0x15) & 3);
+    }
+    if (*(ushort *)(param_3 + 0x6e4) < 0x101) {
+      dVar38 = (double)VectorUnsignedToFloat
+                                 ((uint)*(ushort *)(param_3 + 0x6e4),(byte)(in_fpscr >> 0x15) & 3);
+    }
+    else {
+      dVar38 = 256.0;
+    }
+    in_fpscr = in_fpscr & 0xfffffff;
+    dVar37 = dVar37 + dVar37 * (dVar38 - 32.0) * 0.015625;
+  }
+  coprocessor_function(0xb,0xf,7,in_cr8,in_cr7,in_cr3);
+  puVar20 = (ushort *)(param_2 + 0x64ac);
+  coprocessor_function(0xb,0xb,7,in_cr8,in_cr7,in_cr0);
+  if (*(byte *)(param_3 + 4) < 2) {
+    uVar14 = 0;
+    if (*(char *)(param_3 + 0x6e1) == '\x02') {
+      do {
+        if ((int)uVar14 < 0x3e) {
+          iVar4 = param_3 + ((int)uVar14 >> 1);
+          uVar13 = (ushort)(((int)((2 - (uVar14 & 1)) * (uint)*(byte *)(iVar4 + 0x6b9) +
+                                  (uVar14 & 1) * (uint)*(byte *)(iVar4 + 0x6ba)) >> 1) << 5);
+        }
+        else {
+          uVar13 = (ushort)*(byte *)(param_3 + 0x6d8) << 5;
+        }
+        *puVar20 = uVar13;
+        uVar14 = uVar14 + 1;
+        puVar20 = puVar20 + 1;
+      } while (uVar14 != 0x81);
+    }
+    else {
+      coprocessor_function(10,0xf,6,in_cr0,in_cr7,in_cr8);
+      iVar4 = 0;
+      uVar13 = *(ushort *)(param_3 + 0xc0);
+      coprocessor_function(10,0xb,7,in_cr9,in_cr7,in_cr8);
+      dVar27 = sqrt(dVar27);
+      do {
+        if (iVar4 < (int)(uint)uVar13) {
+          iVar7 = 0;
+        }
+        else {
+          iVar7 = iVar4 - (uint)uVar13;
+        }
+        iVar4 = iVar4 + 0x20;
+        VectorSignedToFloat(iVar7,(byte)(in_fpscr >> 0x15) & 3);
+        dVar27 = sqrt(dVar27);
+        iVar7 = VectorFloatToSigned((double)CONCAT44(extraout_r1_00,extraout_r0_00) * 16.0 + 0.5,3);
+        if (0x7ffe < iVar7) {
+          iVar7 = 0x7fff;
+        }
+        *puVar20 = (ushort)iVar7 & ~(ushort)(iVar7 >> 0x1f);
+        puVar20 = puVar20 + 1;
+      } while (iVar4 != 0x1020);
+    }
+    FUN_0041b130(*(undefined2 *)(param_3 + 0xc0),param_2 + 0x6438,(int)((ulonglong)unaff_d8 >> 0x20)
+                 ,SUB84(unaff_d8,0));
+  }
+  else {
+    fVar33 = (float)VectorUnsignedToFloat
+                              (*(undefined4 *)(param_3 + 0xb0),(byte)(in_fpscr >> 0x15) & 3);
+    fVar30 = (float)VectorSignedToFloat((uint)*(ushort *)(param_3 + 0xae),
+                                        (byte)(in_fpscr >> 0x15) & 3);
+    fVar33 = fVar33 * 0.015625;
+    if (*(int *)(param_3 + 8) == 1) {
+      iVar4 = 0;
+      fVar30 = (float)VectorUnsignedToFloat
+                                ((uint)*(byte *)(param_3 + 0x6ee),(byte)(in_fpscr >> 0x15) & 3);
+      fVar31 = (float)VectorUnsignedToFloat
+                                ((uint)*(byte *)(param_3 + 0x6ef),(byte)(in_fpscr >> 0x15) & 3);
+      fVar35 = 131072.0 / ((fVar33 + 1.0) * 4096.0);
+      do {
+        uVar8 = VectorSignedToFloat(iVar4 << 5,(byte)(in_fpscr >> 0x15) & 3);
+        uVar8 = VectorFloatToUnsigned(uVar8,3);
+        fVar25 = (float)FUN_0041afec(uVar8,&local_74,&local_70);
+        VectorUnsignedToFloat(local_74,(byte)(in_fpscr >> 0x15) & 3);
+        if (iVar4 == 0) {
+          local_70 = 1.0;
+        }
+        in_fpscr = in_fpscr & 0xfffffff;
+        coprocessor_function(10,0xf,6,in_cr0,in_cr7,in_cr7);
+        iVar4 = iVar4 + 1;
+        fVar25 = sqrtf(fVar25);
+        fVar25 = sqrtf(fVar25);
+        sqrtf(fVar25);
+        coprocessor_function(10,0xb,6,in_cr7,in_cr7,in_cr7);
+        uVar14 = VectorFloatToUnsigned
+                           ((double)CONCAT44(fVar31 * 0.0625,
+                                             fVar31 * 0.0625 * fVar35 * extraout_r0_02 * local_70 *
+                                             16.0) + 0.5,3);
+        if (0x7ffe < uVar14) {
+          uVar14 = 0x7fff;
+        }
+        *puVar20 = (ushort)uVar14;
+        coprocessor_function(10,0xb,6,in_cr7,in_cr7,in_cr7);
+        uVar14 = VectorFloatToUnsigned
+                           ((double)CONCAT44(fVar30 * 0.0625,
+                                             fVar30 * 0.0625 *
+                                             local_70 *
+                                             (fVar33 + 1.0) * extraout_r0_01 * 16.0 * fVar35 * 16.0)
+                            + 0.5,3);
+        if (0x7ffe < uVar14) {
+          uVar14 = 0x7fff;
+        }
+        puVar20[0x81] = (ushort)uVar14;
+        puVar20 = puVar20 + 1;
+      } while (iVar4 != 0x81);
+      uVar13 = *(ushort *)(param_3 + 0xae);
+      fVar30 = (float)VectorUnsignedToFloat
+                                (*(undefined4 *)(param_3 + 0xb0),(byte)(in_fpscr >> 0x15) & 3);
+      iVar4 = 0;
+      VectorUnsignedToFloat((uint)*(byte *)(param_3 + 0x706),(byte)(in_fpscr >> 0x15) & 3);
+      fVar33 = (float)VectorUnsignedToFloat
+                                ((uint)*(byte *)(param_3 + 0x707),(byte)(in_fpscr >> 0x15) & 3);
+      puVar16 = (undefined1 *)(param_2 + 0x68b4);
+      puVar11 = (uint *)(param_2 + 0x66b0);
+      do {
+        uVar8 = VectorSignedToFloat(iVar4 << 5,(byte)(in_fpscr >> 0x15) & 3);
+        uVar8 = VectorFloatToUnsigned(uVar8,3);
+        fVar31 = (float)FUN_0041afec(uVar8,&local_74,&local_70);
+        VectorUnsignedToFloat(local_74,(byte)(in_fpscr >> 0x15) & 3);
+        if (iVar4 == 0) {
+          local_70 = 1.0;
+        }
+        VectorSignedToFloat((uint)uVar13,(byte)(in_fpscr >> 0x15) & 3);
+        in_fpscr = in_fpscr & 0xfffffff;
+        coprocessor_function(10,0xf,7,in_cr0,in_cr7,in_cr7);
+        fVar31 = sqrtf(fVar31);
+        fVar31 = sqrtf(fVar31);
+        sqrtf(fVar31);
+        dVar27 = 1.0905077326652577;
+        fVar31 = fVar33 * 0.0625 *
+                 (131072.0 / ((fVar30 * 0.015625 + 1.0) * 4096.0)) * extraout_r0_03 * local_70;
+        in_fpscr = in_fpscr & 0xfffffff;
+        if (fVar31 < 1.0) {
+          fVar31 = 1.0;
+        }
+        if (fVar31 < 1.0) {
+          fVar31 = 1.0;
+        }
+        coprocessor_function(10,0xf,6,in_cr0,in_cr7,in_cr7);
+        uVar14 = VectorFloatToUnsigned(65536.0 / fVar31,3);
+        if (0xfffe < uVar14) {
+          uVar14 = 0xffff;
+        }
+        if (uVar14 == 0) {
+          uVar14 = 1;
+        }
+        *puVar11 = uVar14;
+        for (iVar7 = 0;
+            (uVar14 = in_fpscr & 0xfffffff | (uint)(dVar37 < dVar27) << 0x1f |
+                      (uint)(dVar37 == dVar27) << 0x1e,
+            in_fpscr = uVar14 | (uint)(NAN(dVar37) || NAN(dVar27)) << 0x1c,
+            bVar23 = (byte)(uVar14 >> 0x18),
+            !(bool)(bVar23 >> 6 & 1) && bVar23 >> 7 == ((byte)(in_fpscr >> 0x1c) & 1) &&
+            (iVar7 != 0x1f)); iVar7 = iVar7 + 1) {
+          dVar27 = dVar27 * 1.189207115002721;
+        }
+        *puVar16 = (char)iVar7;
+        iVar4 = iVar4 + 1;
+        puVar16 = puVar16 + 1;
+        puVar11 = puVar11 + 1;
+      } while (iVar4 != 0x81);
+    }
+    else {
+      fVar32 = (float)VectorSignedToFloat((uint)(*(ushort *)(param_3 + 0xac) >> 2),
+                                          (byte)(in_fpscr >> 0x15) & 3);
+      fVar25 = (float)VectorUnsignedToFloat
+                                ((uint)*(ushort *)(param_3 + 0xc),(byte)(in_fpscr >> 0x15) & 3);
+      fVar35 = (float)VectorUnsignedToFloat
+                                ((uint)*(ushort *)(param_3 + 0xe),(byte)(in_fpscr >> 0x15) & 3);
+      fVar34 = (float)VectorUnsignedToFloat
+                                ((uint)*(byte *)(param_3 + 0x6ed),(byte)(in_fpscr >> 0x15) & 3);
+      fVar31 = (float)VectorUnsignedToFloat
+                                ((uint)*(byte *)(param_3 + 0x6ea),(byte)(in_fpscr >> 0x15) & 3);
+      fVar36 = (fVar25 - fVar32) * 0.0625;
+      fVar32 = (fVar35 - fVar32) * 0.0625;
+      fVar31 = fVar31 * 0.0625;
+      fVar35 = (float)VectorUnsignedToFloat
+                                ((uint)*(byte *)(param_3 + 0x6eb),(byte)(in_fpscr >> 0x15) & 3);
+      fVar25 = fVar33 * 4096.0;
+      coprocessor_function(10,0xf,7,in_cr0,in_cr7,in_cr7);
+      in_fpscr = in_fpscr & 0xfffffff;
+      if ((dVar37 < 1e-10) &&
+         (uVar14 = in_fpscr | (uint)(dVar37 < -1e-10) << 0x1f | (uint)(dVar37 == -1e-10) << 0x1e,
+         in_fpscr = uVar14 | (uint)NAN(dVar37) << 0x1c, bVar23 = (byte)(uVar14 >> 0x18),
+         !(bool)(bVar23 >> 6 & 1) && bVar23 >> 7 == ((byte)(in_fpscr >> 0x1c) & 1))) {
+        fVar25 = 1.0;
+      }
+      fVar25 = 131072.0 / fVar25;
+      iVar4 = 0;
+      do {
+        uVar8 = VectorSignedToFloat(iVar4 << 5,(byte)(in_fpscr >> 0x15) & 3);
+        uVar8 = VectorFloatToUnsigned(uVar8,3);
+        fVar26 = (float)FUN_0041afec(uVar8,&local_74,&local_70);
+        fVar29 = (float)VectorUnsignedToFloat(local_74,(byte)(in_fpscr >> 0x15) & 3);
+        if (iVar4 == 0) {
+          local_70 = 1.0;
+        }
+        fVar29 = fVar29 - fVar30;
+        coprocessor_function(10,0xf,6,in_cr0,in_cr7,in_cr4);
+        in_fpscr = in_fpscr & 0xfffffff;
+        if (fVar29 < 0.0) {
+          fVar29 = 0.0;
+        }
+        fVar28 = fVar25 * 16.0;
+        if (dVar37 < 1e-10) {
+          in_fpscr = in_fpscr | (uint)(dVar37 < -1e-10) << 0x1f | (uint)(dVar37 == -1e-10) << 0x1e;
+          bVar23 = (byte)(in_fpscr >> 0x18);
+          fVar28 = 1.0;
+          if ((bool)(bVar23 >> 6 & 1) || (bool)(bVar23 >> 7) != NAN(dVar37)) {
+            fVar28 = fVar25 * 16.0;
+          }
+        }
+        fVar29 = fVar29 / fVar28;
+        coprocessor_function(10,0xf,6,in_cr0,in_cr7,in_cr4);
+        in_fpscr = in_fpscr & 0xfffffff;
+        fVar26 = sqrtf(fVar26);
+        sqrtf(fVar26);
+        uVar14 = in_fpscr & 0xfffffff;
+        uVar24 = uVar14 | (uint)(fVar36 < fVar29) << 0x1f | (uint)(fVar36 == fVar29) << 0x1e;
+        in_fpscr = uVar24 | (uint)(NAN(fVar36) || NAN(fVar29)) << 0x1c;
+        bVar23 = (byte)(uVar24 >> 0x18);
+        fVar26 = fVar34 * 0.0625;
+        fVar28 = extraout_s7;
+        if ((((bool)(bVar23 >> 6 & 1) || bVar23 >> 7 != ((byte)(in_fpscr >> 0x1c) & 1)) &&
+            (in_fpscr = uVar14, fVar26 = fVar31, fVar29 <= fVar32)) &&
+           (fVar28 = fVar32 - fVar36, 0.1 <= fVar28)) {
+          fVar26 = ((fVar29 - fVar36) * fVar31 + fVar34 * 0.0625 * (fVar32 - fVar29)) / fVar28;
+        }
+        iVar4 = iVar4 + 1;
+        coprocessor_function(10,0xb,6,in_cr7,in_cr7,in_cr7);
+        coprocessor_function(10,0xb,6,in_cr3,in_cr7,in_cr3);
+        uVar24 = VectorFloatToUnsigned
+                           ((double)CONCAT44(fVar26,local_70 *
+                                                    extraout_r0_05 * 16.0 * fVar33 * fVar25 * fVar26
+                                                    * 16.0) + 0.5,3);
+        uVar14 = VectorFloatToUnsigned
+                           ((double)CONCAT44(fVar28,fVar35 * 0.0625 *
+                                                    extraout_r0_04 * 16.0 * fVar25 * local_70 * 16.0
+                                            ) + 0.5,3);
+        if (0x7ffe < uVar14) {
+          uVar14 = 0x7fff;
+        }
+        *puVar20 = (ushort)uVar14;
+        if (0x7ffe < uVar24) {
+          uVar24 = 0x7fff;
+        }
+        puVar20[0x81] = (ushort)uVar24;
+        puVar20 = puVar20 + 1;
+      } while (iVar4 != 0x81);
+      uVar13 = *(ushort *)(param_3 + 0xae);
+      fVar30 = (float)VectorUnsignedToFloat
+                                (*(undefined4 *)(param_3 + 0xb0),(byte)(in_fpscr >> 0x15) & 3);
+      fVar30 = fVar30 * 0.015625 * 4096.0;
+      VectorUnsignedToFloat((uint)*(byte *)(param_3 + 0x702),(byte)(in_fpscr >> 0x15) & 3);
+      coprocessor_function(10,0xf,7,in_cr0,in_cr7,in_cr9);
+      fVar33 = (float)VectorUnsignedToFloat
+                                ((uint)*(byte *)(param_3 + 0x703),(byte)(in_fpscr >> 0x15) & 3);
+      in_fpscr = in_fpscr & 0xfffffff;
+      if ((dVar37 < 1e-10) &&
+         (uVar14 = in_fpscr | (uint)(dVar37 < -1e-10) << 0x1f | (uint)(dVar37 == -1e-10) << 0x1e,
+         in_fpscr = uVar14 | (uint)NAN(dVar37) << 0x1c, bVar23 = (byte)(uVar14 >> 0x18),
+         !(bool)(bVar23 >> 6 & 1) && bVar23 >> 7 == ((byte)(in_fpscr >> 0x1c) & 1))) {
+        fVar30 = 1.0;
+      }
+      iVar4 = 0;
+      puVar16 = (undefined1 *)(param_2 + 0x68b4);
+      puVar11 = (uint *)(param_2 + 0x66b0);
+      do {
+        uVar8 = VectorSignedToFloat(iVar4 << 5,(byte)(in_fpscr >> 0x15) & 3);
+        uVar8 = VectorFloatToUnsigned(uVar8,3);
+        fVar31 = (float)FUN_0041afec(uVar8,&local_74,&local_70);
+        VectorUnsignedToFloat(local_74,(byte)(in_fpscr >> 0x15) & 3);
+        if (iVar4 == 0) {
+          local_70 = 1.0;
+        }
+        VectorSignedToFloat((uint)uVar13,(byte)(in_fpscr >> 0x15) & 3);
+        in_fpscr = in_fpscr & 0xfffffff;
+        coprocessor_function(10,0xf,7,in_cr0,in_cr7,in_cr7);
+        coprocessor_function(10,0xf,7,in_cr0,in_cr7,in_cr7);
+        fVar31 = sqrtf(fVar31);
+        sqrtf(fVar31);
+        dVar27 = 1.0905077326652577;
+        fVar31 = fVar33 * 0.0625 * extraout_r0_06 * 16.0 * (131072.0 / fVar30) * local_70;
+        in_fpscr = in_fpscr & 0xfffffff;
+        if (fVar31 < 1.0) {
+          fVar31 = 1.0;
+        }
+        if (fVar31 < 1.0) {
+          fVar31 = 1.0;
+        }
+        coprocessor_function(10,0xf,6,in_cr0,in_cr7,in_cr7);
+        uVar14 = VectorFloatToUnsigned(65536.0 / fVar31,3);
+        if (0xfffe < uVar14) {
+          uVar14 = 0xffff;
+        }
+        if (uVar14 == 0) {
+          uVar14 = 1;
+        }
+        *puVar11 = uVar14;
+        for (iVar7 = 0;
+            (uVar14 = in_fpscr & 0xfffffff | (uint)(dVar37 < dVar27) << 0x1f |
+                      (uint)(dVar37 == dVar27) << 0x1e,
+            in_fpscr = uVar14 | (uint)(NAN(dVar37) || NAN(dVar27)) << 0x1c,
+            bVar23 = (byte)(uVar14 >> 0x18),
+            !(bool)(bVar23 >> 6 & 1) && bVar23 >> 7 == ((byte)(in_fpscr >> 0x1c) & 1) &&
+            (iVar7 != 0x1f)); iVar7 = iVar7 + 1) {
+          dVar27 = dVar27 * 1.189207115002721;
+        }
+        *puVar16 = (char)iVar7;
+        iVar4 = iVar4 + 1;
+        puVar16 = puVar16 + 1;
+        puVar11 = puVar11 + 1;
+      } while (iVar4 != 0x81);
+    }
+  }
+  if (*(int *)(param_3 + 0xd4) == 0) {
+    iVar21 = param_3 + local_90;
+    iVar7 = param_3 + iVar15;
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x1f0),uVar6,
+                         *(undefined1 *)(iVar7 + 0x1f0));
+    *(undefined1 *)(param_3 + 0x6ac) = uVar1;
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x270),uVar6,
+                         *(undefined1 *)(iVar7 + 0x270));
+    *(undefined1 *)(param_3 + 0x6b5) = uVar1;
+    iVar22 = param_3 + local_90 * 2;
+    local_98 = (short)iVar15;
+    iVar4 = param_3 + local_98 * 2;
+    uVar2 = linear_inter(uVar18,uVar5,*(undefined2 *)(iVar22 + 0x280),uVar6,
+                         *(undefined2 *)(iVar4 + 0x280));
+    *(undefined2 *)(param_3 + 0x6b6) = uVar2;
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x2a0),uVar6,
+                         *(undefined1 *)(iVar7 + 0x2a0));
+    *(undefined1 *)(param_3 + 0x6b8) = uVar1;
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x260),uVar6,
+                         *(undefined1 *)(iVar7 + 0x260));
+    *(undefined1 *)(param_3 + 0x6b4) = uVar1;
+    uVar2 = linear_inter(uVar18,uVar5,*(undefined2 *)(iVar22 + 0x170),uVar6,
+                         *(undefined2 *)(iVar4 + 0x170));
+    *(undefined2 *)(param_3 + 0x6a4) = uVar2;
+    uVar2 = linear_inter(uVar18,uVar5,*(undefined2 *)(iVar22 + 400),uVar6,
+                         *(undefined2 *)(iVar4 + 400));
+    *(undefined2 *)(param_3 + 0x6a6) = uVar2;
+    uVar2 = linear_inter(uVar18,uVar5,*(undefined2 *)(iVar22 + 0x1b0),uVar6,
+                         *(undefined2 *)(iVar4 + 0x1b0));
+    *(undefined2 *)(param_3 + 0x6a8) = uVar2;
+    uVar2 = linear_inter(uVar18,uVar5,*(undefined2 *)(iVar22 + 0x1d0),uVar6,
+                         *(undefined2 *)(iVar4 + 0x1d0));
+    *(undefined2 *)(param_3 + 0x6aa) = uVar2;
+    local_8c = iVar7;
+    local_88 = (undefined1 *)(param_3 + 0x6b9);
+    do {
+      uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)((local_8c - iVar15) + local_90 + 0x2b0),
+                           uVar6,*(undefined1 *)(local_8c + 0x2b0));
+      puVar16 = local_88 + 1;
+      *local_88 = uVar1;
+      local_8c = local_8c + 0x10;
+      local_88 = puVar16;
+    } while ((undefined1 *)(param_3 + 0x6d9) != puVar16);
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x4e8),uVar6,
+                         *(undefined1 *)(iVar7 + 0x4e8));
+    *(undefined1 *)(param_3 + 0x6da) = uVar1;
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x508),uVar6,
+                         *(undefined1 *)(iVar7 + 0x508));
+    *(undefined1 *)(param_3 + 0x6dc) = uVar1;
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x518),uVar6,
+                         *(undefined1 *)(iVar7 + 0x518));
+    *(undefined1 *)(param_3 + 0x6dd) = uVar1;
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x528),uVar6,
+                         *(undefined1 *)(iVar7 + 0x528));
+    *(undefined1 *)(param_3 + 0x6de) = uVar1;
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x538),uVar6,
+                         *(undefined1 *)(iVar7 + 0x538));
+    *(undefined1 *)(param_3 + 0x6df) = uVar1;
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x548),uVar6,
+                         *(undefined1 *)(iVar7 + 0x548));
+    *(undefined1 *)(param_3 + 0x6e0) = uVar1;
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x558),uVar6,
+                         *(undefined1 *)(iVar7 + 0x558));
+    *(undefined1 *)(param_3 + 0x6e1) = uVar1;
+    uVar2 = linear_inter(uVar18,uVar5,(int)*(short *)(iVar22 + 0x568),uVar6,
+                         (int)*(short *)(iVar4 + 0x568));
+    *(undefined2 *)(param_3 + 0x6e2) = uVar2;
+    uVar2 = linear_inter(uVar18,uVar5,*(undefined2 *)(iVar22 + 0x588),uVar6,
+                         *(undefined2 *)(iVar4 + 0x588));
+    *(undefined2 *)(param_3 + 0x6e4) = uVar2;
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x5a8),uVar6,
+                         *(undefined1 *)(iVar7 + 0x5a8));
+    *(undefined1 *)(param_3 + 0x6e6) = uVar1;
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x5b8),uVar6,
+                         *(undefined1 *)(iVar7 + 0x5b8));
+    *(undefined1 *)(param_3 + 0x6e7) = uVar1;
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x5c8),uVar6,
+                         *(undefined1 *)(iVar7 + 0x5c8));
+    *(undefined1 *)(param_3 + 0x6e8) = uVar1;
+    uVar1 = linear_inter(uVar18,uVar5,*(undefined1 *)(iVar21 + 0x5d8),uVar6,
+                         *(undefined1 *)(iVar7 + 0x5d8));
+    *(undefined1 *)(param_3 + 0x6e9) = uVar1;
+  }
+  else {
+    memcpy_s(param_3 + 0x6a4,0x36,param_3 + 0x4b0);
+    memcpy_s(param_3 + 0x6da,0x10,param_3 + 0x5e8);
+  }
+  uVar18 = memcpy_s(param_3 + 0x6ea,0x20,param_3 + 0x62c);
+  dVar27 = (double)CONCAT44(extraout_s1_01,uVar18);
+  *(undefined4 *)(param_2 + 0x6440) = *(undefined4 *)(param_3 + 0xd0);
+  *(undefined4 *)(param_2 + 0x6444) = *(undefined4 *)(param_3 + 0xd8);
+  *(undefined4 *)(param_2 + 0x69c4) = *(undefined4 *)(param_3 + 0xdc);
+  uVar1 = *(undefined1 *)(param_3 + 0xe0);
+  *(undefined1 *)(param_2 + 0x69d1) = 0;
+  *(undefined1 *)(param_2 + 0x69c8) = uVar1;
+  *(char *)(param_2 + 0x6453) = ('\x1f' - *(char *)(param_3 + 0x6ac)) * '\x02';
+  *(undefined2 *)(param_2 + 0x6450) = 0x120;
+  *(undefined1 *)(param_2 + 0x6452) = 1;
+  *(undefined4 *)(param_2 + 0x6454) = 0x20801;
+  *(char *)(param_2 + 0x6478) = '\x06' - *(char *)(param_3 + 0x6da);
+  *(undefined1 *)(param_2 + 0x6479) = *(undefined1 *)(param_3 + 0x6df);
+  *(undefined2 *)(param_2 + 0x647c) = 0x4040;
+  dVar38 = (double)VectorSignedToFloat((uint)*(byte *)(param_3 + 0x6dd),(byte)(in_fpscr >> 0x15) & 3
+                                      );
+  dVar37 = (double)VectorSignedToFloat((uint)*(byte *)(param_3 + 0x6de),(byte)(in_fpscr >> 0x15) & 3
+                                      );
+  uVar24 = VectorFloatToUnsigned(dVar38 * 0.03125 * 128.0 + 0.5,3);
+  uVar14 = VectorFloatToUnsigned(dVar37 * 0.03125 * 128.0 + 0.5,3);
+  uVar24 = uVar24 & 0xffff;
+  if (0x1fe < uVar24) {
+    uVar24 = 0x1ff;
+  }
+  if (uVar24 < 0x20) {
+    uVar24 = 0x20;
+  }
+  *(short *)(param_2 + 0x647e) = (short)uVar24;
+  uVar14 = uVar14 & 0xffff;
+  if (0x1fe < uVar14) {
+    uVar14 = 0x1ff;
+  }
+  if (uVar14 < 0x20) {
+    uVar14 = 0x20;
+  }
+  *(short *)(param_2 + 0x6480) = (short)uVar14;
+  dVar37 = (double)VectorSignedToFloat(uVar24 - uVar14,(byte)(in_fpscr >> 0x15) & 3);
+  uVar14 = VectorFloatToUnsigned(dVar37 * 128.0 * 0.015625,3);
+  if (0x3fe < uVar14) {
+    uVar14 = 0x3ff;
+  }
+  *(short *)(param_2 + 0x6482) = (short)uVar14;
+  *(undefined1 *)(param_2 + 0x6484) = 0x40;
+  *(undefined1 *)(param_2 + 0x6485) = *(undefined1 *)(param_3 + 0x6b4);
+  *(undefined2 *)(param_2 + 0x69b6) = 0xfff;
+  if (*(int *)(param_3 + 0x164) == 1) {
+    *(undefined4 *)(param_2 + 0x69b8) = 0;
+    *(undefined2 *)(param_2 + 0x648c) = 0x80ff;
+    cVar12 = -0x80;
+  }
+  else {
+    *(uint *)(param_2 + 0x69b8) = (uint)(*(short *)(param_3 + 0x6b6) != 0);
+    uVar14 = (uint)*(byte *)(param_3 + 0x6e8);
+    if (uVar14 < 0x21) {
+      uVar14 = uVar14 * -7 + 0x100;
+    }
+    else {
+      uVar14 = 0x2a - uVar14 / 3;
+    }
+    if (0xfe < uVar14) {
+      uVar14 = 0xff;
+    }
+    *(char *)(param_2 + 0x648c) = (char)uVar14;
+    *(char *)(param_2 + 0x648d) = -0x80 - *(char *)(param_3 + 0x6e7);
+    cVar12 = -0x80 - *(char *)(param_3 + 0x6e9);
+  }
+  *(char *)(param_2 + 0x648e) = cVar12;
+  *(undefined1 *)(param_2 + 0x69bc) = *(undefined1 *)(param_3 + 0x6b5);
+  *(undefined1 *)(param_2 + 0x69bd) = *(undefined1 *)(param_3 + 0x6e0);
+  bVar23 = *(byte *)(param_3 + 4);
+  *(uint *)(param_2 + 0x69c0) = (uint)(bVar23 < 2);
+  *(undefined4 *)(param_2 + 0x69cc) = 0;
+  *(undefined1 *)(param_2 + 0x69d0) = *(undefined1 *)(param_3 + 0x6b8);
+  *(undefined1 *)(param_2 + 0x647a) = *(undefined1 *)(param_3 + 0x6dc);
+  uVar13 = *(ushort *)(param_3 + 0x6b6);
+  puVar20 = (ushort *)(param_3 + 0xe2);
+  puVar10 = (undefined2 *)(param_2 + 0x69f4);
+  do {
+    puVar9 = puVar20 + 1;
+    uVar14 = ((uint)uVar13 * (uint)*puVar20 * 0x10) / 10000;
+    uVar2 = (undefined2)uVar14;
+    if (0x3fe < (uVar14 & 0xffff)) {
+      uVar2 = 0x3ff;
+    }
+    *puVar10 = uVar2;
+    puVar20 = puVar9;
+    puVar10 = puVar10 + 1;
+  } while ((ushort *)(param_3 + 0x124) != puVar9);
+  *(undefined2 *)(param_2 + 0x69d2) = 0xff00;
+  *(undefined4 *)(param_2 + 0x6488) = 0;
+  puVar20 = (ushort *)(param_3 + 0x6a4);
+  puVar11 = (uint *)(param_2 + 0x6458);
+  do {
+    puVar9 = puVar20 + 1;
+    fVar30 = (float)VectorSignedToFloat((uint)*puVar20,(byte)(in_fpscr >> 0x15) & 3);
+    iVar4 = VectorFloatToUnsigned(fVar30 * 1.118,3);
+    *puVar11 = ((uint)(iVar4 * 0xf4) >> 6) * 0xb1 >> 7;
+    puVar20 = puVar9;
+    puVar11 = puVar11 + 1;
+  } while (puVar9 != (ushort *)(param_3 + 0x6ac));
+  if (1 < bVar23) {
+    *(undefined4 *)(param_3 + 0xa8) = 0x3fc00000;
+    *(undefined4 *)(param_2 + 0x64a0) = 0;
+  }
+  uVar1 = 1 < bVar23;
+  uVar14 = (uint)(byte)uVar1;
+  if (bVar23 < 2) {
+    *(uint *)(param_2 + 0x64a0) = uVar14;
+    *(uint *)(param_2 + 0x64a8) = uVar14;
+  }
+  else {
+    *(uint *)(param_2 + 0x64a8) = uVar14;
+    uVar1 = 0xe;
+  }
+  pbVar17 = (byte *)(param_2 + 0x6935);
+  iVar4 = 0;
+  *(undefined1 *)(param_2 + 0x64a4) = uVar1;
+  bVar19 = *(byte *)(param_2 + 0x64a4);
+  if (0x1e < bVar19) {
+    bVar19 = 0x1f;
+  }
+  *(byte *)(param_2 + 0x64a4) = bVar19;
+  *(uint *)(param_2 + 0x649c) = (uint)(bVar23 == 2);
+  do {
+    VectorSignedToFloat(iVar4,(byte)(in_fpscr >> 0x15) & 3);
+    dVar27 = exp(dVar27);
+    if (*(int *)(param_3 + 0x164) == 1) {
+      bVar23 = *(byte *)(param_3 + 0x6e0);
+      if (bVar23 < 0xf8) {
+        bVar23 = 0xf8;
+      }
+    }
+    else {
+      iVar15 = VectorFloatToSigned((double)CONCAT44(extraout_r1,extraout_r0) * 0.96875 * 256.0 + 0.5
+                                   ,3);
+      if (iVar15 < 0) {
+        bVar23 = 0;
+      }
+      else if (iVar15 < 0x100) {
+        bVar23 = (byte)iVar15;
+      }
+      else {
+        bVar23 = 0xff;
+      }
+    }
+    *pbVar17 = bVar23;
+    iVar4 = iVar4 + 4;
+    pbVar17[0x40] = bVar23;
+    pbVar17 = pbVar17 + 1;
+  } while (iVar4 != 0x100);
+  *(undefined4 *)(param_2 + 0x6438) = 1;
+  *(undefined4 *)(param_2 + 0x6a38) = 1;
+LAB_0041c954:
+  for (uVar14 = 1; uVar14 < *(byte *)(iVar3 + 0x30); uVar14 = uVar14 + 1 & 0xff) {
+    memcpy_s(uVar14 * 0x9378 + 0x6438 + param_2,0x600,param_2 + 0x6438);
+    memcpy_s(uVar14 * 0x9378 + 0x6a38 + param_2,4,param_2 + 0x6a38);
+  }
+  if (__stack_chk_guard != local_6c) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return;
+}
+
+
+--- CALLS TO ---
+  -> linear_inter @ 003d67d2
+  -> isp_sensor_get_default @ 003d7554
+  -> io_read8 @ 003d43e0
+  -> __aeabi_uldivmod @ 00161298
+  -> isp_sensor_get_sns_reg @ 003d75e0
+  -> __stack_chk_fail @ 00161978
+  -> memmove @ 0016141c
+  -> get_iso @ 003d6b2c
+  -> FUN_0041b130 @ 0041b130
+  -> isp_check_pointer_by_line @ 003d7fc0
+  -> FUN_0041afec @ 0041afec
+  -> get_iso_index @ 003d6b00
+  -> sqrtf @ 001616b4
+  -> memcpy_s @ 00394b72
+  -> io_read16 @ 003d4422
+  -> isp_get_usr_ctx @ 003d82f4
+  -> sqrt @ 001617b4
+  -> exp @ 001615d8
+--- CALLED BY ---
+  <- FUN_0041d478 @ 0041d478
+
+======================================================================
+FUNCTION: isp_drc_reg_update
+ADDRESS:  00419548
+SIZE:     1686 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_drc_reg_update(undefined4 param_1,undefined4 param_2,byte *param_3,int param_4)
+
+{
+  byte bVar1;
+  byte bVar2;
+  undefined2 uVar3;
+  char cVar4;
+  ushort *puVar5;
+  int *piVar7;
+  undefined4 extraout_r0;
+  byte bVar8;
+  undefined *extraout_r1;
+  undefined *extraout_r1_00;
+  ushort *puVar9;
+  byte *pbVar10;
+  undefined *puVar11;
+  uint uVar12;
+  undefined4 extraout_r1_01;
+  uint uVar13;
+  byte *pbVar14;
+  undefined *puVar15;
+  int iVar16;
+  uint uVar17;
+  int iVar18;
+  int iVar19;
+  uint uVar20;
+  uint uVar21;
+  byte *pbVar22;
+  undefined2 uVar23;
+  uint in_fpscr;
+  undefined4 extraout_s0;
+  undefined4 extraout_s0_00;
+  undefined4 uVar24;
+  undefined4 extraout_s0_01;
+  undefined4 extraout_s0_02;
+  undefined4 extraout_s0_03;
+  undefined4 extraout_s1;
+  undefined4 extraout_s1_00;
+  undefined4 extraout_s1_01;
+  undefined4 extraout_s1_02;
+  undefined4 extraout_s1_03;
+  undefined4 extraout_s1_04;
+  double dVar25;
+  double __y;
+  double dVar26;
+  undefined8 uVar27;
+  uint local_54;
+  int local_38;
+  int local_34;
+  ushort *puVar6;
+  
+  local_34 = __stack_chk_guard;
+  uVar27 = isp_get_usr_ctx();
+  puVar11 = (undefined *)((ulonglong)uVar27 >> 0x20);
+  if (*(int *)(param_4 + 0x1c) != 0) {
+    if (*(int *)(param_4 + 0x18) == 0) {
+      FUN_00416d78(param_4);
+      puVar11 = extraout_r1_00;
+    }
+    else {
+      FUN_00416d78(param_4);
+      FUN_00416efc();
+      puVar11 = extraout_r1;
+    }
+    *(undefined2 *)(param_4 + 0x6e) = *(undefined2 *)(param_4 + 0x842);
+    *(undefined4 *)(param_4 + 8) = 1;
+  }
+  if (*(int *)((int)uVar27 + 0x2370) != *(int *)((int)uVar27 + 0x2374)) {
+    *(undefined4 *)(param_4 + 0x38) = *(undefined4 *)(param_4 + 0x30);
+    *(undefined4 *)(param_4 + 0x3c) = *(undefined4 *)(param_4 + 0x34);
+  }
+  local_54 = 0;
+  do {
+    uVar21 = local_54 & 0xff;
+    uVar13 = (uint)*param_3;
+    if (uVar13 <= uVar21) {
+      if (*(int *)(param_4 + 0xc) == 0) {
+        if (*(int *)(param_4 + 0x10) == 0) {
+          if (*(int *)(*(int *)(param_4 + 0x65c) + 0xc) == 2) {
+            FUN_004184f8(param_1,param_4,param_2,param_3,uVar13);
+          }
+        }
+        else {
+          FUN_00417b9c(param_4,param_3);
+        }
+      }
+      else {
+        FUN_004184f8(param_1,param_4,param_2,param_3,uVar13);
+        *(undefined4 *)(param_4 + 0xc) = 0;
+      }
+      if (*(int *)(param_4 + 0x28) != 0) {
+        FUN_00418388(*(undefined4 *)(param_4 + 0x65c),param_3,*param_3);
+        *(undefined4 *)(param_4 + 0x28) = 0;
+      }
+      uVar21 = *(uint *)(param_4 + 0x30) + 1;
+      uVar13 = *(int *)(param_4 + 0x34) + (uint)(0xfffffffe < *(uint *)(param_4 + 0x30));
+      *(uint *)(param_4 + 0x30) = uVar21;
+      *(uint *)(param_4 + 0x34) = uVar13;
+      uVar17 = *(uint *)(param_4 + 0x14) & 1;
+      if (uVar13 != 0 || uVar13 < (2 < uVar21)) {
+        uVar17 = 0;
+      }
+      *(uint *)(param_4 + 0x14) = uVar17;
+      *(undefined4 *)(param_4 + 0x10) = 0;
+      if (__stack_chk_guard == local_34) {
+        return;
+      }
+                    /* WARNING: Subroutine does not return */
+      __stack_chk_fail();
+    }
+    if (*(int *)(param_4 + 8) == 0) {
+      pbVar14 = *(byte **)(param_4 + 0x30);
+      uVar13 = *(uint *)(param_4 + 0x34);
+      iVar18 = uVar13 - ((byte *)0x3 >= pbVar14);
+      if (uVar13 == 0 && ((byte *)0x3 < pbVar14) <= uVar13) goto LAB_0041964e;
+    }
+    else {
+LAB_0041964e:
+      iVar18 = *(int *)(param_4 + 0x65c);
+      puVar5 = (ushort *)(iVar18 + 0x1c2);
+      puVar9 = (ushort *)(param_3 + uVar21 * 0x9378 + 0x32ee);
+      do {
+        puVar6 = puVar5 + 1;
+        *puVar9 = *puVar5 >> 2;
+        puVar5 = puVar6;
+        puVar9 = puVar9 + 1;
+      } while ((ushort *)(iVar18 + 0x204) != puVar6);
+      pbVar14 = (byte *)(iVar18 + 0x20c);
+      pbVar22 = param_3 + uVar21 * 0x9378 + 0x34a8;
+      do {
+        pbVar10 = pbVar14 + 1;
+        *pbVar22 = *pbVar14;
+        pbVar14 = pbVar10;
+        pbVar22 = pbVar22 + 1;
+      } while ((byte *)(iVar18 + 0x21c) != pbVar10);
+      FUN_00418290(uVar21,param_3);
+      iVar19 = *(int *)(param_4 + 0x65c);
+      bVar1 = *(byte *)(iVar19 + 0x204);
+      param_3[uVar21 * 0x9378 + 0x32d8] = (&DAT_00604418)[bVar1];
+      param_3[uVar21 * 0x9378 + 0x32d9] = (&DAT_00604408)[bVar1];
+      param_3[uVar21 * 0x9378 + 0x32da] = (&DAT_006043f8)[bVar1];
+      param_3[uVar21 * 0x9378 + 0x32e5] = *(byte *)(iVar19 + 0x2d);
+      param_3[uVar21 * 0x9378 + 0x32e6] = *(byte *)(iVar19 + 0x2e);
+      param_3[uVar21 * 0x9378 + 0x32e8] = *(byte *)(param_4 + 0x6e);
+      param_3[uVar21 * 0x9378 + 0x32e7] = *(byte *)(param_4 + 0x6f);
+      param_3[uVar21 * 0x9378 + 0x32ec] = *(byte *)(iVar19 + 0x20);
+      param_3[uVar21 * 0x9378 + 0x32ed] = *(byte *)(iVar19 + 0x21);
+      iVar18 = *(int *)(iVar19 + 0x1c);
+      param_3[uVar21 * 0x9378 + 0x32db] = (byte)((uint)(iVar18 << 0x14) >> 0x1c);
+      param_3[uVar21 * 0x9378 + 0x32dc] = (byte)iVar18;
+      param_3[uVar21 * 0x9378 + 0x32dd] = (byte)((uint)(iVar18 << 0xc) >> 0x1c);
+      param_3[uVar21 * 0x9378 + 0x32de] = (byte)((uint)iVar18 >> 8) >> 4;
+      iVar18 = *(int *)(iVar19 + 0x18);
+      param_3[uVar21 * 0x9378 + 0x32df] = (byte)((uint)(iVar18 << 0x14) >> 0x1c);
+      param_3[uVar21 * 0x9378 + 0x32e0] = (byte)iVar18;
+      param_3[uVar21 * 0x9378 + 0x32e1] = (byte)((uint)(iVar18 << 0xc) >> 0x1c);
+      param_3[uVar21 * 0x9378 + 0x32e2] = (byte)((uint)iVar18 >> 8) >> 4;
+      param_3[uVar21 * 0x9378 + 0x3341] = -*(char *)(iVar19 + 0x2a);
+      param_3[uVar21 * 0x9378 + 0x3331] = *(byte *)(iVar19 + 0x22);
+      param_3[uVar21 * 0x9378 + 0x3332] = *(byte *)(iVar19 + 0x23);
+      param_3[uVar21 * 0x9378 + 0x3333] = *(byte *)(iVar19 + 0x24);
+      param_3[uVar21 * 0x9378 + 0x3334] = *(byte *)(iVar19 + 0x25);
+      param_3[uVar21 * 0x9378 + 0x3335] = *(byte *)(iVar19 + 0x26);
+      param_3[uVar21 * 0x9378 + 0x3336] = *(byte *)(iVar19 + 0x27);
+      param_3[uVar21 * 0x9378 + 0x3337] = *(byte *)(iVar19 + 0x28);
+      param_3[uVar21 * 0x9378 + 0x3338] = *(byte *)(iVar19 + 0x29);
+      uVar13 = *(uint *)(param_4 + 0x34);
+      if (*(int *)(param_4 + 0x14) == 0) {
+        if (*(uint *)(param_4 + 0x30) == 0 && uVar13 == 0) {
+          param_3[uVar21 * 0x9378 + 0x32e5] = 0;
+          param_3[uVar21 * 0x9378 + 0x32db] = 8;
+          (param_3 + uVar21 * 0x9378 + 0x32e0)[0] = 0xff;
+          (param_3 + uVar21 * 0x9378 + 0x32e0)[1] = 5;
+          pbVar14 = param_3 + uVar21 * 0x9378 + 0x32dc;
+          pbVar14[0] = 0xff;
+          pbVar14[1] = 5;
+          pbVar14[2] = 2;
+          pbVar14[3] = 8;
+          param_3[uVar21 * 0x9378 + 0x32e2] = 2;
+        }
+      }
+      else if (uVar13 == 0 && (2 < *(uint *)(param_4 + 0x30)) <= uVar13) {
+        param_3[uVar21 * 0x9378 + 0x3331] = 0;
+        param_3[uVar21 * 0x9378 + 0x3332] = 0;
+        param_3[uVar21 * 0x9378 + 0x3335] = 0;
+        param_3[uVar21 * 0x9378 + 0x3336] = 0;
+        param_3[uVar21 * 0x9378 + 0x3341] = 0xf8;
+      }
+      pbVar14 = param_3 + uVar21 * 0x9378;
+      *(uint *)(pbVar14 + 0x34c0) = (uint)(*(int *)(iVar19 + 0x220) != 0);
+      pbVar14[0x3501] = 1;
+      pbVar14[0x32d4] = 1;
+      pbVar14[0x32d5] = 0;
+      pbVar14[0x32d6] = 0;
+      pbVar14[0x32d7] = 0;
+      puVar11 = (undefined *)0x3504;
+      iVar18 = *(int *)(pbVar14 + 0x3504) + 1;
+      *(int *)(pbVar14 + 0x3504) = iVar18;
+    }
+    iVar18 = isp_get_usr_ctx(param_1,puVar11,pbVar14,iVar18);
+    bVar1 = *param_3;
+    bVar2 = *(byte *)(iVar18 + 0xa5);
+    uVar13 = *(uint *)(param_4 + 0x38);
+    uVar17 = *(uint *)(param_4 + 0x3c);
+    if (uVar17 == 0 && (3 < uVar13) <= uVar17) {
+LAB_00419838:
+      iVar19 = *(int *)(iVar18 + 0x2370);
+      *(uint *)(param_4 + 0x20) = (uint)(iVar19 == 1);
+      if (bVar2 - 2 < 7) {
+        if (iVar19 == 1) goto LAB_00419a3c;
+        iVar19 = isp_get_usr_ctx(param_1);
+        dVar25 = (double)CONCAT44(extraout_s1_02,extraout_s0_01);
+        piVar7 = *(int **)(param_4 + 0x65c);
+        if (*piVar7 != 0) goto LAB_00419a96;
+        uVar13 = *(uint *)(iVar19 + 0x2344);
+        *(undefined2 *)(param_4 + 0x68) = 0x3ff;
+        if (uVar13 < 0x40) {
+          uVar13 = 0x40;
+        }
+        uVar17 = 0x3ff;
+        if (uVar13 < 0x400) {
+          uVar17 = uVar13;
+        }
+LAB_00419990:
+        uVar13 = FUN_00418330(piVar7,uVar17);
+        dVar25 = (double)CONCAT44(extraout_s1_03,extraout_s0_02);
+LAB_00419994:
+        uVar17 = (uint)*(ushort *)(param_4 + 0x66);
+        if ((int)(uVar17 + 0x14) < (int)uVar13) {
+          uVar13 = uVar17 + 0x14 & 0xffff;
+        }
+        else if ((int)(uVar13 + 0x14) < (int)uVar17) {
+          uVar13 = uVar17 - 0x14 & 0xffff;
+        }
+      }
+      else if ((bVar2 == 1) && (iVar19 != 1)) {
+        iVar19 = isp_get_usr_ctx(param_1);
+        dVar25 = (double)CONCAT44(extraout_s1,extraout_s0);
+        if (**(int **)(param_4 + 0x65c) == 0) {
+          *(undefined2 *)(param_4 + 0x68) = 0x3ff;
+          uVar13 = (uint)*(byte *)(iVar19 + 0xa5);
+LAB_00419880:
+          uVar13 = FUN_004173fc(param_4,uVar13,param_2);
+          dVar25 = (double)CONCAT44(extraout_s1_00,extraout_s0_00);
+          goto LAB_00419994;
+        }
+        uVar13 = (uint)*(ushort *)(*(int **)(param_4 + 0x65c) + 1);
+      }
+      else {
+LAB_00419a3c:
+        iVar19 = isp_get_usr_ctx(param_1);
+        dVar25 = (double)CONCAT44(extraout_s1_04,extraout_s0_03);
+        piVar7 = *(int **)(param_4 + 0x65c);
+        if (*piVar7 == 0) {
+          uVar13 = (uint)*(byte *)(iVar19 + 0xa5);
+          if ((uVar13 == 0) || (*(int *)(param_4 + 0x20) != 0)) {
+            *(undefined2 *)(param_4 + 0x68) = 0x200;
+          }
+          else {
+            *(undefined2 *)(param_4 + 0x68) = 0x3ff;
+            if (uVar13 - 2 < 7) {
+              uVar17 = *(uint *)(iVar19 + 0x2344);
+              if (uVar17 < 0x40) {
+                uVar17 = 0x40;
+              }
+              if (0x3fe < uVar17) {
+                uVar17 = 0x3ff;
+              }
+              goto LAB_00419990;
+            }
+          }
+          goto LAB_00419880;
+        }
+LAB_00419a96:
+        uVar13 = (uint)*(ushort *)(piVar7 + 1);
+      }
+      iVar19 = *(int *)(param_4 + 0x65c);
+      pbVar14 = param_3 + uVar21 * 0x9378;
+      *(undefined2 *)(pbVar14 + 0x2f8e) = *(undefined2 *)(iVar19 + 8);
+      *(undefined2 *)(pbVar14 + 0x2f90) = *(undefined2 *)(iVar19 + 10);
+      iVar19 = *(int *)(param_4 + 0x30);
+      iVar16 = *(int *)(param_4 + 0x34);
+      uVar3 = (undefined2)uVar13;
+      if ((iVar19 == 0 && iVar16 == 0) && (*(int *)(param_4 + 0x14) == 0)) {
+        uVar23 = uVar3;
+        if (*(int *)(iVar18 + 0x60) != 1) {
+          uVar23 = 0;
+        }
+        *(undefined2 *)(pbVar14 + 0x2f8c) = uVar23;
+        uVar24 = 0;
+      }
+      else {
+        uVar24 = 1;
+        pbVar14 = param_3 + uVar21 * 0x9378;
+        *(undefined2 *)(pbVar14 + 0x2f8c) = uVar3;
+      }
+      *(undefined4 *)(pbVar14 + 0x2f84) = uVar24;
+      pbVar14 = param_3 + uVar21 * 0x9378 + 0x2f88;
+      pbVar14[0] = 0;
+      pbVar14[1] = 0;
+      pbVar14[2] = 0;
+      pbVar14[3] = 0;
+      if ((bVar1 - 1 == uVar21) && ((iVar19 != 0 || iVar16 != 0 || (*(int *)(param_4 + 0x14) != 0)))
+         ) {
+        *(undefined2 *)(param_4 + 0x66) = uVar3;
+        *(undefined2 *)(param_4 + 0x6c) = 0x3ff;
+        *(undefined2 *)(param_4 + 0x6a) = uVar3;
+      }
+      puVar11 = (undefined *)0x1;
+      pbVar14 = param_3 + uVar21 * 0x9378 + 0x2f78;
+      pbVar14[0] = 1;
+      pbVar14[1] = 0;
+      pbVar14[2] = 0;
+      pbVar14[3] = 0;
+    }
+    else {
+      puVar15 = *(undefined **)(param_4 + 0x30);
+      uVar20 = *(uint *)(param_4 + 0x34);
+      local_38 = 0;
+      uVar24 = isp_sensor_get_sns_reg(param_1,&local_38);
+      dVar25 = (double)CONCAT44(extraout_s1_01,uVar24);
+      if (local_38 == 0) {
+        uVar12 = 2;
+      }
+      else {
+        uVar12 = (uint)*(byte *)(local_38 + 8);
+      }
+      bVar8 = *(byte *)(iVar18 + 0xa5);
+      if ((*(int *)(iVar18 + 0x60) == 0) || (*(int *)(iVar18 + 0x60) - 3U < 2)) {
+        if (((bVar8 & 0xfd) == 4) || (bVar8 == 8)) goto LAB_004198f2;
+        if (5 < uVar12) {
+          uVar12 = 6;
+        }
+        bVar8 = (char)uVar12 + 1;
+LAB_00419906:
+        uVar12 = (uint)bVar8;
+      }
+      else if (((bVar8 & 0xfd) == 4) || (bVar8 == 8)) {
+        cVar4 = (char)uVar12;
+        if (cVar4 < '\x01') {
+          uVar12 = 0;
+        }
+        else {
+          if (cVar4 < '\t') {
+            bVar8 = cVar4 - 1;
+            goto LAB_00419906;
+          }
+          uVar12 = 7;
+        }
+      }
+      else {
+LAB_004198f2:
+        if (6 < uVar12) {
+          uVar12 = 7;
+        }
+      }
+      puVar11 = (undefined *)(uVar12 + uVar13);
+      uVar17 = uVar17 + CARRY4(uVar12,uVar13);
+      if (uVar17 < uVar20 || uVar20 - uVar17 < (uint)(puVar11 <= puVar15)) goto LAB_00419838;
+    }
+    iVar19 = uVar21 * 0x9378;
+    iVar18 = 0;
+    pbVar14 = param_3 + iVar19 + 0x3510;
+    pbVar14[0] = 0;
+    pbVar14[1] = 0;
+    pbVar14[2] = 0;
+    pbVar14[3] = 0;
+    *(undefined4 *)(param_4 + 0x18) = 0;
+    if (*(int *)(param_4 + 0x10) != 0) {
+      bVar1 = *(byte *)(*(int *)(param_4 + 0x65c) + 0x2b);
+      pbVar22 = param_3 + iVar19 + 0x350c;
+      param_3[iVar19 + 0x350c] = bVar1;
+      param_3[iVar19 + 0x350d] = bVar1;
+      pbVar14 = param_3 + iVar19 + 0x3514;
+      do {
+        iVar19 = 1 << *(sbyte *)(param_4 + 100);
+        VectorUnsignedToFloat
+                  (*(undefined4 *)(&DAT_00603278 + ((uint)*pbVar22 * 7 + iVar18) * 4),
+                   (byte)(in_fpscr >> 0x15) & 3);
+        if (iVar19 != 0) {
+          VectorSignedToFloat(iVar19,(byte)(in_fpscr >> 0x15) & 3);
+        }
+        dVar25 = log2(dVar25);
+        VectorUnsignedToFloat
+                  (*(undefined4 *)(&DAT_00603478 + (uint)*(byte *)(param_4 + 100) * 4),
+                   (byte)(in_fpscr >> 0x15) & 3);
+        if (*(int *)(&DAT_00603478 + (uint)*pbVar22 * 4) != 0) {
+          VectorUnsignedToFloat
+                    (*(int *)(&DAT_00603478 + (uint)*pbVar22 * 4),(byte)(in_fpscr >> 0x15) & 3);
+        }
+        dVar25 = pow(dVar25,__y);
+        puVar11 = &DAT_00603278;
+        dVar26 = (double)VectorSignedToFloat(1 << *(sbyte *)(*(int *)(param_4 + 0x65c) + 0x2b),
+                                             (byte)(in_fpscr >> 0x15) & 3);
+        iVar19 = (uint)*pbVar22 * 7 + iVar18;
+        iVar18 = iVar18 + 1;
+        iVar16 = VectorFloatToSigned(((double)CONCAT44(extraout_r1_01,extraout_r0) - 1.0) * dVar26 +
+                                     0.5,3);
+        *(int *)pbVar14 = iVar16 - *(int *)(&DAT_00603278 + iVar19 * 4);
+        pbVar14 = pbVar14 + 4;
+      } while (iVar18 != 7);
+    }
+    local_54 = local_54 + 1;
+  } while( true );
+}
+
+
+--- CALLS TO ---
+  -> isp_sensor_get_sns_reg @ 003d75e0
+  -> FUN_00418290 @ 00418290
+  -> __stack_chk_fail @ 00161978
+  -> pow @ 0016234c
+  -> log2 @ 00161f3c
+  -> FUN_00418388 @ 00418388
+  -> FUN_00416d78 @ 00416d78
+  -> FUN_00417b9c @ 00417b9c
+  -> FUN_004184f8 @ 004184f8
+  -> FUN_00418330 @ 00418330
+  -> isp_get_usr_ctx @ 003d82f4
+  -> FUN_00416efc @ 00416efc
+  -> FUN_004173fc @ 004173fc
+--- CALLED BY ---
+  <- FUN_00419c08 @ 00419c08
+
+======================================================================
+FUNCTION: isp_init
+ADDRESS:  003d5a18
+SIZE:     994 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_init(int param_1,int param_2)
+
+{
+  byte bVar1;
+  undefined1 uVar2;
+  undefined2 uVar3;
+  undefined4 uVar4;
+  int iVar5;
+  char *pcVar6;
+  char *pcVar7;
+  int iVar8;
+  undefined4 local_64;
+  undefined8 local_60;
+  undefined8 local_58;
+  undefined8 local_50;
+  undefined8 local_48;
+  undefined8 local_40;
+  undefined4 local_38;
+  undefined4 uStack_34;
+  undefined4 uStack_30;
+  int local_2c;
+  
+  iVar8 = (param_1 + 8) * 0x20000;
+  local_2c = __stack_chk_guard;
+  uVar4 = io_read16(iVar8 + 0xd4,param_2,&__DT_PLTGOT,0);
+  *(undefined4 *)(param_2 + 0x20) = uVar4;
+  uVar4 = io_read16(iVar8 + 0xd6);
+  *(undefined4 *)(param_2 + 0x24) = uVar4;
+  uVar4 = FUN_003d4a04(param_1);
+  *(undefined4 *)(param_2 + 0x28) = uVar4;
+  uVar4 = FUN_003d4a10(param_1);
+  *(undefined4 *)(param_2 + 0x2c) = uVar4;
+  iVar5 = isp_alg_buf_init(param_1,param_2);
+  if (iVar5 == 0) {
+    iVar5 = isp_reg_cfg_init(param_1);
+    if (iVar5 == 0) {
+      iVar5 = isp_get_usr_ctx(param_1);
+      if (*(int *)(iVar5 + 8) == 1) {
+LAB_003d5a84:
+        local_60 = local_60 & 0xffffffff00000000;
+        if (*(int *)(param_2 + 8) == 0) {
+          iVar5 = isp_sensor_update_all(param_1);
+          if (iVar5 == 0) goto LAB_003d5b4e;
+          uVar4 = 0x211;
+          pcVar7 = "isp_init_sensor_update";
+          pcVar6 = "[Func]:%s [Line]:%d [Info]:ISP[%d] update sensor all failed!\n";
+          goto LAB_003d5ace;
+        }
+        iVar5 = isp_sensor_update_all_yuv(param_1);
+        if (iVar5 != 0) {
+          uVar4 = 0x217;
+          pcVar7 = "isp_init_sensor_update";
+          pcVar6 = "[Func]:%s [Line]:%d [Info]:ISP[%d] update sensor all failed!\n";
+          goto LAB_003d5ace;
+        }
+LAB_003d5b4e:
+        isp_sensor_get_default(param_1,&local_60);
+        iVar5 = isp_check_pointer_by_line((int)local_60,"isp_init_sensor_update",0x21d);
+        if (iVar5 == 0) {
+          uVar4 = *(undefined4 *)((int)local_60 + 0xe0);
+          iVar5 = *(int *)(param_2 + 0x2628);
+          *(undefined4 *)(iVar5 + 0x6c) = uVar4;
+          bVar1 = *(byte *)((int)local_60 + 0xe4);
+          *(uint *)(iVar5 + 0x70) = (uint)bVar1;
+          if (*(int *)(param_2 + 8) == 0) {
+            *(undefined4 *)(param_2 + 0x26bc) = uVar4;
+            *(uint *)(param_2 + 0x26c0) = (uint)bVar1;
+          }
+          isp_dng_ext_regs_initialize(param_1,(int)local_60 + 0x114);
+          io_write8(iVar8 + 0x11d0,*(undefined1 *)((int)local_60 + 0xe8));
+          if (*(int *)((int)local_60 + 0xe8) == 1) {
+            memcpy_s(*(undefined4 *)(param_2 + 0x270c),0x28,(int)local_60 + 0xec);
+          }
+          else {
+            fprintf((FILE *)0x0,
+                    "[Func]:%s [Line]:%d [Info]:ISP[%d] dng_info not initialized in cmos.c!\n",
+                    "isp_init_sensor_update",0x22d,param_1);
+          }
+          iVar5 = isp_sensor_init_standby_cfg(param_1);
+          if (iVar5 != 0) {
+            fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:isp init standby cfg failed 0x%x!\n",
+                    "isp_init_sensor_update",0x232,iVar5);
+          }
+          isp_ext_regs_default(param_1);
+          isp_regs_default(param_1);
+          isp_ext_regs_initialize(param_1);
+          isp_regs_initialize(param_1);
+          isp_global_initialize(param_1,param_2);
+          *(undefined4 *)(param_2 + 0xac) = 0;
+          local_38 = 0;
+          local_60 = 0;
+          local_58 = 0;
+          local_50 = 0;
+          local_48 = 0;
+          local_40 = 0;
+          uStack_34 = 0;
+          uStack_30 = 0;
+          local_64 = 0;
+          iVar5 = isp_get_fd(param_1);
+          iVar5 = ioctl(iVar5,0x8034703b,&local_60);
+          if (iVar5 == 0) {
+            if (*(int *)(param_2 + 8) == 1) {
+              isp_yuv_algs_register(param_1);
+            }
+            else if ((local_40._4_4_ == 1) && (1 < param_1 - 2U)) {
+              isp_fe_algs_register();
+              *(int *)(param_2 + 0xac) = local_40._4_4_;
+            }
+            else {
+              isp_algs_register(param_1);
+            }
+          }
+          else {
+            fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] get ctrlparam failed\n",
+                    "isp_register_algs",0x28a,param_1);
+          }
+          isp_get_reg_cfg_ctx(param_1,&local_64);
+          isp_algs_init(param_2 + 0x1900,param_1,local_64);
+          if ((*(int *)(param_2 + 8) != 1) && (iVar5 = isp_lut2stt_apb_reg(param_1), iVar5 != 0)) {
+            fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] init lut2stt reg failed!\n",
+                    "isp_apb_reg_pre_cfg",0x29f,param_1);
+          }
+          iVar5 = isp_wdr_cfg_set(param_1);
+          if (iVar5 == 0) {
+            local_60 = local_60 & 0xffffffff00000000;
+            if (*(int *)(param_2 + 8) == 1) {
+              uVar2 = 2;
+            }
+            else {
+              iVar5 = isp_sensor_init(param_1);
+              if (iVar5 != 0) {
+                fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] init sensor failed!\n",
+                        "isp_should_init_sensor",0x2ae,param_1);
+                goto LAB_003d5d50;
+              }
+              isp_sensor_get_sns_reg(param_1,&local_60);
+              uVar2 = *(undefined1 *)((int)local_60 + 8);
+            }
+            *(undefined1 *)(param_2 + 0x25a8) = uVar2;
+            iVar5 = isp_reg_cfg_info_init(param_1);
+            if (iVar5 == 0) {
+              *(undefined4 *)(param_2 + 0x1c) = 1;
+              iVar5 = isp_get_fd(param_1);
+              iVar5 = ioctl(iVar5,0x40047026,(undefined4 *)(param_2 + 0x1c));
+              if (iVar5 == 0) {
+                iVar5 = isp_all_cfgs_be_buf_init(param_1);
+                if (iVar5 == 0) {
+                  *(undefined4 *)(param_2 + 0x80) = 0;
+                  *(undefined4 *)(param_2 + 0x84) = 0;
+                  *(undefined4 *)(param_2 + 0x18) = 1;
+                  local_60 = 0x66778899;
+                  iVar5 = isp_get_fd(param_1);
+                  iVar5 = ioctl(iVar5,0x40047024,param_2 + 0x18);
+                  if (iVar5 != 0) {
+                    *(undefined4 *)(param_2 + 0x18) = 0;
+                    pcVar7 = "isp_init_global_info";
+                    uVar4 = 0x264;
+                    pcVar6 = "[Func]:%s [Line]:%d [Info]:ISP[%d] set isp init info failed!\n";
+                    goto LAB_003d5d84;
+                  }
+                  iVar5 = isp_get_fd(param_1);
+                  iVar5 = ioctl(iVar5,0x40087027,&local_60);
+                  uVar4 = 0;
+                  if (iVar5 == 0) goto LAB_003d5e4c;
+                }
+              }
+              else {
+                *(undefined4 *)(param_2 + 0x1c) = 0;
+                pcVar7 = "isp_stitch_sync_init_set";
+                uVar4 = 0x252;
+                pcVar6 = "[Func]:%s [Line]:%d [Info]:ISP[%d] set isp stitch sync failed!\n";
+LAB_003d5d84:
+                fprintf((FILE *)0x0,pcVar6,pcVar7,uVar4,param_1);
+              }
+            }
+            if (*(int *)(param_2 + 8) != 1) {
+              isp_sensor_exit(param_1);
+            }
+          }
+LAB_003d5d50:
+          isp_algs_exit(param_1,param_2 + 0x1900);
+          isp_algs_unregister(param_1);
+        }
+      }
+      else {
+        uVar4 = FUN_003d4a1c(param_1);
+        iVar5 = isp_sensor_set_wdr_mode(param_1,uVar4);
+        if (iVar5 == 0) {
+          uVar3 = io_read32(iVar8 + 8);
+          local_60 = CONCAT62(local_60._2_6_,uVar3);
+          uVar3 = io_read32(iVar8 + 0xc);
+          local_60._0_4_ = CONCAT22(uVar3,(undefined2)local_60);
+          uVar4 = io_read32(iVar8 + 0x10);
+          local_60 = CONCAT44(uVar4,(int)local_60);
+          uVar2 = io_read8(iVar8 + 0xf2);
+          local_58 = CONCAT71(local_58._1_7_,uVar2);
+          iVar5 = isp_sensor_set_image_mode(param_1,&local_60);
+          if (iVar5 == 0) goto LAB_003d5a84;
+          uVar4 = 0x202;
+          pcVar7 = "isp_init_set_sensor_mode";
+          pcVar6 = "[Func]:%s [Line]:%d [Info]:ISP[%d] set sensor image mode failed!\n";
+        }
+        else {
+          uVar4 = 500;
+          pcVar7 = "isp_init_set_sensor_mode";
+          pcVar6 = "[Func]:%s [Line]:%d [Info]:ISP[%d] set sensor WDR mode failed!\n";
+        }
+LAB_003d5ace:
+        fprintf((FILE *)0x0,pcVar6,pcVar7,uVar4,param_1);
+      }
+      isp_reg_cfg_exit(param_1);
+    }
+    isp_alg_buf_exit(param_1);
+  }
+  uVar4 = 0xa01c8040;
+LAB_003d5e4c:
+  if (__stack_chk_guard != local_2c) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail(uVar4);
+  }
+  return;
+}
+
+
+--- CALLS TO ---
+  -> io_read8 @ 003d43e0
+  -> isp_sensor_get_default @ 003d7554
+  -> isp_reg_cfg_init @ 003d2a68
+  -> isp_get_fd @ 003d82dc
+  -> ioctl @ 001617c4
+  -> isp_algs_init @ 003df026
+  -> FUN_003d4a10 @ 003d4a10
+  -> isp_all_cfgs_be_buf_init @ 003ccd74
+  -> io_write8 @ 003d43f8
+  -> isp_algs_exit @ 003df112
+  -> isp_sensor_set_image_mode @ 003d7700
+  -> isp_sensor_init @ 003d7874
+  -> isp_sensor_set_wdr_mode @ 003d76b4
+  -> memcpy_s @ 00394b72
+  -> io_read16 @ 003d4422
+  -> isp_get_usr_ctx @ 003d82f4
+  -> isp_ext_regs_default @ 003dfb3c
+  -> isp_fe_algs_register @ 003df1e0
+  -> isp_lut2stt_apb_reg @ 003d37a8
+  -> FUN_003d4a1c @ 003d4a1c
+  -> isp_sensor_exit @ 003d79d4
+  -> isp_algs_unregister @ 003df222
+  -> isp_wdr_cfg_set @ 003d5140
+  -> isp_algs_register @ 003df138
+  -> isp_sensor_get_sns_reg @ 003d75e0
+  -> isp_regs_initialize @ 003dfb3a
+  -> __stack_chk_fail @ 00161978
+  -> isp_alg_buf_init @ 003d5944
+  -> fprintf @ 00161568
+  -> isp_yuv_algs_register @ 003df1fe
+  -> isp_sensor_init_standby_cfg @ 003d74c0
+  -> isp_check_pointer_by_line @ 003d7fc0
+  -> isp_alg_buf_exit @ 003d59e0
+  -> isp_sensor_update_all_yuv @ 003d73f0
+  -> isp_global_initialize @ 003dfd4c
+  -> FUN_003d4a04 @ 003d4a04
+  -> isp_regs_default @ 003dfb38
+  -> isp_ext_regs_initialize @ 003dfca4
+  -> isp_get_reg_cfg_ctx @ 003d2afc
+  -> isp_sensor_update_all @ 003d7370
+  -> isp_dng_ext_regs_initialize @ 003dfe38
+  -> isp_reg_cfg_exit @ 003d2ad4
+  -> io_read32 @ 003d437c
+  -> isp_reg_cfg_info_init @ 003d2b48
+--- CALLED BY ---
+  <- ot_mpi_isp_init @ 003d85e8
+
+======================================================================
+FUNCTION: isp_switch_mode
+ADDRESS:  003d5270
+SIZE:     1446 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 isp_switch_mode(int param_1)
+
+{
+  undefined1 uVar1;
+  byte bVar2;
+  char cVar3;
+  undefined2 uVar4;
+  int iVar5;
+  int iVar6;
+  uint uVar7;
+  undefined4 uVar8;
+  int iVar9;
+  undefined4 uVar10;
+  int iVar11;
+  char *pcVar12;
+  int iVar13;
+  undefined4 in_cr0;
+  undefined4 in_cr7;
+  double in_d16;
+  int local_48;
+  undefined4 local_44;
+  undefined4 local_40;
+  undefined1 local_3c;
+  undefined4 local_38;
+  undefined4 local_34;
+  undefined1 local_30;
+  int local_2c;
+  
+  local_2c = __stack_chk_guard;
+  iVar5 = isp_get_usr_ctx();
+  iVar6 = isp_check_pointer_by_line(iVar5,"isp_switch_mode",0x489);
+  if (iVar6 != 0) {
+    uVar8 = 0xa01c800a;
+    goto LAB_003d532c;
+  }
+  uVar7 = FUN_003d4a1c(param_1);
+  iVar6 = (param_1 + 8) * 0x20000;
+  uVar8 = io_read32(iVar6 + 0x10);
+  *(undefined4 *)(iVar5 + 0xe8) = uVar8;
+  uVar4 = io_read32(iVar6 + 8);
+  *(undefined2 *)(iVar5 + 0xe4) = uVar4;
+  uVar4 = io_read32(iVar6 + 0xc);
+  *(undefined2 *)(iVar5 + 0xe6) = uVar4;
+  uVar1 = io_read8(iVar6 + 0xf2);
+  *(undefined1 *)(iVar5 + 0xec) = uVar1;
+  uVar8 = io_read16(iVar6 + 0xd4);
+  *(undefined4 *)(iVar5 + 0x20) = uVar8;
+  uVar8 = io_read16(iVar6 + 0xd6);
+  *(undefined4 *)(iVar5 + 0x24) = uVar8;
+  uVar8 = 0;
+  if (*(char *)(iVar5 + 0xd4) == '\0') {
+    isp_algs_ctrl(iVar5 + 0x1900,param_1,0x1f42,iVar5 + 0xe8);
+    memcpy_s(iVar5 + 0xd8,0xc,iVar5 + 0xe4);
+    *(undefined1 *)(iVar5 + 0xd4) = 1;
+    goto LAB_003d532c;
+  }
+  if (*(byte *)(iVar5 + 0xa5) != uVar7) {
+    *(undefined4 *)(iVar5 + 0x8c) = 1;
+  }
+  if ((((*(int *)(iVar5 + 0xe4) != *(int *)(iVar5 + 0xd8)) ||
+       (coprocessor_function(10,0xf,7,in_cr0,in_cr7,in_cr7),
+       -1 < (int)((uint)(in_d16 < 1e-10) << 0x1f))) || (in_d16 <= -1e-10)) ||
+     (*(char *)(iVar5 + 0xec) != *(char *)(iVar5 + 0xe0))) {
+    *(undefined4 *)(iVar5 + 0x90) = 1;
+  }
+  iVar13 = *(int *)(iVar5 + 0x28);
+  iVar9 = FUN_003d4a04(param_1);
+  if ((iVar13 != iVar9) ||
+     (iVar13 = *(int *)(iVar5 + 0x2c), iVar9 = FUN_003d4a10(param_1), iVar13 != iVar9)) {
+    uVar10 = FUN_003d4a04(param_1);
+    *(undefined4 *)(iVar5 + 0x28) = uVar10;
+    uVar10 = FUN_003d4a10(param_1);
+    *(undefined4 *)(iVar5 + 0x2c) = uVar10;
+    *(undefined4 *)(iVar5 + 0x94) = 1;
+  }
+  if (((*(int *)(iVar5 + 0x8c) != 0) || (*(int *)(iVar5 + 0x90) != 0)) ||
+     (*(int *)(iVar5 + 0x94) != 0)) {
+    iVar9 = isp_get_fd(param_1);
+    iVar9 = ioctl(iVar9,0xc0047041,iVar5 + 0x1654);
+    if (iVar9 == 0) {
+      if (*(int *)(iVar5 + 0x8c) == 1) {
+        iVar9 = *(int *)(iVar5 + 0x1654);
+        bVar2 = FUN_003d4a1c(param_1);
+        iVar9 = isp_sensor_set_wdr_mode(param_1,(iVar9 == 5) * '@' | bVar2);
+        if (iVar9 != 0) {
+          uVar10 = 0x447;
+          pcVar12 = "[Func]:%s [Line]:%d [Info]:ISP[%d] set sensor wdr mode failed\n";
+          goto LAB_003d53fc;
+        }
+      }
+      local_3c = *(undefined1 *)(iVar5 + 0xec);
+      local_40 = *(undefined4 *)(iVar5 + 0xe8);
+      local_44 = *(undefined4 *)(iVar5 + 0xe4);
+      memcpy_s(iVar5 + 0xd8,0xc,(undefined4 *)(iVar5 + 0xe4));
+      iVar9 = isp_sensor_set_image_mode(param_1,&local_44);
+      if (iVar9 != 0) {
+        iVar9 = iVar5 + 0x1900;
+        if (*(int *)(iVar5 + 0x94) == 1) {
+          *(undefined4 *)(iVar5 + 0x70) = 1;
+          cVar3 = FUN_003d4a1c(param_1);
+          uVar10 = io_read32(iVar6 + 0x10);
+          uVar4 = FUN_003d4a04(param_1);
+          local_38 = CONCAT22(local_38._2_2_,uVar4);
+          uVar4 = FUN_003d4a10(param_1);
+          local_38 = CONCAT22(uVar4,(undefined2)local_38);
+          local_34 = uVar10;
+          local_30 = io_read8(iVar6 + 0xf2);
+          iVar6 = isp_reset_fe_stt_en(param_1);
+          if (iVar6 != 0) {
+            uVar10 = 999;
+            pcVar12 = "[Func]:%s [Line]:%d [Info]:ISP[%d] reset fe_stt enable failed\n";
+            goto LAB_003d57c0;
+          }
+          iVar6 = FUN_003d4a30(param_1,iVar5);
+          if (((iVar6 == 0) && (iVar6 = isp_reg_cfg_ctrl(param_1), iVar6 == 0)) &&
+             (iVar6 = isp_get_be_last_buf(param_1), iVar6 == 0)) {
+            isp_sensor_update_default(param_1);
+            isp_sensor_update_blc(param_1);
+            isp_algs_ctrl(iVar9,param_1,0x1f48,&local_38);
+            isp_algs_ctrl(iVar9,param_1,0x1f42,iVar5 + 0xe8);
+            if ((6 < (byte)(cVar3 - 2U)) || (iVar6 = isp_wdr_cfg_set(param_1), iVar6 == 0)) {
+              iVar6 = isp_switch_reg_set(param_1);
+              if (iVar6 == 0) {
+                isp_sensor_update_sns_reg(param_1);
+                iVar6 = isp_sensor_switch(param_1);
+                if (iVar6 == 0) {
+                  FUN_003d49f8(param_1,1);
+                  goto LAB_003d583a;
+                }
+                uVar10 = 0x410;
+                pcVar12 = "[Func]:%s [Line]:%d [Info]:pipe:%d init sensor failed!\n";
+              }
+              else {
+                uVar10 = 0x409;
+                pcVar12 = "[Func]:%s [Line]:%d [Info]:ISP[%d] set reg config failed!\n";
+              }
+LAB_003d57c0:
+              fprintf((FILE *)0x0,pcVar12,"isp_switch_res",uVar10,param_1);
+            }
+          }
+        }
+LAB_003d583a:
+        isp_algs_ctrl(iVar9,param_1,0x1f42,iVar5 + 0xe8);
+LAB_003d56bc:
+        FUN_003d49f8(param_1,1);
+LAB_003d56c4:
+        local_48 = 0;
+        local_38 = 0;
+        isp_sensor_get_default(param_1,&local_48);
+        iVar6 = isp_check_pointer_by_line(local_48,"isp_switch_mode_update_sns_info",0x41e);
+        if (iVar6 == 0) {
+          iVar6 = *(int *)(iVar5 + 0x2628);
+          *(undefined4 *)(iVar6 + 0x6c) = *(undefined4 *)(local_48 + 0xe0);
+          *(uint *)(iVar6 + 0x70) = (uint)*(byte *)(local_48 + 0xe4);
+          isp_sensor_get_sns_reg(param_1,&local_38);
+          iVar6 = isp_check_pointer_by_line(local_38,"isp_switch_mode_update_sns_info",0x424);
+          if (iVar6 == 0) {
+            isp_switch_state_set(param_1);
+            memcpy_s(*(undefined4 *)(iVar5 + 0x270c),0x28,local_48 + 0xec);
+            if (7 < *(byte *)(local_38 + 8) - 1) {
+              fprintf((FILE *)0x0,
+                      "[Func]:%s [Line]:%d [Info]:ISP[%d] delay of config to invalid is:0x%x\n",
+                      "isp_switch_mode_update_sns_info",0x42b,param_1,(uint)*(byte *)(local_38 + 8))
+              ;
+              *(undefined1 *)(local_38 + 8) = 1;
+            }
+            *(undefined1 *)(iVar5 + 0x25a8) = *(undefined1 *)(local_38 + 8);
+          }
+        }
+        goto LAB_003d5402;
+      }
+      *(char *)(iVar5 + 0xa5) = (char)uVar7;
+      *(undefined4 *)(iVar5 + 0x70) = 1;
+      local_48 = iVar9;
+      iVar9 = isp_get_usr_ctx(param_1);
+      iVar13 = isp_check_pointer_by_line(iVar9,"isp_switch_mode_init_sensor",0x3a2);
+      if (iVar13 == 0) {
+        iVar13 = isp_reset_fe_stt_en(param_1);
+        if (iVar13 != 0) {
+          uVar10 = 0x3a6;
+          pcVar12 = "[Func]:%s [Line]:%d [Info]:ISP[%d] reset fe_stt enable failed\n";
+          goto LAB_003d54ce;
+        }
+        iVar13 = FUN_003d4a30(param_1,iVar9);
+        if ((iVar13 == 0) && (iVar13 = isp_reg_cfg_ctrl(param_1), iVar13 == 0)) {
+          iVar13 = isp_get_be_last_buf(param_1);
+          if (iVar13 == 0) {
+            isp_sensor_update_default(param_1);
+            isp_sensor_update_blc(param_1);
+            isp_sensor_get_blc(param_1,&local_48);
+            iVar13 = local_48;
+            iVar11 = isp_check_pointer_by_line(local_48,"isp_algs_ctrl_process",0x385);
+            if (iVar11 == 0) {
+              iVar11 = iVar9 + 0x1900;
+              uVar4 = FUN_003d4a04(param_1);
+              local_38 = CONCAT22(local_38._2_2_,uVar4);
+              uVar4 = FUN_003d4a10(param_1);
+              local_34 = *(undefined4 *)(iVar9 + 0xe8);
+              local_38 = CONCAT22(uVar4,(undefined2)local_38);
+              local_30 = *(undefined1 *)(iVar9 + 0xec);
+              isp_algs_ctrl(iVar11,param_1,0x1f43,iVar13 + 0xb2);
+              isp_ext_regs_initialize(param_1);
+              if (*(int *)(iVar9 + 0x8c) == 1) {
+                isp_algs_ctrl(iVar11,param_1,8000,iVar9 + 0xa5);
+              }
+              if ((*(int *)(iVar9 + 0x94) == 1) || (*(int *)(iVar9 + 0x90) == 1)) {
+                isp_algs_ctrl(iVar11,param_1,0x1f48,&local_38);
+              }
+              isp_algs_ctrl(iVar11,param_1,0x1f42,iVar9 + 0xe8);
+            }
+            iVar13 = isp_wdr_cfg_set(param_1);
+            if (iVar13 == 0) {
+              iVar13 = isp_switch_reg_set(param_1);
+              if (iVar13 == 0) {
+                isp_sensor_update_sns_reg(param_1);
+                iVar13 = isp_sensor_switch(param_1);
+                if (iVar13 == 0) {
+                  *(undefined1 *)(iVar9 + 0xa4) = *(undefined1 *)(iVar9 + 0xa5);
+                  if (*(int *)(iVar9 + 0x8c) == 1) {
+                    io_write8(iVar6 + 4);
+                  }
+                  if ((*(int *)(iVar9 + 0x94) == 1) || (*(int *)(iVar9 + 0x90) == 1))
+                  goto LAB_003d56bc;
+                  goto LAB_003d56c4;
+                }
+                uVar10 = 0x3d0;
+                pcVar12 = "[Func]:%s [Line]:%d [Info]:ISP[%d] init sensor failed!\n";
+              }
+              else {
+                uVar10 = 0x3c9;
+                pcVar12 = "[Func]:%s [Line]:%d [Info]:ISP[%d] set reg config failed!\n";
+              }
+            }
+            else {
+              uVar10 = 0x3c3;
+              pcVar12 = "[Func]:%s [Line]:%d [Info]:ISP[%d] isp_wdr_cfg_set error \n";
+            }
+LAB_003d54ce:
+            fprintf((FILE *)0x0,pcVar12,"isp_switch_mode_init_sensor",uVar10,param_1);
+          }
+          else {
+            fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] get be last bufs failed %x!\n",
+                    "isp_switch_mode_init_sensor",0x3b7,param_1,iVar13);
+          }
+        }
+      }
+      uVar10 = 0x45b;
+      pcVar12 = "[Func]:%s [Line]:%d [Info]:ISP[%d] switch mode failed!\n";
+    }
+    else {
+      uVar10 = 0x43c;
+      pcVar12 = "[Func]:%s [Line]:%d [Info]:ISP[%d] get HDR attr failed\n";
+    }
+LAB_003d53fc:
+    fprintf((FILE *)0x0,pcVar12,"isp_switch_mode_process",uVar10,param_1);
+  }
+LAB_003d5402:
+  *(undefined4 *)(iVar5 + 0x8c) = 0;
+  *(undefined4 *)(iVar5 + 0x90) = 0;
+  *(undefined4 *)(iVar5 + 0x94) = 0;
+LAB_003d532c:
+  if (__stack_chk_guard != local_2c) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return uVar8;
+}
+
+
+--- CALLS TO ---
+  -> io_read8 @ 003d43e0
+  -> isp_sensor_get_default @ 003d7554
+  -> isp_get_be_last_buf @ 003ccc68
+  -> FUN_003d49f8 @ 003d49f8
+  -> isp_get_fd @ 003d82dc
+  -> ioctl @ 001617c4
+  -> isp_sensor_switch @ 003d7924
+  -> FUN_003d4a10 @ 003d4a10
+  -> io_write8 @ 003d43f8
+  -> isp_sensor_set_image_mode @ 003d7700
+  -> isp_switch_state_set @ 003d381c
+  -> isp_sensor_set_wdr_mode @ 003d76b4
+  -> memcpy_s @ 00394b72
+  -> io_read16 @ 003d4422
+  -> isp_sensor_get_blc @ 003d7470
+  -> isp_get_usr_ctx @ 003d82f4
+  -> FUN_003d4a1c @ 003d4a1c
+  -> isp_algs_ctrl @ 003df0e8
+  -> isp_wdr_cfg_set @ 003d5140
+  -> isp_sensor_get_sns_reg @ 003d75e0
+  -> __stack_chk_fail @ 00161978
+  -> fprintf @ 00161568
+  -> isp_sensor_update_default @ 003d7668
+  -> isp_switch_reg_set @ 003d3664
+  -> isp_sensor_update_sns_reg @ 003d7828
+  -> isp_check_pointer_by_line @ 003d7fc0
+  -> FUN_003d4a04 @ 003d4a04
+  -> isp_sensor_update_blc @ 003d761c
+  -> isp_ext_regs_initialize @ 003dfca4
+  -> isp_reset_fe_stt_en @ 003d25d4
+  -> FUN_003d4a30 @ 003d4a30
+  -> isp_reg_cfg_ctrl @ 003d34c8
+  -> io_read32 @ 003d437c
+--- CALLED BY ---
+  <- isp_run_thread @ 003d6408
+  <- ot_mpi_isp_run_once @ 003d8cf4
+
+======================================================================
+FUNCTION: FUN_003f9e14
+ADDRESS:  003f9e14
+SIZE:     2464 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 FUN_003f9e14(int param_1,undefined4 param_2,byte *param_3)
+
+{
+  byte bVar1;
+  sbyte sVar2;
+  ushort uVar3;
+  undefined1 uVar4;
+  undefined2 uVar5;
+  int iVar6;
+  int iVar7;
+  uint uVar8;
+  undefined4 uVar9;
+  undefined4 uVar10;
+  byte bVar11;
+  uint uVar12;
+  ushort *puVar13;
+  undefined1 *puVar15;
+  int iVar16;
+  uint uVar17;
+  byte *pbVar18;
+  uint *puVar19;
+  uint uVar20;
+  ushort *puVar21;
+  uint *puVar22;
+  int *piVar23;
+  int iVar24;
+  uint uVar25;
+  int iVar26;
+  int iVar27;
+  uint uVar28;
+  byte bVar29;
+  uint uVar30;
+  ushort uVar31;
+  uint uVar32;
+  int *piVar33;
+  uint uVar34;
+  undefined4 uVar35;
+  undefined4 uVar36;
+  uint local_b4;
+  undefined4 local_ac;
+  undefined4 local_90;
+  undefined4 local_8c;
+  int local_88;
+  uint local_84 [4];
+  uint local_74;
+  undefined4 uStack_70;
+  uint local_6c;
+  undefined4 uStack_68;
+  uint local_64;
+  undefined4 uStack_60;
+  uint local_5c [5];
+  undefined4 uStack_48;
+  uint local_44;
+  undefined4 uStack_40;
+  uint local_3c;
+  undefined4 uStack_38;
+  byte local_34 [8];
+  int local_2c;
+  ushort *puVar14;
+  
+  local_2c = __stack_chk_guard;
+  local_90 = 0xd;
+  iVar6 = isp_get_usr_ctx();
+  piVar23 = *(int **)(g_fswdr_ctx + param_1 * 4);
+  iVar7 = isp_check_pointer_by_line(piVar23,"isp_frame_wdr_run",0x58a);
+  if (iVar7 != 0) {
+    local_ac = 0xa01c800a;
+    goto LAB_003f9e8e;
+  }
+  local_ac = 0;
+  if (*(int *)(iVar6 + 0x2304) != 0) goto LAB_003f9e8e;
+  FUN_003f90d4(param_1,(char)*piVar23);
+  if ((*(byte *)(iVar6 + 0xa5) - 2 < 7) && (*piVar23 != 1)) {
+    iVar6 = isp_get_fd(param_1);
+    ioctl(iVar6,0x4004706c,&local_90);
+    goto LAB_003f9e8e;
+  }
+  iVar24 = (param_1 + 8) * 0x20000 + 0x1302;
+  iVar27 = (param_1 + 8) * 0x20000;
+  iVar7 = io_read8(iVar24);
+  piVar23[2] = iVar7;
+  iVar7 = isp_get_usr_ctx(param_1);
+  if (*(byte *)(iVar7 + 0xa5) < 2) {
+    piVar23[2] = 0;
+  }
+  bVar29 = *param_3;
+  for (uVar17 = 0; iVar7 = piVar23[2], (uVar17 & 0xff) < (uint)bVar29; uVar17 = uVar17 + 1) {
+    *(int *)(param_3 + uVar17 * 0x9378 + 0x38f8) = iVar7;
+  }
+  param_3[10] = param_3[10] | 2;
+  if (iVar7 != 1) goto LAB_003f9e8e;
+  iVar26 = iVar27 + 0x1301;
+  iVar7 = io_read8(iVar26);
+  piVar23[1] = iVar7;
+  if (iVar7 != 0) {
+    io_write8(iVar26,0);
+    iVar7 = io_read8(iVar24);
+    piVar23[2] = iVar7;
+    uVar4 = io_read8(iVar27 + 0x1313);
+    *(undefined1 *)((int)piVar23 + 0x13) = uVar4;
+    isp_fswdr_attr_read(param_1,piVar23 + 0x33);
+    piVar23[5] = piVar23[0x35];
+    piVar23[0x12] = piVar23[0x37];
+    uVar5 = FUN_003f9144(param_1,0);
+    *(undefined2 *)(piVar23 + 0x10) = uVar5;
+    uVar5 = FUN_003f9144(param_1,1);
+    *(undefined2 *)((int)piVar23 + 0x42) = uVar5;
+    uVar5 = FUN_003f9144(param_1,2);
+    *(undefined2 *)(piVar23 + 0x11) = uVar5;
+    uVar5 = FUN_003f9144(param_1,3);
+    *(undefined2 *)((int)piVar23 + 0x46) = uVar5;
+  }
+  iVar7 = isp_get_usr_ctx(param_1);
+  local_88 = 0;
+  isp_sensor_get_sns_reg(param_1,&local_88);
+  iVar24 = isp_check_pointer_by_line(local_88,"wdr_set_long_frame_mode",0x53e);
+  if (iVar24 == 0) {
+    bVar11 = *(byte *)(iVar7 + 0xa5);
+    iVar24 = *(int *)(iVar7 + 0x60);
+    bVar29 = *(byte *)(local_88 + 8);
+    uVar17 = (uint)bVar29;
+    if ((iVar24 == 0) || (iVar24 == 3)) {
+      if (((bVar11 & 0xfd) == 4) || (bVar11 == 8)) goto LAB_003f9fec;
+      if (5 < uVar17) {
+        bVar29 = 6;
+      }
+      bVar29 = bVar29 + 1;
+LAB_003f9ffc:
+      uVar17 = (uint)bVar29;
+    }
+    else if (((bVar11 & 0xfd) == 4) || (bVar11 == 8)) {
+      if ((char)bVar29 < '\x01') {
+        uVar17 = 0;
+      }
+      else {
+        if ((char)bVar29 < '\t') {
+          bVar29 = bVar29 - 1;
+          goto LAB_003f9ffc;
+        }
+        uVar17 = 7;
+      }
+    }
+    else {
+LAB_003f9fec:
+      if (6 < uVar17) {
+        uVar17 = 7;
+      }
+    }
+    bVar29 = *param_3;
+    if (bVar29 != 0) {
+      memmove(piVar23 + 0x14,piVar23 + 0x13,0x1c);
+      memmove(piVar23 + 0x24,piVar23 + 0x23,0x1c);
+      uVar30 = (uint)(1 < *(int *)(iVar7 + 0x2370) - 1U);
+      piVar23[0x13] = uVar30;
+      piVar23[0x23] = uVar30;
+      iVar27 = piVar23[uVar17 + 0x23];
+      *(int *)(param_3 + 0x4230) = piVar23[uVar17 + 0x13];
+      *(int *)(param_3 + 0x4234) = iVar27;
+      if ((iVar24 == 4) && (uVar17 != 7)) {
+        *(int *)(param_3 + 0x4234) = piVar23[(uVar17 + 1 & 0xff) + 0x23];
+      }
+      if (bVar29 != 1) {
+        memmove(piVar23 + 0x1c,piVar23 + 0x1b,0x1c);
+        memmove(piVar23 + 0x2c,piVar23 + 0x2b,0x1c);
+        uVar30 = (uint)(1 < *(int *)(iVar7 + 0x2370) - 1U);
+        piVar23[0x1b] = uVar30;
+        piVar23[0x2b] = uVar30;
+        uVar30 = uVar17 + 8 & 0xff;
+        iVar7 = piVar23[uVar30 + 0x23];
+        *(int *)(param_3 + 0xd5a8) = piVar23[uVar30 + 0x13];
+        *(int *)(param_3 + 0xd5ac) = iVar7;
+        if ((iVar24 == 4) && (uVar17 != 7)) {
+          *(int *)(param_3 + 0xd5ac) = piVar23[(uVar17 + 1 & 0xff) + 0x2b];
+        }
+      }
+    }
+  }
+  bVar29 = *param_3;
+  if (piVar23[1] != 0) {
+    pbVar18 = param_3 + 0x4a80;
+    for (bVar11 = 0; bVar11 < bVar29; bVar11 = bVar11 + 1) {
+      *(uint *)(pbVar18 + 4) = (uint)(piVar23[0x33] == 1);
+      *(int *)(pbVar18 + 8) = piVar23[0x38];
+      pbVar18[0xf] = *(byte *)((int)piVar23 + 0xed);
+      pbVar18[0xc] = *(byte *)((int)piVar23 + 0xee);
+      bVar1 = *(byte *)(piVar23 + 0x3b);
+      pbVar18[0] = 1;
+      pbVar18[1] = 0;
+      pbVar18[2] = 0;
+      pbVar18[3] = 0;
+      pbVar18[0xe] = bVar1;
+      *(int *)(pbVar18 + 0x14) = *(int *)(pbVar18 + 0x14) + 1;
+      pbVar18 = pbVar18 + 0x9378;
+    }
+  }
+  bVar11 = 0;
+  puVar19 = (uint *)(param_3 + 0x4ab0);
+  while (bVar11 < bVar29) {
+    bVar11 = bVar11 + 1;
+    *puVar19 = (uint)(piVar23[0x33] == 1);
+    uVar3 = *(ushort *)((int)piVar23 + 0x16);
+    puVar19[1] = piVar23[0x34];
+    uVar31 = *(ushort *)(piVar23 + 5);
+    *(ushort *)((int)puVar19 + 0xe) = uVar3;
+    *(ushort *)(puVar19 + 3) = uVar31;
+    if ((uint)uVar31 == (uint)uVar3) {
+      iVar7 = 1;
+    }
+    else {
+      iVar7 = (uint)uVar31 - (uint)uVar3;
+    }
+    *(short *)((int)puVar19 + 0x12) = (short)(0x4000 / iVar7);
+    puVar19 = puVar19 + 0x24de;
+  }
+  for (local_b4 = 0; uVar17 = local_b4 & 0xff, uVar17 < *param_3; local_b4 = local_b4 + 1) {
+    uVar25 = *(uint *)(iVar6 + 0x2344);
+    uVar30 = uVar25;
+    if (uVar25 < 0x40) {
+      uVar30 = 0x40;
+    }
+    *(int *)(param_3 + uVar17 * 0x9378 + 0x41d8) = piVar23[0x34];
+    if (0x7ff < uVar30) {
+      uVar30 = 0x800;
+    }
+    *(undefined2 *)(param_3 + uVar17 * 0x9378 + 0x41f0) = *(undefined2 *)((int)piVar23 + 0x16);
+    *(short *)(param_3 + uVar17 * 0x9378 + 0x41ee) = (short)piVar23[5];
+    *(uint *)(param_3 + uVar17 * 0x9378 + 0x423c) = (uint)(uVar25 < 0x200);
+    *(uint *)(param_3 + uVar17 * 0x9378 + 0x4258) = (uint)(uVar25 < 0x200);
+    uVar12 = *(uint *)(iVar6 + 0x237c) >> 8;
+    if (((uVar12 != 0) && (uVar32 = *(uint *)(iVar6 + 0x2388) >> 8, uVar32 != 0)) &&
+       (uVar28 = *(uint *)(iVar6 + 0x2380) >> 8, uVar28 != 0)) {
+      uVar31 = *(ushort *)(piVar23 + 0x10);
+      uVar20 = (uint)(((ulonglong)uVar31 << 8) / (ulonglong)uVar12);
+      if (0xffe < uVar20) {
+        uVar20 = 0xfff;
+      }
+      *(short *)(param_3 + uVar17 * 0x9378 + 0x4208) = (short)uVar20;
+      uVar3 = *(ushort *)((int)piVar23 + 0x42);
+      uVar12 = (uint)(((ulonglong)uVar3 << 8) / (ulonglong)uVar12);
+      if (0xffe < uVar12) {
+        uVar12 = 0xfff;
+      }
+      *(short *)(param_3 + uVar17 * 0x9378 + 0x420a) = (short)uVar12;
+      uVar12 = (uint)(((ulonglong)uVar31 << 8) / (ulonglong)uVar28);
+      uVar20 = (uint)(((ulonglong)uVar3 << 8) / (ulonglong)uVar28);
+      uVar28 = (uint)(((ulonglong)uVar31 << 8) / (ulonglong)uVar32);
+      uVar32 = (uint)(((ulonglong)uVar3 << 8) / (ulonglong)uVar32);
+      if (0xffe < uVar12) {
+        uVar12 = 0xfff;
+      }
+      *(short *)(param_3 + uVar17 * 0x9378 + 0x4210) = (short)uVar12;
+      if (0xffe < uVar20) {
+        uVar20 = 0xfff;
+      }
+      *(short *)(param_3 + uVar17 * 0x9378 + 0x4212) = (short)uVar20;
+      if (0xffe < uVar28) {
+        uVar28 = 0xfff;
+      }
+      *(short *)(param_3 + uVar17 * 0x9378 + 0x4218) = (short)uVar28;
+      if (0xffe < uVar32) {
+        uVar32 = 0xfff;
+      }
+      *(short *)(param_3 + uVar17 * 0x9378 + 0x421a) = (short)uVar32;
+    }
+    puVar13 = (ushort *)((int)piVar23 + 0x23e);
+    puVar21 = (ushort *)(param_3 + uVar17 * 0x9378 + 0x4200);
+    do {
+      puVar14 = puVar13 + 1;
+      uVar31 = *puVar13;
+      if (0xffe < uVar31) {
+        uVar31 = 0xfff;
+      }
+      *puVar21 = uVar31;
+      puVar13 = puVar14;
+      puVar21 = puVar21 + 1;
+    } while ((ushort *)((int)piVar23 + 0x246) != puVar14);
+    iVar7 = *(int *)(iVar6 + 0x232c);
+    *(int *)(param_3 + uVar17 * 0x9378 + 0x424c) = piVar23[0x8e];
+    param_3[uVar17 * 0x9378 + 0x4254] = *(byte *)(piVar23 + 0x8f);
+    uVar12 = iVar7 << 0x10;
+    uVar31 = 0xfff;
+    if (*(ushort *)(piVar23 + 0x90) < 0x1000) {
+      uVar31 = *(ushort *)(piVar23 + 0x90);
+    }
+    *(ushort *)(param_3 + uVar17 * 0x9378 + 0x4256) = uVar31;
+    iVar24 = ((uint)(*(int *)(iVar6 + 0x2330) << 0x10) >> 10) + 0x10000;
+    if (0x7ff < uVar25) {
+      uVar25 = 0x800;
+    }
+    if (uVar25 < 0x40) {
+      uVar25 = 0x40;
+    }
+    uVar28 = FUN_003f9074(uVar12 >> 10,0x10);
+    uVar28 = uVar28 >> 8;
+    uVar32 = FUN_003f9074(iVar24,0x10);
+    uVar20 = uVar32 >> 8;
+    iVar27 = 0;
+    uVar12 = uVar12 >> 0x14;
+    piVar23[6] = iVar7;
+    puVar19 = local_5c;
+    piVar33 = &DAT_005fd9a8;
+    do {
+      iVar27 = iVar27 + 1;
+      *puVar19 = *piVar33 << 6;
+      puVar19 = puVar19 + 1;
+      piVar33 = piVar33 + 1;
+    } while (iVar27 != 7);
+    iVar27 = 0;
+    iVar7 = 0;
+    local_34[4] = 0xb;
+    local_34[5] = 0x11;
+    pbVar18 = local_34;
+    local_34[0] = 1;
+    local_34[1] = 2;
+    local_34[2] = 3;
+    local_34[3] = 6;
+    local_34[6] = 0x15;
+    puVar19 = local_5c;
+    do {
+      uVar34 = *puVar19;
+      iVar7 = iVar7 + 1;
+      if ((uVar34 <= uVar12) && (uVar8 = puVar19[1], uVar12 <= uVar8)) {
+        if (uVar34 == uVar8) {
+          uVar8 = 1;
+        }
+        else {
+          uVar8 = uVar8 - uVar34;
+        }
+        iVar27 = (uint)*pbVar18 + ((uVar12 - uVar34) * ((uint)pbVar18[1] - (uint)*pbVar18)) / uVar8;
+      }
+      pbVar18 = pbVar18 + 1;
+      puVar19 = puVar19 + 1;
+    } while (iVar7 != 6);
+    uVar12 = 0;
+    uVar10 = 0;
+    uVar35 = 0;
+    uVar36 = 0;
+    uVar32 = uVar32 * (iVar27 + (((iVar27 * 3 + 1U >> 1) + 0x40 >> 7) +
+                                (((uint)(iVar27 * 0x10e) >> 1) + 0x20 >> 6)) * 2) + 0x20 >> 8;
+    if (0xffe < uVar32) {
+      uVar32 = 0xfff;
+    }
+    *(short *)(param_3 + uVar17 * 0x9378 + 0x41f8) = (short)uVar32;
+    uVar32 = iVar27 * iVar24 + 0x8000U >> 0x10;
+    if (0x1fe < uVar32) {
+      uVar32 = 0x1ff;
+    }
+    uVar9 = FUN_003f9074(uVar25,0xb);
+    iVar7 = FUN_003f9074(uVar9,0xb);
+    if (iVar7 * uVar32 < 0x80) {
+      bVar29 = (char)uVar32 * (char)iVar7;
+    }
+    else {
+      bVar29 = 0x7f;
+    }
+    param_3[uVar17 * 0x9378 + 0x41ec] = bVar29;
+    if (5 < uVar28) {
+      uVar28 = 6;
+    }
+    param_3[uVar17 * 0x9378 + 0x41ea] = (byte)uVar28;
+    if (5 < uVar20) {
+      uVar20 = 6;
+    }
+    param_3[uVar17 * 0x9378 + 0x41eb] = (byte)uVar20;
+    puVar15 = (undefined1 *)((int)piVar23 + 0x196);
+    puVar19 = local_5c;
+    puVar22 = local_84;
+    local_84[0] = uVar12;
+    local_84[1] = uVar10;
+    local_84[2] = uVar35;
+    local_84[3] = uVar36;
+    local_74 = uVar12;
+    uStack_70 = uVar10;
+    local_6c = uVar12;
+    uStack_68 = uVar10;
+    local_64 = uVar12;
+    uStack_60 = uVar10;
+    local_5c[0] = uVar12;
+    local_5c[1] = uVar10;
+    local_5c[2] = uVar35;
+    local_5c[3] = uVar36;
+    local_5c[4] = uVar12;
+    uStack_48 = uVar10;
+    local_44 = uVar12;
+    uStack_40 = uVar10;
+    local_3c = uVar12;
+    uStack_38 = uVar10;
+    do {
+      *puVar19 = (uint)puVar15;
+      *puVar22 = (uint)(puVar15 + -0xa0);
+      puVar15 = puVar15 + 0x10;
+      puVar19 = puVar19 + 1;
+      puVar22 = puVar22 + 1;
+    } while ((undefined1 *)((int)piVar23 + 0x236) != puVar15);
+    if (piVar23[0x3c] == 1) {
+      param_3[uVar17 * 0x9378 + 0x41e8] = *(byte *)(piVar23 + 0x3d);
+      param_3[uVar17 * 0x9378 + 0x41e9] = *(byte *)((int)piVar23 + 0xf5);
+    }
+    else {
+      bVar29 = FUN_003f9158(*(undefined4 *)(iVar6 + 0x2338),*(undefined4 *)(iVar6 + 0x2348),local_84
+                           );
+      uVar10 = *(undefined4 *)(iVar6 + 0x2348);
+      param_3[uVar17 * 0x9378 + 0x41e8] = bVar29;
+      bVar29 = FUN_003f9158(*(undefined4 *)(iVar6 + 0x2338),uVar10,local_5c);
+      param_3[uVar17 * 0x9378 + 0x41e9] = bVar29;
+    }
+    uVar32 = (uint)(*(int *)(iVar6 + 0x232c) << 0x10) >> 0x14;
+    iVar7 = ((uint)(*(int *)(iVar6 + 0x2330) << 0x10) >> 10) + 0x10000;
+    uVar25 = FUN_003f9074((uint)(*(int *)(iVar6 + 0x232c) << 0x10) >> 10,0x10);
+    uVar12 = FUN_003f9074(iVar7,0x10);
+    uVar12 = uVar12 >> 8;
+    pbVar18 = (byte *)(piVar23 + 7);
+    iVar24 = 0;
+    puVar19 = (uint *)(piVar23 + 9);
+    do {
+      puVar22 = puVar19 + 1;
+      uVar28 = *puVar19;
+      if ((uVar28 <= uVar32) && (uVar20 = *puVar22, uVar32 <= uVar20)) {
+        if (uVar28 == uVar20) {
+          uVar20 = 1;
+        }
+        else {
+          uVar20 = uVar20 - uVar28;
+        }
+        iVar24 = (uint)*pbVar18 + ((uVar32 - uVar28) * ((uint)pbVar18[1] - (uint)*pbVar18)) / uVar20
+        ;
+      }
+      pbVar18 = pbVar18 + 1;
+      puVar19 = puVar22;
+    } while ((uint *)(piVar23 + 0xf) != puVar22);
+    uVar32 = iVar24 * iVar7 + 0x8000U >> 0x10;
+    if (0x1fe < uVar32) {
+      uVar32 = 0x1ff;
+    }
+    uVar10 = FUN_003f9074(uVar30,0xb);
+    iVar7 = FUN_003f9074(uVar10,0xb);
+    if (iVar7 * uVar32 < 0x80) {
+      uVar31 = (short)uVar32 * (short)iVar7 & 0xff;
+    }
+    else {
+      uVar31 = 0x7f;
+    }
+    if (5 < uVar12) {
+      uVar12 = 6;
+    }
+    if (uVar25 >> 8 < 7) {
+      bVar29 = (char)uVar12 + (char)(uVar25 >> 8);
+    }
+    else {
+      bVar29 = (char)uVar12 + 6;
+    }
+    uVar30 = (int)(short)uVar31 * (int)(short)(ushort)param_3[uVar17 * 0x9378 + 0x41e8] >> 4;
+    uVar5 = (undefined2)uVar30;
+    if (0x7fe < uVar30) {
+      uVar5 = 0x7ff;
+    }
+    *(undefined2 *)(param_3 + uVar17 * 0x9378 + 0x4240) = uVar5;
+    uVar30 = (int)(short)uVar31 * (int)(short)(ushort)param_3[uVar17 * 0x9378 + 0x41e9] >> 4;
+    uVar5 = (undefined2)uVar30;
+    if (0x7fe < uVar30) {
+      uVar5 = 0x7ff;
+    }
+    *(undefined2 *)(param_3 + uVar17 * 0x9378 + 0x4242) = uVar5;
+    *(short *)(param_3 + uVar17 * 0x9378 + 0x4244) =
+         (short)((int)(short)(ushort)param_3[uVar17 * 0x9378 + 0x41e8] * (int)(short)(ushort)bVar29
+                >> 4);
+    *(short *)(param_3 + uVar17 * 0x9378 + 0x4246) =
+         (short)((int)(short)(ushort)param_3[uVar17 * 0x9378 + 0x41e9] * (int)(short)(ushort)bVar29
+                >> 4);
+    sVar2 = *(sbyte *)((int)piVar23 + 0x12);
+    local_8c = 0;
+    local_88 = 0;
+    isp_sensor_get_default(param_1,&local_8c);
+    isp_sensor_get_blc(param_1,&local_88);
+    iVar7 = isp_check_pointer_by_line(local_8c,"isp_wdr_func_third",0x49e);
+    if ((iVar7 == 0) &&
+       (iVar7 = isp_check_pointer_by_line(local_88,"isp_wdr_func_third",0x49f), iVar7 == 0)) {
+      *(byte *)(piVar23 + 4) = param_3[uVar17 * 0x9378 + 0x41e8];
+      *(byte *)((int)piVar23 + 0x11) = param_3[uVar17 * 0x9378 + 0x41e9];
+      *(int *)(param_3 + uVar17 * 0x9378 + 0x41fc) = piVar23[3];
+      iVar7 = ((1 << sVar2) + -1) - (uint)*(ushort *)(local_88 + 0xb0);
+      iVar24 = FUN_003f9074(iVar7,8);
+      iVar27 = param_3[uVar17 * 0x9378 + 0x423a] - 1;
+      if (4 < param_3[uVar17 * 0x9378 + 0x423a]) {
+        iVar27 = 3;
+      }
+      pbVar18 = param_3 + uVar17 * 0x9378 + 0x41f2;
+      puVar19 = (uint *)(iVar6 + 0x2348);
+      for (iVar26 = 0; iVar26 < iVar27; iVar26 = iVar26 + 1) {
+        uVar30 = *puVar19;
+        if (uVar30 == 0) {
+          uVar30 = 1;
+        }
+        iVar16 = (uint)(iVar7 * 0x40) / uVar30 - iVar24;
+        if (iVar16 < 0) {
+          uVar5 = 0;
+        }
+        else if (iVar16 < 0x1000) {
+          uVar5 = (undefined2)iVar16;
+        }
+        else {
+          uVar5 = 0xfff;
+        }
+        *(undefined2 *)pbVar18 = uVar5;
+        pbVar18 = pbVar18 + 2;
+        puVar19 = puVar19 + 1;
+      }
+      *(int *)(param_3 + uVar17 * 0x9378 + 0x4220) = piVar23[0x36];
+      uVar30 = (uint)*(ushort *)(piVar23 + 0x12);
+      if (0xffe < uVar30) {
+        uVar30 = 0xfff;
+      }
+      *(short *)(param_3 + uVar17 * 0x9378 + 0x4224) = (short)uVar30;
+      uVar25 = (uint)*(ushort *)((int)piVar23 + 0x4a);
+      if (0xffe < uVar25) {
+        uVar25 = 0xfff;
+      }
+      *(short *)(param_3 + uVar17 * 0x9378 + 0x4226) = (short)uVar25;
+      uVar31 = *(ushort *)(piVar23 + 0x39);
+      if (0xffe < uVar31) {
+        uVar31 = 0xfff;
+      }
+      if (uVar30 == uVar25) {
+        iVar7 = 1;
+      }
+      else {
+        iVar7 = uVar25 - uVar30;
+      }
+      *(ushort *)(param_3 + uVar17 * 0x9378 + 0x4228) = uVar31;
+      *(short *)(param_3 + uVar17 * 0x9378 + 0x4248) = (short)(0x3f0 / iVar7);
+      if ((uint)*(ushort *)(param_3 + uVar17 * 0x9378 + 0x41ee) ==
+          (uint)*(ushort *)(param_3 + uVar17 * 0x9378 + 0x41f0)) {
+        iVar7 = 1;
+      }
+      else {
+        iVar7 = (uint)*(ushort *)(param_3 + uVar17 * 0x9378 + 0x41ee) -
+                (uint)*(ushort *)(param_3 + uVar17 * 0x9378 + 0x41f0);
+      }
+      *(short *)(param_3 + uVar17 * 0x9378 + 0x424a) = (short)(0x4000 / iVar7);
+      pbVar18 = param_3 + uVar17 * 0x9378 + 0x41d4;
+      pbVar18[0] = 1;
+      pbVar18[1] = 0;
+      pbVar18[2] = 0;
+      pbVar18[3] = 0;
+    }
+  }
+LAB_003f9e8e:
+  if (__stack_chk_guard != local_2c) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return local_ac;
+}
+
+
+--- CALLS TO ---
+  -> io_read8 @ 003d43e0
+  -> isp_sensor_get_default @ 003d7554
+  -> FUN_003f9074 @ 003f9074
+  -> isp_sensor_get_sns_reg @ 003d75e0
+  -> isp_fswdr_attr_read @ 003e391c
+  -> __stack_chk_fail @ 00161978
+  -> memmove @ 0016141c
+  -> isp_get_fd @ 003d82dc
+  -> ioctl @ 001617c4
+  -> FUN_003f9144 @ 003f9144
+  -> isp_check_pointer_by_line @ 003d7fc0
+  -> FUN_003f9158 @ 003f9158
+  -> io_write8 @ 003d43f8
+  -> FUN_003f90d4 @ 003f90d4
+  -> isp_sensor_get_blc @ 003d7470
+  -> isp_get_usr_ctx @ 003d82f4
+--- CALLED BY ---
+

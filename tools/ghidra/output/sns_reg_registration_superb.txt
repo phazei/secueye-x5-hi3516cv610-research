@@ -1,0 +1,4763 @@
+SNS REG SYNC PATH DECOMPILATION
+Program: superb
+Total target functions: 26
+======================================================================
+
+======================================================================
+FUNCTION: ot_mpi_ae_sensor_reg_callback
+ADDRESS:  003b22cc
+SIZE:     196 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4
+ot_mpi_ae_sensor_reg_callback
+          (undefined4 param_1,undefined4 *param_2,undefined4 param_3,undefined4 *param_4)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  
+  iVar1 = ae_check_pipe();
+  if (iVar1 == 0) {
+    iVar1 = ae_check_pointer(param_2);
+    if (((iVar1 != 0) || (iVar1 = ae_check_pointer(param_4), iVar1 != 0)) ||
+       (iVar1 = ae_check_pointer(param_3), iVar1 != 0)) {
+      return 0xa01c800a;
+    }
+    uVar2 = *param_2;
+    iVar1 = ae_check_handle(uVar2);
+    if ((iVar1 == 0) && (iVar1 = ae_check_lib_name(param_2 + 1), iVar1 == 0)) {
+      iVar1 = isp_get_ae_ctx(uVar2);
+      if (*(int *)(iVar1 + 0x4bf0) != 1) {
+        if ((code *)*param_4 != (code *)0x0) {
+          (*(code *)*param_4)(param_1,iVar1 + 0x4bf8);
+        }
+        memcpy_s(iVar1 + 0x5a58,0x38,param_4);
+        memcpy_s(iVar1 + 0x4bf4,4,param_3);
+        *(undefined4 *)(iVar1 + 0x4bf0) = 1;
+        return 0;
+      }
+      fprintf((FILE *)0x0,
+              "[Func]:%s [Line]:%d [Info]:Reg ERR! ISP[%d] sensor have registered to AE[%d]!\n",
+              "ot_mpi_ae_sensor_reg_callback",0xf18,param_1,uVar2);
+    }
+  }
+  return 0xa01c8007;
+}
+
+
+--- CALLS TO ---
+  -> ae_check_lib_name @ 003ae918
+  -> memcpy_s @ 00394b72
+  -> fprintf @ 00161568
+  -> isp_get_ae_ctx @ 003ad028
+  -> ae_check_pointer @ 003ae960
+  -> ae_check_handle @ 003ae440
+  -> ae_check_pipe @ 003ae400
+--- CALLED BY ---
+  <- cis_register_callback @ 0042341c
+
+======================================================================
+FUNCTION: hi_mpi_isp_sensor_reg_callback
+ADDRESS:  003c7150
+SIZE:     4 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int hi_mpi_isp_sensor_reg_callback(undefined4 param_1,undefined4 *param_2,undefined4 *param_3)
+
+{
+  int iVar1;
+  int iVar2;
+  
+  iVar1 = isp_check_pipe();
+  if (iVar1 == 0) {
+    iVar1 = isp_check_pointer(param_3);
+    if ((((iVar1 == 0) && (iVar1 = isp_check_pointer(param_2), iVar1 == 0)) &&
+        (iVar1 = isp_check_pointer(*param_3), iVar1 == 0)) &&
+       (((iVar1 = isp_check_pointer(param_3[5]), iVar1 == 0 &&
+         (iVar1 = isp_check_pointer(param_3[6]), iVar1 == 0)) &&
+        ((iVar1 = isp_check_pointer(param_3[8]), iVar1 == 0 &&
+         (iVar1 = isp_check_pointer(param_3[9]), iVar1 == 0)))))) {
+      iVar1 = isp_get_usr_ctx(param_1);
+      iVar2 = isp_check_pointer();
+      if (iVar2 == 0) {
+        isp_mutex_lock(param_1);
+        if (*(int *)(iVar1 + 4) != 1) {
+          iVar2 = isp_sensor_reg_callback(param_1,param_2,param_3);
+          if (iVar2 == 0) {
+            *(undefined4 *)(iVar1 + 0x1788) = *param_2;
+            *(undefined4 *)(iVar1 + 4) = 1;
+          }
+          isp_mutex_unlock(param_1);
+          return iVar2;
+        }
+        isp_mutex_unlock(param_1);
+        fprintf((FILE *)0x0,
+                "[Func]:%s [Line]:%d [Info]:Reg ERR! Sensor have registered to ISP[%d]!\n",
+                "ot_mpi_isp_sensor_reg_callback",0x46d,param_1);
+        goto LAB_003d98a6;
+      }
+    }
+    iVar1 = -0x5fe37ff6;
+  }
+  else {
+LAB_003d98a6:
+    iVar1 = -0x5fe37ff9;
+  }
+  return iVar1;
+}
+
+
+--- CALLS TO ---
+--- CALLED BY ---
+
+======================================================================
+FUNCTION: hi_mpi_isp_sensor_unreg_callback
+ADDRESS:  003c7154
+SIZE:     4 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 hi_mpi_isp_sensor_unreg_callback(undefined4 param_1,int param_2)
+
+{
+  int iVar1;
+  int *piVar2;
+  undefined4 uVar3;
+  
+  iVar1 = isp_check_pipe();
+  if (iVar1 == 0) {
+    piVar2 = (int *)isp_get_usr_ctx(param_1);
+    iVar1 = isp_check_pointer();
+    if (iVar1 != 0) {
+      return 0xa01c800a;
+    }
+    isp_mutex_lock(param_1);
+    iVar1 = isp_get_usr_ctx(param_1);
+    if ((*(int *)(iVar1 + 4) == 1) || (*(int *)(iVar1 + 8) == 1)) {
+      if (*piVar2 == 1) {
+        isp_mutex_unlock(param_1);
+        fprintf((FILE *)0x0,
+                "[Func]:%s [Line]:%d [Info]:Unreg sensor failed! Isp should deinit before unreg sensor!\n"
+                ,"ot_mpi_isp_sensor_unreg_callback",0x502);
+        return 0xa01c800c;
+      }
+      if (piVar2[0x5e2] != param_2) {
+        isp_mutex_unlock(param_1);
+        fprintf((FILE *)0x0,
+                "[Func]:%s [Line]:%d [Info]:UnReg ERR! ISP[%d] Registered sensor is %d, present sensor is %d.\n"
+                ,"ot_mpi_isp_sensor_unreg_callback",0x509,param_1,piVar2[0x5e2],param_2);
+        goto LAB_003d9cf4;
+      }
+      piVar2[0x5e2] = 0;
+      piVar2[1] = 0;
+      isp_sensor_unreg_callback(param_1);
+      uVar3 = 0;
+    }
+    else {
+      uVar3 = 0xa01c8043;
+      fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Sensor doesn\'t register to ISP[%d]!\n",
+              "ot_mpi_isp_sensor_unreg_callback",0x4fe,param_1);
+    }
+    isp_mutex_unlock(param_1);
+  }
+  else {
+LAB_003d9cf4:
+    uVar3 = 0xa01c8007;
+  }
+  return uVar3;
+}
+
+
+--- CALLS TO ---
+--- CALLED BY ---
+
+======================================================================
+FUNCTION: ss_mpi_isp_sensor_reg_callback
+ADDRESS:  003c7358
+SIZE:     4 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int ss_mpi_isp_sensor_reg_callback(undefined4 param_1,undefined4 *param_2,undefined4 *param_3)
+
+{
+  int iVar1;
+  int iVar2;
+  
+  iVar1 = isp_check_pipe();
+  if (iVar1 == 0) {
+    iVar1 = isp_check_pointer(param_3);
+    if ((((iVar1 == 0) && (iVar1 = isp_check_pointer(param_2), iVar1 == 0)) &&
+        (iVar1 = isp_check_pointer(*param_3), iVar1 == 0)) &&
+       (((iVar1 = isp_check_pointer(param_3[5]), iVar1 == 0 &&
+         (iVar1 = isp_check_pointer(param_3[6]), iVar1 == 0)) &&
+        ((iVar1 = isp_check_pointer(param_3[8]), iVar1 == 0 &&
+         (iVar1 = isp_check_pointer(param_3[9]), iVar1 == 0)))))) {
+      iVar1 = isp_get_usr_ctx(param_1);
+      iVar2 = isp_check_pointer();
+      if (iVar2 == 0) {
+        isp_mutex_lock(param_1);
+        if (*(int *)(iVar1 + 4) != 1) {
+          iVar2 = isp_sensor_reg_callback(param_1,param_2,param_3);
+          if (iVar2 == 0) {
+            *(undefined4 *)(iVar1 + 0x1788) = *param_2;
+            *(undefined4 *)(iVar1 + 4) = 1;
+          }
+          isp_mutex_unlock(param_1);
+          return iVar2;
+        }
+        isp_mutex_unlock(param_1);
+        fprintf((FILE *)0x0,
+                "[Func]:%s [Line]:%d [Info]:Reg ERR! Sensor have registered to ISP[%d]!\n",
+                "ot_mpi_isp_sensor_reg_callback",0x46d,param_1);
+        goto LAB_003d98a6;
+      }
+    }
+    iVar1 = -0x5fe37ff6;
+  }
+  else {
+LAB_003d98a6:
+    iVar1 = -0x5fe37ff9;
+  }
+  return iVar1;
+}
+
+
+--- CALLS TO ---
+--- CALLED BY ---
+
+======================================================================
+FUNCTION: ss_mpi_isp_sensor_unreg_callback
+ADDRESS:  003c735c
+SIZE:     4 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 ss_mpi_isp_sensor_unreg_callback(undefined4 param_1,int param_2)
+
+{
+  int iVar1;
+  int *piVar2;
+  undefined4 uVar3;
+  
+  iVar1 = isp_check_pipe();
+  if (iVar1 == 0) {
+    piVar2 = (int *)isp_get_usr_ctx(param_1);
+    iVar1 = isp_check_pointer();
+    if (iVar1 != 0) {
+      return 0xa01c800a;
+    }
+    isp_mutex_lock(param_1);
+    iVar1 = isp_get_usr_ctx(param_1);
+    if ((*(int *)(iVar1 + 4) == 1) || (*(int *)(iVar1 + 8) == 1)) {
+      if (*piVar2 == 1) {
+        isp_mutex_unlock(param_1);
+        fprintf((FILE *)0x0,
+                "[Func]:%s [Line]:%d [Info]:Unreg sensor failed! Isp should deinit before unreg sensor!\n"
+                ,"ot_mpi_isp_sensor_unreg_callback",0x502);
+        return 0xa01c800c;
+      }
+      if (piVar2[0x5e2] != param_2) {
+        isp_mutex_unlock(param_1);
+        fprintf((FILE *)0x0,
+                "[Func]:%s [Line]:%d [Info]:UnReg ERR! ISP[%d] Registered sensor is %d, present sensor is %d.\n"
+                ,"ot_mpi_isp_sensor_unreg_callback",0x509,param_1,piVar2[0x5e2],param_2);
+        goto LAB_003d9cf4;
+      }
+      piVar2[0x5e2] = 0;
+      piVar2[1] = 0;
+      isp_sensor_unreg_callback(param_1);
+      uVar3 = 0;
+    }
+    else {
+      uVar3 = 0xa01c8043;
+      fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Sensor doesn\'t register to ISP[%d]!\n",
+              "ot_mpi_isp_sensor_unreg_callback",0x4fe,param_1);
+    }
+    isp_mutex_unlock(param_1);
+  }
+  else {
+LAB_003d9cf4:
+    uVar3 = 0xa01c8007;
+  }
+  return uVar3;
+}
+
+
+--- CALLS TO ---
+--- CALLED BY ---
+
+======================================================================
+FUNCTION: isp_sensor_ctx_init
+ADDRESS:  003d7278
+SIZE:     80 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 isp_sensor_ctx_init(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  undefined4 uVar1;
+  int iVar2;
+  int iVar3;
+  
+  iVar2 = *(int *)(g_sensor_ctx + param_1 * 4);
+  iVar3 = param_1;
+  if ((iVar2 == 0) && (iVar2 = isp_malloc(0x8f8), iVar2 == 0)) {
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Isp[%d] sensor_ctx malloc memory failed!\n",
+            "isp_sensor_ctx_init",0x24,param_1);
+    uVar1 = 0xa01c8045;
+  }
+  else {
+    memset_s(iVar2,0x8f8,0,0x8f8,iVar3,param_2,param_3);
+    *(int *)(g_sensor_ctx + param_1 * 4) = iVar2;
+    uVar1 = 0;
+  }
+  return uVar1;
+}
+
+
+--- CALLS TO ---
+  -> fprintf @ 00161568
+  -> isp_malloc @ 003d6ad4
+  -> memset_s @ 00395b08
+--- CALLED BY ---
+  <- isp_sensor_reg_callback @ 003d72e0
+  <- isp_mem_init_update_ctx @ 003d4e4c
+
+======================================================================
+FUNCTION: isp_sensor_reg_callback
+ADDRESS:  003d72e0
+SIZE:     88 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int isp_sensor_reg_callback(int param_1,undefined4 param_2,undefined4 param_3)
+
+{
+  int iVar1;
+  int iVar2;
+  
+  iVar1 = isp_sensor_ctx_init();
+  if (iVar1 == 0) {
+    iVar2 = *(int *)(g_sensor_ctx + param_1 * 4);
+    iVar1 = isp_check_pointer_by_line(iVar2,"isp_sensor_reg_callback",0x3c);
+    if (iVar1 == 0) {
+      memcpy_s(iVar2,4,param_2);
+      memcpy_s(iVar2 + 4,0x30,param_3);
+      iVar1 = 0;
+      if (*(code **)(iVar2 + 0xc) != (code *)0x0) {
+        (**(code **)(iVar2 + 0xc))(param_1);
+      }
+    }
+    else {
+      iVar1 = -0x5fe37ff6;
+    }
+  }
+  return iVar1;
+}
+
+
+--- CALLS TO ---
+  -> memcpy_s @ 00394b72
+  -> isp_sensor_ctx_init @ 003d7278
+  -> isp_check_pointer_by_line @ 003d7fc0
+--- CALLED BY ---
+  <- ot_mpi_isp_sensor_reg_callback @ 003d9804
+
+======================================================================
+FUNCTION: isp_sensor_unreg_callback
+ADDRESS:  003d7348
+SIZE:     30 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_sensor_unreg_callback(int param_1)
+
+{
+  if (*(void **)(g_sensor_ctx + param_1 * 4) != (void *)0x0) {
+    free(*(void **)(g_sensor_ctx + param_1 * 4));
+  }
+  *(undefined4 *)(g_sensor_ctx + param_1 * 4) = 0;
+  return;
+}
+
+
+--- CALLS TO ---
+  -> free @ 00161400
+--- CALLED BY ---
+  <- ot_mpi_isp_sensor_unreg_callback @ 003d9c2c
+  <- ot_mpi_isp_mem_init @ 003d841c
+
+======================================================================
+FUNCTION: isp_sensor_update_all
+ADDRESS:  003d7370
+SIZE:     102 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 isp_sensor_update_all(int param_1,undefined4 param_2)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  int iVar3;
+  
+  iVar3 = *(int *)(g_sensor_ctx + param_1 * 4);
+  iVar1 = isp_check_pointer_by_line(iVar3,"isp_sensor_update_all",0x5b,g_sensor_ctx,param_1,param_2)
+  ;
+  if (iVar1 == 0) {
+    if (*(code **)(iVar3 + 0x18) == (code *)0x0) {
+      uVar2 = 0xffffffff;
+      fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Get isp[%d] default value error!\n",
+              "isp_sensor_update_all",0x60,param_1);
+    }
+    else {
+      (**(code **)(iVar3 + 0x18))(param_1,iVar3 + 0x38);
+      uVar2 = 0;
+      if (*(code **)(iVar3 + 0x1c) != (code *)0x0) {
+        (**(code **)(iVar3 + 0x1c))(param_1,iVar3 + 400);
+      }
+    }
+  }
+  else {
+    uVar2 = 0xa01c800a;
+  }
+  return uVar2;
+}
+
+
+--- CALLS TO ---
+  -> fprintf @ 00161568
+  -> isp_check_pointer_by_line @ 003d7fc0
+--- CALLED BY ---
+  <- isp_init @ 003d5a18
+
+======================================================================
+FUNCTION: isp_sensor_update_all_yuv
+ADDRESS:  003d73f0
+SIZE:     56 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 isp_sensor_update_all_yuv(int param_1)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  int iVar3;
+  
+  iVar3 = *(int *)(g_sensor_ctx + param_1 * 4);
+  iVar1 = isp_check_pointer_by_line(iVar3,"isp_sensor_update_all_yuv",0x71);
+  if (iVar1 == 0) {
+    uVar2 = isp_get_yuv_default(iVar3 + 0x38);
+    *(undefined4 *)(iVar3 + 0x23c) = 1;
+    *(undefined4 *)(iVar3 + 0x240) = 0x1010101;
+    *(undefined4 *)(iVar3 + 0x244) = 0x1010101;
+  }
+  else {
+    uVar2 = 0xa01c800a;
+  }
+  return uVar2;
+}
+
+
+--- CALLS TO ---
+  -> isp_check_pointer_by_line @ 003d7fc0
+  -> isp_get_yuv_default @ 003def00
+--- CALLED BY ---
+  <- isp_init @ 003d5a18
+
+======================================================================
+FUNCTION: isp_sensor_init_standby_cfg
+ADDRESS:  003d74c0
+SIZE:     114 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_sensor_init_standby_cfg(int param_1)
+
+{
+  int iVar1;
+  code *pcVar2;
+  int iVar3;
+  undefined1 auStack_694 [1664];
+  int local_14;
+  
+  local_14 = __stack_chk_guard;
+  iVar3 = *(int *)(g_sensor_ctx + param_1 * 4);
+  iVar1 = isp_check_pointer_by_line(iVar3,"isp_sensor_init_standby_cfg",0xa0);
+  if (iVar1 == 0) {
+    pcVar2 = *(code **)(iVar3 + 0x30);
+    iVar1 = 0;
+    if (pcVar2 != (code *)0x0) {
+      (*pcVar2)(param_1,auStack_694);
+      iVar1 = isp_get_fd(param_1);
+      iVar1 = ioctl(iVar1,0x4680705c,auStack_694);
+    }
+  }
+  else {
+    iVar1 = -0x5fe37ff6;
+  }
+  if (__stack_chk_guard != local_14) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail(iVar1);
+  }
+  return;
+}
+
+
+--- CALLS TO ---
+  -> __stack_chk_fail @ 00161978
+  -> isp_check_pointer_by_line @ 003d7fc0
+  -> ioctl @ 001617c4
+  -> isp_get_fd @ 003d82dc
+--- CALLED BY ---
+  <- isp_init @ 003d5a18
+
+======================================================================
+FUNCTION: ot_mpi_isp_sensor_reg_callback
+ADDRESS:  003d9804
+SIZE:     204 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int ot_mpi_isp_sensor_reg_callback(undefined4 param_1,undefined4 *param_2,undefined4 *param_3)
+
+{
+  int iVar1;
+  int iVar2;
+  
+  iVar1 = isp_check_pipe();
+  if (iVar1 == 0) {
+    iVar1 = isp_check_pointer(param_3);
+    if ((((iVar1 == 0) && (iVar1 = isp_check_pointer(param_2), iVar1 == 0)) &&
+        (iVar1 = isp_check_pointer(*param_3), iVar1 == 0)) &&
+       (((iVar1 = isp_check_pointer(param_3[5]), iVar1 == 0 &&
+         (iVar1 = isp_check_pointer(param_3[6]), iVar1 == 0)) &&
+        ((iVar1 = isp_check_pointer(param_3[8]), iVar1 == 0 &&
+         (iVar1 = isp_check_pointer(param_3[9]), iVar1 == 0)))))) {
+      iVar1 = isp_get_usr_ctx(param_1);
+      iVar2 = isp_check_pointer();
+      if (iVar2 == 0) {
+        isp_mutex_lock(param_1);
+        if (*(int *)(iVar1 + 4) != 1) {
+          iVar2 = isp_sensor_reg_callback(param_1,param_2,param_3);
+          if (iVar2 == 0) {
+            *(undefined4 *)(iVar1 + 0x1788) = *param_2;
+            *(undefined4 *)(iVar1 + 4) = 1;
+          }
+          isp_mutex_unlock(param_1);
+          return iVar2;
+        }
+        isp_mutex_unlock(param_1);
+        fprintf((FILE *)0x0,
+                "[Func]:%s [Line]:%d [Info]:Reg ERR! Sensor have registered to ISP[%d]!\n",
+                "ot_mpi_isp_sensor_reg_callback",0x46d,param_1);
+        goto LAB_003d98a6;
+      }
+    }
+    iVar1 = -0x5fe37ff6;
+  }
+  else {
+LAB_003d98a6:
+    iVar1 = -0x5fe37ff9;
+  }
+  return iVar1;
+}
+
+
+--- CALLS TO ---
+  -> isp_mutex_unlock @ 003d7e98
+  -> fprintf @ 00161568
+  -> isp_sensor_reg_callback @ 003d72e0
+  -> isp_check_pipe @ 003d802c
+  -> isp_check_pointer @ 003d806c
+  -> isp_get_usr_ctx @ 003d82f4
+  -> isp_mutex_lock @ 003d7e54
+--- CALLED BY ---
+  <- cis_register_callback @ 0042341c
+
+======================================================================
+FUNCTION: ot_mpi_isp_sensor_unreg_callback
+ADDRESS:  003d9c2c
+SIZE:     224 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 ot_mpi_isp_sensor_unreg_callback(undefined4 param_1,int param_2)
+
+{
+  int iVar1;
+  int *piVar2;
+  undefined4 uVar3;
+  
+  iVar1 = isp_check_pipe();
+  if (iVar1 == 0) {
+    piVar2 = (int *)isp_get_usr_ctx(param_1);
+    iVar1 = isp_check_pointer();
+    if (iVar1 != 0) {
+      return 0xa01c800a;
+    }
+    isp_mutex_lock(param_1);
+    iVar1 = isp_get_usr_ctx(param_1);
+    if ((*(int *)(iVar1 + 4) == 1) || (*(int *)(iVar1 + 8) == 1)) {
+      if (*piVar2 == 1) {
+        isp_mutex_unlock(param_1);
+        fprintf((FILE *)0x0,
+                "[Func]:%s [Line]:%d [Info]:Unreg sensor failed! Isp should deinit before unreg sensor!\n"
+                ,"ot_mpi_isp_sensor_unreg_callback",0x502);
+        return 0xa01c800c;
+      }
+      if (piVar2[0x5e2] != param_2) {
+        isp_mutex_unlock(param_1);
+        fprintf((FILE *)0x0,
+                "[Func]:%s [Line]:%d [Info]:UnReg ERR! ISP[%d] Registered sensor is %d, present sensor is %d.\n"
+                ,"ot_mpi_isp_sensor_unreg_callback",0x509,param_1,piVar2[0x5e2],param_2);
+        goto LAB_003d9cf4;
+      }
+      piVar2[0x5e2] = 0;
+      piVar2[1] = 0;
+      isp_sensor_unreg_callback(param_1);
+      uVar3 = 0;
+    }
+    else {
+      uVar3 = 0xa01c8043;
+      fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Sensor doesn\'t register to ISP[%d]!\n",
+              "ot_mpi_isp_sensor_unreg_callback",0x4fe,param_1);
+    }
+    isp_mutex_unlock(param_1);
+  }
+  else {
+LAB_003d9cf4:
+    uVar3 = 0xa01c8007;
+  }
+  return uVar3;
+}
+
+
+--- CALLS TO ---
+  -> isp_mutex_unlock @ 003d7e98
+  -> fprintf @ 00161568
+  -> isp_check_pipe @ 003d802c
+  -> isp_check_pointer @ 003d806c
+  -> isp_get_usr_ctx @ 003d82f4
+  -> isp_sensor_unreg_callback @ 003d7348
+  -> isp_mutex_lock @ 003d7e54
+--- CALLED BY ---
+  <- cis_register_callback @ 0042341c
+  <- cis_unregister_callback @ 00423604
+
+======================================================================
+FUNCTION: ot_mpi_awb_sensor_reg_callback
+ADDRESS:  004143a4
+SIZE:     194 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4
+ot_mpi_awb_sensor_reg_callback
+          (undefined4 param_1,undefined4 *param_2,undefined4 param_3,undefined4 *param_4)
+
+{
+  int iVar1;
+  int iVar2;
+  undefined4 uVar3;
+  
+  iVar1 = awb_check_pipe();
+  if (iVar1 == 0) {
+    iVar1 = awb_check_pointer(param_2);
+    if (((iVar1 != 0) || (iVar1 = awb_check_pointer(param_3), iVar1 != 0)) ||
+       (iVar1 = awb_check_pointer(param_4), iVar1 != 0)) {
+      return 0xa01c800a;
+    }
+    uVar3 = *param_2;
+    iVar1 = awb_check_handle(uVar3);
+    if ((iVar1 == 0) && (iVar1 = awb_check_lib_name(param_2 + 1), iVar1 == 0)) {
+      iVar1 = awb_get_ctx_adp(uVar3);
+      iVar2 = awb_check_pointer();
+      if (iVar2 != 0) {
+        return 0xa01c800a;
+      }
+      if (*(int *)(iVar1 + 0xbe0) != 1) {
+        if ((code *)*param_4 != (code *)0x0) {
+          (*(code *)*param_4)(param_1,iVar1 + 0xbe8);
+        }
+        memcpy_s(iVar1 + 0xd80,4,param_4);
+        memcpy_s(iVar1 + 0xbe4,4,param_3);
+        *(undefined4 *)(iVar1 + 0xbe0) = 1;
+        return 0;
+      }
+      fprintf((FILE *)0x0,
+              "[Func]:%s [Line]:%d [Info]:Reg ERR! ISP[%d] sensor have registered to AWB[%d]!\n",
+              "ot_mpi_awb_sensor_reg_callback",0x76a,param_1,uVar3);
+    }
+  }
+  return 0xa01c8007;
+}
+
+
+--- CALLS TO ---
+  -> awb_check_pointer @ 00411e2c
+  -> awb_check_pipe @ 00411c98
+  -> memcpy_s @ 00394b72
+  -> awb_check_lib_name @ 00411de4
+  -> fprintf @ 00161568
+  -> awb_check_handle @ 00411cd8
+  -> awb_get_ctx_adp @ 004118b4
+--- CALLED BY ---
+  <- cis_register_callback @ 0042341c
+
+======================================================================
+FUNCTION: fprintf
+ADDRESS:  00161568
+SIZE:     12 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+
+int fprintf(FILE *__stream,char *__format,...)
+
+{
+  int iVar1;
+  
+  iVar1 = fprintf(__stream,__format);
+  return iVar1;
+}
+
+
+--- CALLS TO ---
+  -> fprintf @ 009cc3b4
+--- CALLED BY ---
+  <- ot_mpi_isp_sensor_unreg_callback @ 003d9c2c
+  <- svp_npu_dump_match_model @ 004d0538
+  <- aiv_npu_connect @ 0049afb4
+  <- soap_trt_GetAudioSourceConfigurations @ 002211c4
+  <- aiv_src_fq_disable @ 004a61d0
+  <- svp_npu_model_read_input_dim_type @ 004c2de4
+  <- isp_alg_register_dg @ 003f8988
+  <- ot_scene_set_static_awbex @ 002dc622
+  <- isp_motion_stats_attr_arch_check @ 00401d74
+  <- svp_npu_model_check_execute_param @ 004bf914
+  <- svp_npu_model_read_input_channel @ 004c2d04
+  <- FUN_0039b474 @ 0039b474
+  <- FUN_0040a4d4 @ 0040a4d4
+  <- isp_mesh_shading_gain_lut_attr_check @ 003e66f4
+  <- ot_mpi_adec_clr_chn_buf @ 004d5eec
+  <- zbar_image_write @ 00344f98
+  <- FUN_003c98ac @ 003c98ac
+  <- svp_npu_runtime_destroy_stream @ 004cab7c
+  <- isp_alg_register_cac @ 003f5fcc
+  <- ot_mpi_aenc_register_encoder @ 004d684c
+  <- soap_trt_GetCompatibleAudioOutputConfigurations @ 00221dcc
+  <- svp_npu_model_read_inout_mem_reuse_mode @ 004c2274
+  <- aiv_vdb_get_value @ 004a08d8
+  <- ot_mpi_sys_mmz_remap_nocache @ 003a7bd4
+  <- ot_scene_set_dynamic_csc @ 002e43c2
+  <- FUN_004bd2dc @ 004bd2dc
+  <- FUN_003f71c4 @ 003f71c4
+  <- soap_ptz_RemovePreset @ 002226d4
+  <- sc200ai_linear_2m30_10bit_init @ 004356e8
+  <- aibnr_pipe_set_cfg @ 00490fa4
+  <- ot_mpi_ai_set_chn_param @ 004e10a0
+  <- mpi_isp_set_mesh_shading_attr @ 003dc94c
+  <- FUN_002fad84 @ 002fad84
+  <- FUN_003a1c34 @ 003a1c34
+  <- ot_mpi_adec_get_frame_info @ 004d60c0
+  <- FUN_0034e83e @ 0034e83e
+  <- FUN_0049b314 @ 0049b314
+  <- aiv_isp_set_aidrc_mode @ 00498520
+  <- ot_mpi_ao_disable @ 004e330c
+  <- svp_npu_rt_impl_stream_sync @ 004cc158
+  <- soap_tds_SetRelayOutputState @ 0021e658
+  <- mpi_isp_get_wb_stats @ 003e9930
+  <- isp_statistics_init @ 003d7a98
+  <- mpi_isp_set_fast_face_ae_attr @ 003acc28
+  <- upvqe_process_frame @ 004ee070
+  <- audio_vqe_module_handle_register @ 004ec404
+  <- FUN_004c69d4 @ 004c69d4
+  <- svp_npu_runtime_impl_free_model_id_resource @ 004cdb34
+  <- FUN_002d9fb8 @ 002d9fb8
+  <- mpi_isp_set_exposure_attr @ 003a9810
+  <- FUN_002fb6ac @ 002fb6ac
+  <- FUN_004bd478 @ 004bd478
+  <- iw_check_mac_addr_type @ 0034287c
+  <- svp_npu_mem_flush_cache_with_phys_addr @ 004b06c8
+  <- FUN_003e7d94 @ 003e7d94
+  <- svp_acl_mdl_set_aipp_padding_params @ 004abe24
+  <- svp_npu_model_check_priority_config_opt @ 004b8f60
+  <- aibnr_tnr_fill_in_channel @ 004930e4
+  <- svp_npu_driver_sq_task_already @ 004ae470
+  <- aibnr_source_disable @ 004926ac
+  <- isp_wdr_cfg_set @ 003d5140
+  <- svp_npu_mem_free_smmz @ 004b08b8
+  <- ot_mpi_vb_pool_unshare @ 0039dd74
+  <- isp_sync_cfg_set @ 003d32ec
+  <- sc465sl_vc_wdr_2t1_4m30_10bit_init @ 00430cbc
+  <- aiv_sink_fq_disable @ 004a5e20
+  <- ot_opusenc_create @ 004f0df0
+  <- isp_statistics_put_buf @ 003d7ca8
+  <- ive_check_ncc_param_user @ 0040710c
+  <- FUN_003a1bbc @ 003a1bbc
+  <- soap_tr2_RemoveConfiguration @ 00223e04
+  <- ae_check_pipe @ 003ae400
+  <- ot_scene_set_dynamic_ae @ 002e0954
+  <- svp_npu_model_read_input_type @ 004c334c
+  <- mpi_isp_get_ca_attr @ 003ec95c
+  <- aiv_ioctl_vb_add @ 00496bf0
+  <- utl_ifconfig_ppp_set @ 0031d1dc
+  <- svp_acl_mdl_set_aipp_crop_params @ 004abb8c
+  <- svp_npu_model_check_total_t @ 004bf8a0
+  <- isp_ldci_buf_exit @ 003cc748
+  <- FUN_002fe64c @ 002fe64c
+  <- aiv_listener_exit @ 00498d00
+  <- aiv_ioctl_fq_source_get_frame @ 00497244
+  <- mpi_isp_set_mesh_shading_gain_lut_attr @ 003dc864
+  <- svp_npu_prof_subscribe_exit @ 004c9568
+  <- imx662_linear_2M30_12bit_init @ 0042ebfc
+  <- svp_npu_runtime_impl_sync_device @ 004cd374
+  <- sc235hai_slave_vc_wdr_2t1_2m30_10bit_init @ 0042a8e4
+  <- mpi_isp_disable_aiisp @ 003dc104
+  <- isp_dcf_info_check @ 003e6fe4
+  <- demosaic_proc_write @ 003f7af0
+  <- FUN_00302a50 @ 00302a50
+  <- svp_npu_model_read_input_order @ 004c2f64
+  <- svp_npu_model_get_net_type @ 004b3ed8
+  <- svp_npu_model_read_aicpu_buf_size @ 004c1040
+  <- svp_npu_dump_add_model_node_to_list @ 004d09f0
+  <- isp_black_level_value_check @ 003e63c4
+  <- ot_scene_set_dynamic_3dnr @ 002e5cd4
+  <- sharpen_proc_write @ 0040000c
+  <- svp_npu_runtime_impl_deinit_resource @ 004ce5a0
+  <- FUN_0031679a @ 0031679a
+  <- aiv_ioctl_proc_init @ 00496560
+  <- mpi_isp_get_ae_stats @ 003e96b4
+  <- soap_tr2_GetVideoSourceConfigurations @ 00223f38
+  <- isp_clut_attr_check @ 003e61a8
+  <- svp_npu_runtime_malloc_cached @ 004cb048
+  <- isp_lut2stt_apb_reg @ 003d37a8
+  <- svp_npu_model_read_net_num @ 004c0ca8
+  <- FUN_004ec154 @ 004ec154
+  <- ot_mpi_ive_image_dot @ 0040362c
+  <- ot_mpi_sys_mmz_check_phy_addr @ 003a78b0
+  <- isp_statistics_exit @ 003d7b74
+  <- FUN_00302406 @ 00302406
+  <- mpi_svp_npu_prof_stop @ 004c7224
+  <- FUN_002e38e2 @ 002e38e2
+  <- drc_ctx_init @ 0041862c
+  <- ot_confaccess_get_long_long @ 003174bc
+  <- svp_npu_driver_get_sq_task @ 004ae7b4
+  <- aiv_sink_release @ 0049ea5c
+  <- aiv_listener_set_attr @ 00498db8
+  <- svp_npu_json_prof_init @ 004ca070
+  <- isp_get_check_sum_stats @ 003de508
+  <- mpi_aenc_chn_get_frm_proc @ 004d8208
+  <- ot_mpi_vi_set_ext_chn_attr @ 003a3410
+  <- ae_check_bool @ 003afeb4
+  <- ive_check_res_relation_user @ 004063cc
+  <- mpi_isp_set_ai_mode_attr @ 003dbea8
+  <- svp_npu_driver_finish_aicpu_task @ 004aed7c
+  <- isp_nr_snr_attr_check @ 003e55c8
+  <- soap_tr2_SetAudioDecoderConfiguration @ 0022547c
+  <- svp_npu_runtime_get_model_id @ 004cac80
+  <- iw_get_priv_info @ 003417d4
+  <- aiv_agent_disable_pipe @ 004952e4
+  <- isp_nr_attr_arch_check @ 00401950
+  <- svp_npu_model_get_dataset_buffer_num @ 004b86b0
+  <- FUN_00439880 @ 00439880
+  <- FUN_003d4a30 @ 003d4a30
+  <- soap_trt_RemoveVideoSourceConfiguration @ 0021fa5c
+  <- aibnr_task_fill_channel @ 00492a58
+  <- FUN_0042cdd4 @ 0042cdd4
+  <- FUN_004e1da4 @ 004e1da4
+  <- soap_trt_GetAudioOutputConfigurationOptions @ 00221b64
+  <- ot_mpi_aenc_create_chn @ 004d6a7c
+  <- _zbar_decode_code39 @ 0034edc4
+  <- aiv_isp_get_drc_blend @ 00498804
+  <- svp_npu_prof_subscribe_get_op_name_len @ 004c99e8
+  <- ot_mpi_ive_16bit_to_8bit @ 004043a0
+  <- svp_npu_runtime_set_op_wait_timeout @ 004caf60
+  <- svp_npu_model_read_output_shape @ 004c48d4
+  <- ot_scene_set_static_ccm @ 002dcb76
+  <- soap_tds_SetHostname @ 0021d764
+  <- upvqe_set_volume @ 004edf68
+  <- ot_scene_set_static_ca @ 002df5ee
+  <- ot_mpi_sys_mem_share @ 003a7f28
+  <- FUN_003a908c @ 003a908c
+  <- svp_npu_model_read_layer_dump_offset @ 004c655c
+  <- svp_npu_model_read_last_merge_layer_flag @ 004c61a0
+  <- svp_npu_mdl_impl_get_output_dims @ 004ba110
+  <- mpi_isp_set_hdr_exposure_attr @ 003aa820
+  <- svp_npu_runtime_unsubscribe_report @ 004ca5c4
+  <- isp_blc_dbg_run_bgn @ 003df9c4
+  <- mpi_isp_set_sharpen_attr @ 003ec218
+  <- soap_tr2_GetAudioEncoderConfigurationOptions @ 002252b8
+  <- FUN_0034b926 @ 0034b926
+  <- FUN_0048fa78 @ 0048fa78
+  <- ive_check_lk_optial_flow_pyr_out_param_user @ 00407ba8
+  <- soap_tmd_SetRelayOutputState @ 00223590
+  <- ot_mpi_aenc_send_frame @ 004d7924
+  <- soap_trt_AddVideoSourceConfiguration @ 0021f9bc
+  <- ae_check_vreg_permission @ 003a97d0
+  <- isp_check_pointer @ 003d806c
+  <- svp_npu_model_read_sdk_arch @ 004c0894
+  <- svp_npu_model_create_desc @ 004b84e0
+  <- FUN_004ea568 @ 004ea568
+  <- soap_trt_GetCompatibleMetadataConfigurations @ 00220960
+  <- mpi_isp_calc_flicker_type @ 003ed670
+  <- FUN_002f801e @ 002f801e
+  <- svp_npu_model_read_output_id @ 004c4310
+  <- aiv_npu_acl_assign_aipp_mem @ 004a74a8
+  <- ot_mpi_vb_create_ext_pool @ 0039d9f8
+  <- ot_mpi_ive_equalize_hist @ 0040479c
+  <- ot_mpi_aibnr_set_attr @ 0048b72c
+  <- isp_dp_dynamic_attr_check @ 003e6e44
+  <- ot_mpi_vb_pool_unshare_all @ 0039dfc8
+  <- aiv_npu_set_attr @ 0049ac84
+  <- svp_acl_mdl_set_aipp_ax_swap_switch @ 004ab564
+  <- ot_mpi_ai_set_chn_attr @ 004e18a4
+  <- aibnr_sink_send_frame @ 00492394
+  <- aiv_ioctl_source_release_frame @ 00497c34
+  <- ot_scene_set_dynamic_shading @ 002e29cc
+  <- svp_npu_runtime_launch_callback @ 004ca43c
+  <- svp_npu_model_create_dataset @ 004b8564
+  <- soap_ptz_SetPreset @ 00222590
+  <- FUN_00180e58 @ 00180e58
+  <- aiv_src_acquire @ 0049f464
+  <- ot_mpi_vpss_set_chn_ldc @ 003a5678
+  <- sc235hai_slave_linear_2m30_10bit_init @ 0042a81c
+  <- svp_npu_runtime_reset_device @ 004ca8cc
+  <- aiv_npu_get_attr @ 0049ac20
+  <- FUN_003cb508 @ 003cb508
+  <- aiv_input_get_busy_node_num @ 004961e0
+  <- isp_drc_attr_arch_check @ 0040165c
+  <- aibnr_fw_register_model @ 0048cb78
+  <- FUN_004ee4bc @ 004ee4bc
+  <- FUN_003f1878 @ 003f1878
+  <- svp_npu_model_read_output_num @ 004c1af0
+  <- ive_check_lbp_param_user @ 0040738c
+  <- isp_check_bool_by_line @ 003d7ff4
+  <- vreg_exit @ 003d3dc8
+  <- isp_alg_register_ae @ 003f0458
+  <- aiv_mem_munmap @ 00499c34
+  <- aiv_frame_queue_get_free_node_num @ 004a3408
+  <- aiv_output_get_busy_node_num @ 0049ddd4
+  <- soap_tmd_GetAudioOutputConfiguration @ 002232f4
+  <- svp_npu_model_destroy_desc @ 004b8520
+  <- svp_npu_model_check_load_with_config_param @ 004c0728
+  <- ot_mpi_sys_set_mem_cfg @ 0039c4dc
+  <- mpi_isp_get_dehaze_attr @ 003e9250
+  <- FUN_004d9150 @ 004d9150
+  <- isp_nr_comm_attr_check @ 003e5750
+  <- svp_npu_model_get_dynamic_hw @ 004b48a4
+  <- FUN_0030ae12 @ 0030ae12
+  <- _build_fw_env_config @ 00329fd4
+  <- isp_proc_init @ 003d6b98
+  <- aiv_npu_acl_calc_aipp_mem @ 004a73b0
+  <- svp_npu_model_load_check_params @ 004b8b54
+  <- ot_mpi_vpss_set_chn_rotation @ 003a4e68
+  <- isp_sharpen_auto_attr_check @ 003e3f60
+  <- FUN_003dd54c @ 003dd54c
+  <- svp_npu_rt_impl_get_sq_mem @ 004cbb04
+  <- soap_tds_SetNTP @ 0021dd38
+  <- isp_ldci_buf_init @ 003cc7e4
+  <- ot_mpi_vpss_set_chn_crop @ 003a5128
+  <- ot_mpi_ao_enable_resample @ 004e3964
+  <- aiv_npu_sta_get_free_node @ 0049c290
+  <- aiv_src_vi_get_frame @ 0049fc74
+  <- svp_npu_model_load_from_mem @ 004b1238
+  <- mpi_isp_set_fpn_attr @ 003ece14
+  <- ot_mpi_vgs_add_rotation_task @ 003a1724
+  <- aiv_src_io_release_frame @ 004a66f4
+  <- ot_mpi_ai_get_track_mode @ 004e1264
+  <- ot_mpi_vb_pool_share @ 0039dc34
+  <- aiv_sink_fq_release_frame @ 004a6078
+  <- svp_acl_mdl_set_aipp_dtc_pixel_min @ 004ac6a8
+  <- ot_mpi_vgs_add_online_task @ 003a1984
+  <- sc200ai_get_standby_cfg @ 00435824
+  <- svp_npu_driver_free_resource_id @ 004adef0
+  <- svp_npu_model_get_each_hw @ 004b94f8
+  <- aiv_npu_sta_stop @ 0049b96c
+  <- aiv_ioctl_sink_enable @ 00497d24
+  <- ot_mpi_aibnr_set_thread_attr @ 0048b420
+  <- FUN_004088d0 @ 004088d0
+  <- FUN_004d9b48 @ 004d9b48
+  <- aibnr_mdl_proc @ 0048dbf8
+  <- isp_alg_register_awb @ 003f38fc
+  <- awb_check_handle @ 00411cd8
+  <- soap_trt_AddVideoEncoderConfiguration @ 0021fafc
+  <- soap_trt_CreateOSD @ 00220610
+  <- soap_trt_GetVideoSourceModes @ 00220c6c
+  <- ot_mpi_ive_alpha_blending @ 00403334
+  <- soap_trt_SetVideoEncoderConfiguration @ 00220160
+  <- FUN_004d3d14 @ 004d3d14
+  <- aiv_mem_free_mmz @ 00499230
+  <- svp_npu_model_unload @ 004b1bcc
+  <- svp_npu_model_read_beta_version @ 004c0a20
+  <- soap_tr2_GetAudioDecoderConfigurations @ 002253e8
+  <- isp_frame_cnt_get @ 003d58ac
+  <- ot_mpi_aibnr_load_model @ 0048bdf8
+  <- soap_tmd_SetRelayOutputSettings @ 002234f0
+  <- FUN_00348af8 @ 00348af8
+  <- ot_aacenc_frame @ 00514e20
+  <- svp_npu_prof_thread @ 004c818c
+  <- FUN_002894ce @ 002894ce
+  <- ot_mpi_vi_get_wdr_fusion_grp_attr @ 003a21a4
+  <- FUN_002f7e6a @ 002f7e6a
+  <- FUN_00309688 @ 00309688
+  <- aibnr_pipe_proc @ 004915d0
+  <- ot_scene_set_dynamic_venc_bitrate @ 002e476c
+  <- svp_npu_driver_alloc_resource_id @ 004add44
+  <- FUN_004b4e60 @ 004b4e60
+  <- mpi_isp_get_crosstalk_attr @ 003ec504
+  <- FUN_003fee24 @ 003fee24
+  <- sc235hai_linear_2m30_10bit_init @ 004280c4
+  <- svp_npu_dump_search_dump_info @ 004d0e24
+  <- FUN_004ea448 @ 004ea448
+  <- aiv_mem_mmap_cached @ 00499b90
+  <- svp_npu_model_dump_proc @ 004b2be0
+  <- soap_tds_GetNetworkProtocols @ 0021d890
+  <- svp_npu_model_read_layer_id @ 004c5524
+  <- isp_check_vreg_permission @ 003d8230
+  <- svp_npu_model_read_debug_info_num @ 004c63ac
+  <- svp_npu_model_read_output_batch_num @ 004c4ca8
+  <- aibnr_vdb_set_r_fact @ 00494624
+  <- aiv_split_get_input_offset @ 004a0094
+  <- svp_npu_driver_dev_init @ 004ad9e0
+  <- svp_npu_model_get_config_opt @ 004b3268
+  <- soap_tmd_SetSerialPortConfiguration @ 00223908
+  <- FUN_0039ce04 @ 0039ce04
+  <- ot_confaccess_set_string @ 0031778c
+  <- isp_sharpen_manual_attr_check @ 003e4328
+  <- scene_set_isp_drc_attr @ 002ec53a
+  <- aiv_input_get_tail_node @ 00495fd4
+  <- svp_npu_model_security_unload @ 004b8c14
+  <- aiv_isp_set_ynet_cfg @ 00498898
+  <- svp_npu_model_read_input_id @ 004c2a84
+  <- FUN_004a3b70 @ 004a3b70
+  <- FUN_002ff274 @ 002ff274
+  <- FUN_004e2464 @ 004e2464
+  <- FUN_003ca0cc @ 003ca0cc
+  <- svp_npu_runtime_impl_create_ctx @ 004cc590
+  <- soap_trt_GetAudioSources @ 002210b0
+  <- cis_write_reg @ 00423870
+  <- FUN_003128ba @ 003128ba
+  <- mpi_svp_npu_prof_update_info @ 004c6fe4
+  <- aiv_npu_sta_submit_node @ 0049c70c
+  <- FUN_00303208 @ 00303208
+  <- ot_mpi_isp_fpn_calibrate @ 003db558
+  <- aiv_frame_queue_get_free_node @ 004a3078
+  <- DL_audio_vqe_dlclose @ 004ed060
+  <- ive_check_stride_user @ 004061f8
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 003d9e68
+  <- FUN_003ef56c @ 003ef56c
+  <- FUN_004ee7c8 @ 004ee7c8
+  <- aiv_agent_register_model @ 00495610
+  <- svp_npu_model_read_layer_name @ 004c56f0
+  <- mpi_isp_set_saturation_attr @ 0040c778
+  <- ot_mpi_sys_mem_unshare @ 003a7fe4
+  <- aiv_npu_submit_task @ 0049b1b0
+  <- svp_npu_driver_query_status @ 004af04c
+  <- soap_tmd_GetAudioOutputConfigurationOptions @ 00223388
+  <- soap_tmd_GetDigitalInputs @ 00223630
+  <- aiv_mem_release_blk_in_frame @ 00499474
+  <- mpi_isp_set_drc_blend @ 003dc28c
+  <- soap_img_Stop @ 0021f4e8
+  <- ive_check_filter_and_csc_param_user @ 00406614
+  <- svp_npu_model_check_aicpu_lib_version @ 004bde34
+  <- ot_mpi_ive_canny_edge @ 00404d00
+  <- svp_npu_runtime_impl_free_model_id @ 004cd9ec
+  <- aiv_npu_unload @ 0049adb8
+  <- iw_check_if_addr_type @ 003428cc
+  <- isp_alg_register_dehaze @ 00416a5c
+  <- aiv_agent_enable_pipe @ 00495214
+  <- FUN_003cb124 @ 003cb124
+  <- mpi_sys_bind_send_data @ 003a70d4
+  <- svp_npu_runtime_query_status @ 004cb0b0
+  <- FUN_004e273c @ 004e273c
+  <- soap_trt_RemoveAudioEncoderConfiguration @ 00221014
+  <- isp_alg_register_frame_wdr @ 003fa7e4
+  <- aiv_frame_queue_put_busy_node @ 004a3314
+  <- FUN_00302ebe @ 00302ebe
+  <- soap_ptz_GetServiceCapabilities @ 00221fd4
+  <- ot_mpi_aibnr_get_input_frame @ 0048c468
+  <- svp_npu_model_read_input_csc_out_bias_info @ 004c4140
+  <- isp_crosstalk_attr_check @ 003e64dc
+  <- FUN_003e3ce4 @ 003e3ce4
+  <- ot_mpi_ive_dma @ 00402464
+  <- ot_mpi_ive_sobel @ 00402848
+  <- aiv_agent_callback_success @ 004a1fc0
+  <- FUN_004d63a0 @ 004d63a0
+  <- sc200ai_vc_wdr_2t1_2m30_10bit_init @ 00435794
+  <- isp_reg_cfg_info_set @ 003d2e70
+  <- svp_npu_model_read_cube_ops @ 004c1388
+  <- FUN_0034cca6 @ 0034cca6
+  <- aiv_sink_acquire @ 0049e9dc
+  <- aiv_agent_monitor_enable_pipe @ 004a2d4c
+  <- isp_sharpen_common_attr_arch_check @ 00401210
+  <- FUN_00413adc @ 00413adc
+  <- FUN_004ea3b4 @ 004ea3b4
+  <- _zbar_qr_destroy @ 00350ae6
+  <- soap_trt_GetAudioEncoderConfigurations @ 002210f0
+  <- FUN_004cbba8 @ 004cbba8
+  <- aiv_mem_attach_pool @ 0049a0cc
+  <- ot_mpi_vgs_add_corner_rect_task @ 003a18b0
+  <- aiv_npu_sta_set_attr @ 0049bb9c
+  <- aiv_isp_set_normal_blend_status @ 00498498
+  <- aiv_cond_signal @ 0049e8e4
+  <- soap_trt_GetAudioDecoderConfiguration @ 00221738
+  <- ot_mpi_sys_get_mem_info_by_virt @ 003a8140
+  <- audio_upvqe_read_frame @ 004ebd10
+  <- FUN_0049b374 @ 0049b374
+  <- svp_npu_model_read_item_value_size @ 004bc9a0
+  <- ot_scene_set_rc_param @ 002e61d8
+  <- upvqe_read_frame @ 004eb1b4
+  <- aibnr_mdl_query_list @ 0048e230
+  <- aiv_input_query_head_node @ 004960e8
+  <- aiv_npu_get_work_buf @ 0049d924
+  <- aibnr_pipe_user_enable @ 004912ec
+  <- soap_ptz_ContinuousMove @ 002223b0
+  <- soap_ptz_RemovePresetTour @ 00222d18
+  <- svp_npu_model_check_dynamic_batch_size @ 004bf754
+  <- FUN_002d9e7c @ 002d9e7c
+  <- svp_npu_model_read_input_data_type @ 004c3124
+  <- ive_check_w_and_h_user @ 0040624c
+  <- ot_mpi_sys_get_custom_code @ 0039c994
+  <- sc635hai_slave_linear_6m30_10bit_init @ 0043997c
+  <- svp_npu_create_data_buffer @ 004ad640
+  <- FUN_003a6664 @ 003a6664
+  <- FUN_0030766a @ 0030766a
+  <- ot_mpi_aenc_get_stream_buf_info @ 004d784c
+  <- cis_register_callback @ 0042341c
+  <- FUN_003a65ac @ 003a65ac
+  <- ot_mpi_ive_sub @ 00403070
+  <- ot_mpi_ai_set_pub_attr @ 004d9724
+  <- onvif_probe_err_rly @ 00244f7c
+  <- soap_img_GetServiceCapabilities @ 0021f0a0
+  <- ot_mpi_ive_threshold @ 00402dd8
+  <- ot_mpi_venc_get_sse_rgn @ 003a04f8
+  <- FUN_00305da8 @ 00305da8
+  <- isp_alg_register_bayer_nr @ 0041d6c0
+  <- svp_npu_model_get_output_aipp_type @ 004b4354
+  <- ot_scene_set_static_pregamma @ 002dfbd6
+  <- FUN_0034e322 @ 0034e322
+  <- aibnr_fw_get_thread_attr @ 0048cd68
+  <- FUN_003c8978 @ 003c8978
+  <- svp_npu_start_parse_json_data @ 004afbb4
+  <- svp_npu_model_read_variance_num @ 004c2414
+  <- FUN_004a1f74 @ 004a1f74
+  <- aiv_npu_register_model @ 0049ae1c
+  <- ive_check_get_perspective_transform_param_user @ 00407d98
+  <- aiv_input_get_free_node_num @ 00496224
+  <- mpi_isp_set_gamma_attr @ 003eaf94
+  <- FUN_00430b30 @ 00430b30
+  <- soap_trt_CreateProfile @ 0021f874
+  <- aiv_npu_tq_destroy @ 0049ced0
+  <- soap_tds_GetDiscoveryMode @ 0021da64
+  <- mpi_isp_set_ccm_attr @ 0040c304
+  <- isp_get_fe_reg_virt_addr_base @ 003d4144
+  <- ot_mpi_ai_get_raw_frame @ 004e0d1c
+  <- isp_check_pipe @ 003d802c
+  <- FUN_0049b4e4 @ 0049b4e4
+  <- isp_mem_share_all_vreg @ 003d4750
+  <- aiv_ioctl_fq_source_release_frame @ 00497374
+  <- isp_ca_attr_arch_check @ 00401888
+  <- ot_confaccess_deinit @ 00316f22
+  <- audio_upvqe_set_volume @ 004ebd84
+  <- ive_check_integ_param_user @ 00406bfc
+  <- svp_npu_model_read_layer_type_name @ 004c642c
+  <- aiv_listener_init @ 00498af8
+  <- svp_npu_model_set_input_aipp_data @ 004b3fec
+  <- aibnr_vdb_get_r_fact @ 00494684
+  <- ot_scene_set_static_ldci @ 002dd9e4
+  <- soap_tmd_GetVideoOutputs @ 002230ac
+  <- soap_trt_RemoveVideoEncoderConfiguration @ 0021fb9c
+  <- svp_npu_model_read_output_aipp_mode @ 004c4d68
+  <- FUN_004e2900 @ 004e2900
+  <- FUN_0034ceb0 @ 0034ceb0
+  <- svp_acl_mdl_set_aipp_by_input_index @ 004ad19c
+  <- ot_mpi_ive_mag_and_ang @ 004029c4
+  <- svp_npu_runtime_get_device @ 004ca954
+  <- soap_tr2_GetOSDOptions @ 00224888
+  <- upvqe_process_extend_vqe @ 004edc1c
+  <- FUN_003f1158 @ 003f1158
+  <- isp_get_fe_vir_addr @ 003ccdfc
+  <- svp_npu_mem_free_host @ 004b0914
+  <- soap_tds_GetServices @ 0021d440
+  <- aiv_check_mem_info @ 004a0124
+  <- svp_npu_prof_subscribe_get_op_name @ 004c9a90
+  <- aiv_output_get_tail_node @ 0049dbe0
+  <- soap_img_SetCurrentPreset @ 0021f69c
+  <- ot_mpi_adec_send_end_of_stream @ 004d6170
+  <- aiv_mem_detach_pool @ 0049a284
+  <- ot_mpi_sys_mem_unshare_all @ 003a80dc
+  <- svp_npu_model_destory_config_handle @ 004b8f1c
+  <- isp_alg_register_ge @ 003fbcd4
+  <- soap_tmd_GetRelayOutputs @ 0022341c
+  <- FUN_0040eb1c @ 0040eb1c
+  <- aiv_mem_zalloc_mmz @ 004990cc
+  <- svp_npu_mdl_trans_aipp_format @ 004ba2ec
+  <- isp_all_cfgs_be_buf_init @ 003ccd74
+  <- ot_mpi_rgn_batch_begin @ 0039bf88
+  <- build_tr2_GetStreamUri_rly_xml @ 00244024
+  <- dnvqe_process_frame @ 004ef4e4
+  <- svp_npu_model_read_layer_input_idx @ 004c5968
+  <- FUN_004d4104 @ 004d4104
+  <- ot_mpi_ao_enable @ 004e32ac
+  <- ot_mpi_vgs_add_luma_task @ 003a17dc
+  <- soap_ptz_GetPresetTour @ 002229e4
+  <- FUN_002d80bc @ 002d80bc
+  <- svp_npu_model_read_tmp_buf_size @ 004c0b88
+  <- soap_tmd_GetVideoOutputConfiguration @ 002230ec
+  <- isp_dbg_reg_set @ 003df5b0
+  <- aiv_npu_svp_prepare @ 004a49f4
+  <- FUN_003080d2 @ 003080d2
+  <- isp_block_init @ 003df40c
+  <- FUN_003e7a7c @ 003e7a7c
+  <- svp_npu_model_get_desc @ 004b0a04
+  <- aiv_npu_mdl_unload @ 004a5864
+  <- isp_get_be_last_buf @ 003ccc68
+  <- sc635hai_linear_6m30_10bit_init @ 00432f80
+  <- ive_check_st_corner_param_user @ 004075f8
+  <- FUN_0034c6dc @ 0034c6dc
+  <- ive_check_map_param_user @ 00407c24
+  <- mpi_isp_set_crosstalk_attr @ 003ec3f0
+  <- svp_npu_model_read_output_width @ 004c44b0
+  <- isp_dbg_reg_get @ 003df7f8
+  <- FUN_0042a6f4 @ 0042a6f4
+  <- svp_npu_model_read_input_aipp_width @ 004c3b70
+  <- FUN_0041e9f0 @ 0041e9f0
+  <- ot_scene_set_static_nr @ 002de5e8
+  <- svp_npu_model_set_prof_addr_and_stride @ 004b5f30
+  <- FUN_0031aaac @ 0031aaac
+  <- FUN_0034c5f6 @ 0034c5f6
+  <- FUN_0039c0b0 @ 0039c0b0
+  <- FUN_0027786e @ 0027786e
+  <- aiv_npu_sta_get_link_num @ 0049c218
+  <- FUN_0048f88c @ 0048f88c
+  <- FUN_003a5c54 @ 003a5c54
+  <- WriteConfigInfo @ 0017180c
+  <- svp_npu_model_destroy_dataset @ 004b85b4
+  <- FUN_003a672c @ 003a672c
+  <- aibnr_sink_enable @ 004921fc
+  <- FUN_003f41a4 @ 003f41a4
+  <- svp_npu_driver_subscribe_report @ 004ae970
+  <- FUN_00316702 @ 00316702
+  <- FUN_0030b0f4 @ 0030b0f4
+  <- ive_check_filter_param_user @ 00406504
+  <- ot_mpi_ive_lk_optical_flow_pyr @ 00405568
+  <- aiv_npu_acl_get_input_aipp_num @ 004a7200
+  <- soap_tr2_SetSynchronizationPoint @ 00224560
+  <- ot_mpi_ive_add @ 00404228
+  <- FUN_004b4d74 @ 004b4d74
+  <- ot_mpi_isp_exit @ 003d9328
+  <- mpi_isp_set_demosaic_attr @ 003ec708
+  <- ot_scene_set_scene_mode @ 002db0f2
+  <- FUN_003c90e8 @ 003c90e8
+  <- soap_trt_StartMulticastStreaming @ 00220754
+  <- aiv_mem_get_blk_size @ 00499a84
+  <- svp_npu_mem_get_virt_mem_info @ 004b0328
+  <- FUN_004d6694 @ 004d6694
+  <- aiv_src_set_attr @ 004a6258
+  <- FUN_003a1c74 @ 003a1c74
+  <- isp_reg_cfg_info_init @ 003d2b48
+  <- aiv_agent_proc_entry @ 00495770
+  <- isp_alg_register_ldci @ 0041af40
+  <- ive_check_lk_optial_flow_pyr_in_param_user @ 00407ac8
+  <- ot_mpi_ao_disable_vqe @ 004e6238
+  <- soap_tr2_SetMask @ 00224c7c
+  <- svp_npu_model_read_header @ 004bcb48
+  <- FUN_0040611c @ 0040611c
+  <- FUN_003497a8 @ 003497a8
+  <- sc635hai_vc_wdr_2t1_6m30_10bit_init @ 00433010
+  <- soap_trt_AddAudioSourceConfiguration @ 00220e38
+  <- FUN_002d857a @ 002d857a
+  <- mpi_isp_usr_set_mesh_shading_lut_attr @ 003eb98c
+  <- isp_expander_attr_update @ 003dec64
+  <- aiv_sink_fq_enable @ 004a5d74
+  <- soap_tds_GetEndpointReference @ 0021e10c
+  <- ot_mpi_venc_set_sse_rgn @ 003a0480
+  <- FUN_003a42b8 @ 003a42b8
+  <- ot_mpi_ai_release_raw_frame @ 004e0f58
+  <- ot_mpi_ao_save_file @ 004e6420
+  <- ot_mpi_ai_disable_aec_ref_frame @ 004e17bc
+  <- isp_ae_stats_weight_config_check @ 003de61c
+  <- FUN_002dafdc @ 002dafdc
+  <- svp_npu_prof_subscribe_init @ 004c934c
+  <- ot_mpi_ive_sad @ 00405348
+  <- svp_npu_model_read_layer_info_num @ 004c2538
+  <- soap_ptz_GetConfiguration @ 002221f0
+  <- aibnr_tnr_fill_param @ 004936f4
+  <- ot_mpi_isp_get_vd_time_out @ 003da134
+  <- svp_npu_model_read_aicpu_inner_buf_size @ 004c2748
+  <- ot_mpi_ai_disable_resample @ 004db5f8
+  <- FUN_002faf4a @ 002faf4a
+  <- FUN_0030bb1c @ 0030bb1c
+  <- mpi_isp_set_nr_attr @ 003ebf44
+  <- svp_npu_prof_subscribe_get_op_type_len @ 004c9818
+  <- isp_check_mem_init_func @ 003d8198
+  <- svp_npu_model_set_model_config @ 004b302c
+  <- soap_trt_GetVideoEncoderConfiguration @ 0021fd50
+  <- FUN_003f2d04 @ 003f2d04
+  <- FUN_00490b88 @ 00490b88
+  <- isp_mem_unshare_all_vreg @ 003d48a4
+  <- ive_check_erode_param_user @ 00406928
+  <- svp_acl_mdl_set_aipp_pixel_var_reci @ 004ac9a8
+  <- soap_tr2_CreateMask @ 00224aa0
+  <- soap_ptz_GetPresetTourOptions @ 00222a78
+  <- FUN_004d652c @ 004d652c
+  <- aiv_proc_routine @ 0049e0a4
+  <- ot_mpi_ae_unregister @ 003b21e4
+  <- svp_npu_mdl_fill_output_aipp_data_buf @ 004bc3ac
+  <- ot_mpi_ae_sensor_reg_callback @ 003b22cc
+  <- isp_set_pipe_differ_attr @ 003de4a0
+  <- ot_mpi_awb_sensor_unreg_callback @ 00414480
+  <- svp_npu_dump_set_cfg @ 004d02a4
+  <- sc2331_linear_2m30_10bit_init @ 004231ec
+  <- drc_proc_write @ 0041871c
+  <- sc635hai_slave_vc_wdr_2t1_6m30_10bit_init @ 00439abc
+  <- aibnr_mdl_set_attr @ 0048e308
+  <- soap_ptz_AbsoluteMove @ 00222450
+  <- isp_check_ir_auto_attr @ 003e7300
+  <- mpi_isp_get_drc_blend @ 003dc530
+  <- soap_trt_GetCompatibleAudioEncoderConfigurations @ 00221130
+  <- ot_scene_set_static_pipe_diff @ 002dc960
+  <- _zbar_decode_code128 @ 0034d700
+  <- aiv_npu_tq_put_busy_node @ 0049d31c
+  <- aiv_src_slv_plugin_release_frame @ 0049fa4c
+  <- FUN_002d94a2 @ 002d94a2
+  <- soap_tr2_SetVideoEncoderConfiguration @ 00224058
+  <- svp_npu_model_fill_task_buf @ 004b7734
+  <- isp_unshare_mem @ 003d4c40
+  <- ot_mpi_adec_release_frame @ 004d5c44
+  <- FUN_004a7c5c @ 004a7c5c
+  <- ot_mpi_ao_get_fd @ 004e4f90
+  <- ot_mpi_isp_get_dcf_info @ 003da44c
+  <- svp_acl_mdl_set_aipp_csc_params @ 004ab0bc
+  <- aiv_frame_queue_get_busy_node @ 004a314c
+  <- isp_sensor_ctx_init @ 003d7278
+  <- ot_mpi_ai_get_chn_param @ 004e113c
+  <- soap_tds_SetSystemFactoryDefault @ 0021d270
+  <- aiv_mem_get_blk_in_frame @ 004997c0
+  <- svp_npu_mdl_impl_get_aipp_setted_input_dims @ 004b9cdc
+  <- FUN_0034f20e @ 0034f20e
+  <- aiv_npu_sta_register_model @ 0049bd24
+  <- svp_npu_mdl_get_input_info_by_aipp_node_index @ 004b97f0
+  <- aiv_npu_mdl_get_desc @ 004a5a4c
+  <- svp_npu_model_read_instr_num @ 004c194c
+  <- soap_img_GetOptions @ 0021f24c
+  <- isp_csc_reg_update @ 003f61b4
+  <- svp_npu_prof_save_stop @ 004c8efc
+  <- ot_mpi_isp_init @ 003d85e8
+  <- aibnr_source_get_frame @ 00492854
+  <- FUN_0031a590 @ 0031a590
+  <- svp_npu_driver_get_model_id @ 004ade54
+  <- ot_scene_set_scene_init_exp @ 002db4e4
+  <- mpi_isp_set_cac_attr @ 003ebd68
+  <- ive_check_threshold_param_user @ 004069b0
+  <- isp_dehaze_attr_check @ 003e5ff0
+  <- FUN_003c8fb8 @ 003c8fb8
+  <- ot_mpi_aibnr_get_output_frame @ 0048c590
+  <- mpi_ive_md_proc_init @ 00405ffc
+  <- FUN_0034ec10 @ 0034ec10
+  <- aiv_npu_mdl_load @ 004a56c8
+  <- aiv_sink_fq_get_frame @ 004a5fe0
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 003d9d3c
+  <- FUN_003ca674 @ 003ca674
+  <- aiv_clear_mem_info @ 004a01c4
+  <- aiv_mem_vb_add @ 0049a444
+  <- svp_npu_runtime_impl_execute_model @ 004cde24
+  <- soap_tr2_GetOSDs @ 002248c8
+  <- svp_npu_model_read_layer_output_idx @ 004c5a90
+  <- FUN_0039e390 @ 0039e390
+  <- soap_tds_GetSystemUris @ 0021cf8c
+  <- aiv_mem_flush_cache @ 0049a384
+  <- ot_mpi_sys_get_mem_info_by_phys @ 003a8234
+  <- FUN_0039e3c8 @ 0039e3c8
+  <- soap_trt_DeleteOSD @ 002206b4
+  <- ot_mpi_ao_disable_chn @ 004e36a0
+  <- FUN_002da7b6 @ 002da7b6
+  <- FUN_00347290 @ 00347290
+  <- isp_exit @ 003d6568
+  <- svp_npu_prof_subscribe_get_op_num @ 004c96f8
+  <- svp_npu_runtime_impl_subscribe_report @ 004cc288
+  <- ot_scene_set_static_wdr_exposure @ 002dbe08
+  <- FUN_003eddb4 @ 003eddb4
+  <- isp_trans_info_init @ 003e3d84
+  <- ot_mpi_vb_init_mod_common_pool @ 0039d6f8
+  <- svp_npu_model_read_layer_num @ 004c5378
+  <- ot_mpi_ai_disable_vqe @ 004e0628
+  <- mpi_isp_set_anti_false_color_attr @ 003ec604
+  <- ot_mpi_adec_unregister_decoder @ 004d4978
+  <- FUN_0049b238 @ 0049b238
+  <- svp_npu_model_read_image_size_num @ 004c10e0
+  <- aibnr_task_set_frame_flag @ 00492fd8
+  <- svp_npu_model_read_item @ 004bcfcc
+  <- svp_npu_model_get_aicpu_param_info @ 004b8cdc
+  <- soap_tr2_DeleteMask @ 00224b48
+  <- ive_check_ord_stat_filter_param_user @ 00406eb0
+  <- ot_mpi_awb_unregister @ 004142bc
+  <- soap_tds_CreateUsers @ 0021e18c
+  <- ae_check_pointer @ 003ae960
+  <- audio_vqe_check_module_handle @ 004ec4fc
+  <- FUN_003c888c @ 003c888c
+  <- aiv_ioctl_vdb_init @ 0049687c
+  <- FUN_004da80c @ 004da80c
+  <- svp_npu_model_read_build_info @ 004c0b08
+  <- _log_print @ 0054ab0c
+  <- ot_mpi_ive_order_stats_filter @ 004040dc
+  <- FUN_0048ed5c @ 0048ed5c
+  <- ldci_proc_write @ 0041acb8
+  <- aiv_npu_acl_destroy_dataset_pool @ 004a7d58
+  <- svp_npu_runtime_execute_model @ 004cadec
+  <- ot_mpi_aenc_get_mute @ 004d8794
+  <- aiv_npu_link_disconnect @ 004a53dc
+  <- svp_npu_model_read_is_recurrent_cont_enable @ 004c1df4
+  <- isp_expander_attr_check @ 003e6c94
+  <- svp_npu_runtime_subscribe_report @ 004ca3b4
+  <- FUN_004c6cb0 @ 004c6cb0
+  <- aiv_src_vi_enable @ 0049fb64
+  <- FUN_003f921c @ 003f921c
+  <- svp_npu_runtime_sync_stream @ 004cac0c
+  <- soap_tds_GetSystemLog @ 0021d2f8
+  <- FUN_002f8c22 @ 002f8c22
+  <- awb_check_lib_name @ 00411de4
+  <- FUN_00432eb8 @ 00432eb8
+  <- ive_check_hist_param_user @ 00406c8c
+  <- dehaze_proc_write @ 0041544c
+  <- FUN_002de0da @ 002de0da
+  <- ot_scene_set_static_awb @ 002dc0d8
+  <- svp_npu_model_check_axi_attr @ 004b9068
+  <- soap_ptz_GetPresetTours @ 00222950
+  <- isp_bayernr_param_init @ 0041ba14
+  <- FUN_004c9e44 @ 004c9e44
+  <- aibnr_arch_check_attr_manual_tnr @ 0048c784
+  <- FUN_002de31c @ 002de31c
+  <- aiv_npu_svp_submit @ 004a4c50
+  <- FUN_004e29a8 @ 004e29a8
+  <- svp_npu_prof_save_exit @ 004c8ccc
+  <- aiv_agent_acquire @ 00494c0c
+  <- FUN_002ff7e4 @ 002ff7e4
+  <- mpi_vpp_set_chn_rotation @ 003a5ed0
+  <- ot_mpi_ai_get_talk_vqe_v2_attr @ 004dd2a8
+  <- FUN_00345aa0 @ 00345aa0
+  <- aibnr_nlc_run @ 004a15e4
+  <- aiv_npu_sta_unregister_model @ 0049bea0
+  <- svp_npu_model_get_first_aipp_info @ 004b3aa4
+  <- FUN_004ec0bc @ 004ec0bc
+  <- soap_tmd_SetVideoOutputConfiguration @ 00223180
+  <- aiv_vdb_exit @ 004a0660
+  <- aiv_npu_acl_get_output_aipp_num @ 004a72d8
+  <- svp_npu_driver_is_soc_support_transformer @ 004adc24
+  <- svp_npu_get_data_buffer_addr @ 004ad788
+  <- ot_mpi_ai_query_file_status @ 004e13e8
+  <- get_command_func @ 00338554
+  <- aiv_mem_unshare_pool @ 0049a058
+  <- svp_npu_model_run_aicpu_func_secure @ 004b2af4
+  <- FUN_0034f464 @ 0034f464
+  <- svp_npu_prof_save_start @ 004c8d74
+  <- FUN_002da162 @ 002da162
+  <- svp_npu_model_read_layer_infos_prof_layer_id @ 004c687c
+  <- isp_user_black_level_en_check @ 003e6450
+  <- FUN_002f998c @ 002f998c
+  <- ive_check_mag_and_ang_param_user @ 004067ac
+  <- aibnr_mdl_deinit @ 0048d7bc
+  <- ot_mpi_ao_clr_chn_buf @ 004e472c
+  <- mpi_ai_chn_get_frm_proc @ 004da68c
+  <- FUN_003fb0bc @ 003fb0bc
+  <- FUN_0041bf08 @ 0041bf08
+  <- mpi_isp_usr_set_mesh_shading_attr @ 003eb83c
+  <- svp_npu_model_get_last_aipp_info @ 004b41ec
+  <- soap_tds_SetDNS @ 0021db78
+  <- svp_npu_runtime_impl_set_device @ 004cd050
+  <- soap_trt_AddAudioEncoderConfiguration @ 00220f74
+  <- FUN_003ae998 @ 003ae998
+  <- mpi_isp_enable_aiisp @ 003dbff0
+  <- aibnr_vdb_get_b_fact @ 00494780
+  <- aiv_npu_mdl_submit_node @ 004a5c5c
+  <- ot_mpi_isp_ae_lib_reg_callback @ 003d98e8
+  <- aiv_ioctl_fq_sink_create @ 00497440
+  <- mpi_isp_set_black_level_attr @ 003eca78
+  <- ot_mpi_aibnr_set_model_attr @ 0048c20c
+  <- FUN_002fa1fa @ 002fa1fa
+  <- isp_mem_init_update_ctx @ 003d4e4c
+  <- svp_npu_mdl_impl_get_aipp_setted_output_dims @ 004b9e50
+  <- mpi_isp_set_dciris_attr @ 003abaa8
+  <- mpi_isp_set_fmw_state @ 003e8e64
+  <- ot_mpi_ive_ccl @ 004048e8
+  <- aibnr_nlc_deinit @ 004a155c
+  <- isp_alg_stats_buf_exit @ 003cc9c8
+  <- svp_npu_math_fp32_to_fp16 @ 004b0198
+  <- ot_mpi_isp_set_bind_attr @ 003d9f94
+  <- soap_trt_AddPTZConfiguration @ 00221e60
+  <- FUN_0041aba0 @ 0041aba0
+  <- smt_demo_end_indicate @ 0033feb8
+  <- utl_fcfg_flush @ 00326298
+  <- FUN_003a690c @ 003a690c
+  <- svp_npu_model_read_output_aipp_channel @ 004c5034
+  <- audio_dnvqe_write_frame @ 004ef054
+  <- aiv_ioctl_fq_sink_destroy @ 00497504
+  <- FUN_004e2290 @ 004e2290
+  <- FUN_004d6300 @ 004d6300
+  <- ot_mpi_isp_get_sns_slave_attr @ 003d974c
+  <- FUN_003efa4c @ 003efa4c
+  <- aiv_agent_set_attr @ 0049548c
+  <- svp_npu_prof_subscribe_prestart @ 004c9018
+  <- aibnr_pipe_set_attr @ 00491068
+  <- mpi_isp_usr_get_mesh_shading_lut_attr @ 003eba4c
+  <- FUN_004a38d8 @ 004a38d8
+  <- scene_set_nr_attr_para @ 002eeb18
+  <- mpi_sys_bind_register_sender @ 003a6e9c
+  <- scene_set_tone_mapping_value @ 002ebf02
+  <- aiv_isp_set_drc_blend @ 00498770
+  <- imx662_hcg_set @ 0042eba0
+  <- ot_scene_init @ 002dae44
+  <- soap_trt_SetAudioEncoderConfiguration @ 00221524
+  <- FUN_002f68f4 @ 002f68f4
+  <- ot_mpi_aibnr_exit @ 0048b374
+  <- soap_tds_SetDynamicDNS @ 0021dc58
+  <- soap_trt_SetMetadataConfiguration @ 00220a8c
+  <- utl_write_interface @ 0031b888
+  <- isp_alg_register_af @ 003f106c
+  <- isp_run @ 003d5e94
+  <- svp_npu_parse_json_init @ 004afcc4
+  <- soap_trt_GetMetadataConfiguration @ 002208cc
+  <- FUN_0034de30 @ 0034de30
+  <- svp_npu_runtime_impl_sync_stream @ 004cce48
+  <- soap_trt_GetCompatibleVideoSourceConfigurations @ 002200bc
+  <- FUN_00308dda @ 00308dda
+  <- aiv_ioctl_source_enable @ 004979d4
+  <- sc450ai_vc_wdr_2t1_5m30_10bit_init @ 0042cf5c
+  <- aiv_npu_sta_unregister_link @ 0049c0f0
+  <- svp_npu_prof_check_subscribe_index @ 004c978c
+  <- aiv_npu_get_free_task @ 0049b0a0
+  <- aiv_ioctl_proc_writing @ 00496704
+  <- svp_npu_model_read_is_nms_enable @ 004c1f74
+  <- FUN_00313732 @ 00313732
+  <- soap_tr2_SetAudioEncoderConfiguration @ 00225188
+  <- aiv_ioctl_fq_sink_set_depth @ 004975c8
+  <- upvqe_create @ 004eda54
+  <- svp_npu_model_check_get_config_opt_param @ 004c04bc
+  <- ot_mpi_aibnr_enable @ 0048b574
+  <- soap_img_Move @ 0021f3a0
+  <- soap_trt_GetAudioSourceConfiguration @ 0022133c
+  <- isp_alg_register_mcds @ 003fd284
+  <- svp_npu_model_read_output_aipp_width @ 004c4e74
+  <- mpi_svp_npu_get_aicore_freq @ 004c6ecc
+  <- aibnr_source_init @ 00492468
+  <- cmos_sc235hai_set_custom_i2c_addr @ 00427ec4
+  <- ot_mpi_ai_enable_aec_ref_frame @ 004e15d8
+  <- aiv_check_cpu_core_id @ 004a0264
+  <- svp_npu_model_check_aicpu_security @ 004b2b3c
+  <- ot_ivs_md_init @ 00408990
+  <- aiv_ioctl_fq_sink_get_frame @ 004977d8
+  <- isp_mesh_shading_attr_check @ 003e666c
+  <- aiv_npu_svp_unload @ 004a48cc
+  <- svp_npu_runtime_set_device @ 004ca844
+  <- svp_npu_model_read_layer_data_type @ 004c5b9c
+  <- isp_anti_false_color_attr_check @ 003e6258
+  <- ot_mpi_ao_get_chn_delay @ 004e49c0
+  <- svp_npu_resource_init @ 004af0d0
+  <- svp_npu_model_get_aicpu_func_and_param_info @ 004b2a00
+  <- sample_common_ive_create_mem_info @ 00288daa
+  <- svp_npu_model_read_input_offline_crop_size @ 004c39f0
+  <- FUN_003a13f4 @ 003a13f4
+  <- FUN_003f7548 @ 003f7548
+  <- svp_npu_update_data_buffer @ 004ad830
+  <- soap_trt_RemoveMetadataConfiguration @ 00220bd0
+  <- aiv_ioctl_sink_disable @ 00497de8
+  <- FUN_004e2028 @ 004e2028
+  <- ot_scene_get_scene_mode @ 002db42c
+  <- aiv_ioctl_vb_sub @ 00496cd8
+  <- svp_npu_model_read_input_aipp_height @ 004c3c50
+  <- soap_tmd_GetVideoSources @ 00223ab8
+  <- FUN_00411d18 @ 00411d18
+  <- soap_trt_AddMetadataConfiguration @ 00220b30
+  <- cis_i2c_exit @ 00423818
+  <- svp_npu_resource_finalize @ 004af2fc
+  <- aiv_src_vi_release_frame @ 0049fd98
+  <- svp_npu_model_read_net_id @ 004c160c
+  <- FUN_004ed0a0 @ 004ed0a0
+  <- soap_tds_GetNetworkInterfaces @ 0021d13c
+  <- FUN_00436ef4 @ 00436ef4
+  <- FUN_0048f93c @ 0048f93c
+  <- aiv_npu_mdl_register @ 004a5910
+  <- svp_npu_model_get_inout_dims @ 004b2144
+  <- soap_trt_AddAudioDecoderConfiguration @ 00221658
+  <- ot_scene_run_once @ 002dab2c
+  <- aiv_npu_mdl_unregister @ 004a59c0
+  <- FUN_004d65d4 @ 004d65d4
+  <- ot_mpi_ive_filter @ 004025b8
+  <- aibnr_pipe_disable_all @ 00491568
+  <- svp_npu_model_get_inout_name_by_idx @ 004b2294
+  <- md_check_attr @ 0040a7e4
+  <- aiv_mem_zalloc @ 00498eb8
+  <- svp_npu_model_read_output_data_type @ 004c4814
+  <- FUN_004cb128 @ 004cb128
+  <- isp_ldci_attr_check @ 003e5acc
+  <- soap_ptz_CreatePresetTour @ 00222b2c
+  <- ot_mpi_ao_set_vqe_attr @ 004e5010
+  <- aiv_check_bind_cpu_core_id @ 004a02ac
+  <- aibnr_noise_get_profile @ 004a6f40
+  <- soap_trt_GetMetadataConfigurations @ 0022088c
+  <- zbar_scan_image @ 003461d4
+  <- FUN_003f4928 @ 003f4928
+  <- FUN_003503b4 @ 003503b4
+  <- ive_check_sobel_param_user @ 0040669c
+  <- isp_fswdr_attr_check @ 003e5c84
+  <- audio_dnvqe_read_frame @ 004eedfc
+  <- FUN_003a5d64 @ 003a5d64
+  <- FUN_004ec614 @ 004ec614
+  <- isp_mem_info_set @ 003d50ac
+  <- aiv_npu_register_work_buf @ 0049d714
+  <- ot_mpi_aenc_set_mute @ 004d8660
+  <- ot_mpi_aibnr_query_status @ 0048b678
+  <- FUN_00312e2a @ 00312e2a
+  <- ot_scene_set_dynamic_fps @ 002e0796
+  <- soap_tds_SetNetworkProtocols @ 0021d8d0
+  <- sample_common_ive_dma_image @ 00288e66
+  <- soap_tr2_CreateProfile @ 00223c08
+  <- svp_npu_model_check_model_desc @ 004bff44
+  <- mpi_sys_bind @ 003a6a18
+  <- svp_npu_model_read_mapper_arch @ 004c0918
+  <- FUN_004a3afc @ 004a3afc
+  <- FUN_003a1cb4 @ 003a1cb4
+  <- ot_mpi_venc_get_stream @ 0039ecd0
+  <- svp_npu_model_get_reuse_buffer_type @ 004b0c04
+  <- aiv_isp_get_isp_dgain_enable @ 00498374
+  <- svp_npu_model_add_dataset_buffer @ 004b0f04
+  <- soap_tds_GetZeroConfiguration @ 0021ddd8
+  <- svp_npu_dump_add_layer_node_to_list @ 004d0b78
+  <- svp_npu_driver_unsubscribe_report @ 004aea4c
+  <- FUN_004da048 @ 004da048
+  <- svp_npu_model_read_hwts_preemption_en @ 004c116c
+  <- svp_npu_runtime_process_aicpu_task @ 004caf14
+  <- FUN_003043e8 @ 003043e8
+  <- FUN_003a4330 @ 003a4330
+  <- mpi_isp_usr_get_mesh_shading_attr @ 003eb8fc
+  <- svp_npu_model_read_nets_batch_layer_num @ 004c51a4
+  <- ot_mpi_sys_mmz_free @ 003a75d0
+  <- ot_ivs_md_create_chn @ 00408c5c
+  <- ot_mpi_ive_lbp @ 00404650
+  <- mpi_sys_get_bind_by_dest @ 003a6db4
+  <- FUN_0039e450 @ 0039e450
+  <- mpi_isp_set_pub_attr @ 003e8070
+  <- mpi_isp_set_ca_attr @ 003ec834
+  <- svp_npu_model_read_aicpu_inner_buf_offset @ 004c269c
+  <- svp_npu_model_read_input_aipp_channel @ 004c3d30
+  <- svp_npu_driver_free_resource_id_with_arg @ 004ae000
+  <- soap_tds_SetRemoteUser @ 0021e3d8
+  <- ot_mpi_aibnr_release_output_frame @ 0048c618
+  <- isp_get_motion_stats @ 003dee80
+  <- FUN_004a12d0 @ 004a12d0
+  <- aiv_src_io_get_frame @ 004a65ac
+  <- aiv_sink_set_attr @ 004a5ea8
+  <- isp_alg_register_expander @ 003f8fc4
+  <- mpi_isp_set_csc_attr @ 003eb220
+  <- FUN_003cabc4 @ 003cabc4
+  <- ot_mpi_aibnr_get_thread_attr @ 0048b4f0
+  <- ot_scene_set_static_cac @ 002dd03e
+  <- ot_mpi_awb_sensor_reg_callback @ 004143a4
+  <- aiv_acc_copy @ 004a1e08
+  <- ot_scene_set_dynamic_drc @ 002e116e
+  <- aiv_ioctl_proc_end_write @ 004967c0
+  <- svp_npu_model_read_layer_img_is_raw_type @ 004c5e8c
+  <- aiv_npu_exit @ 0049abbc
+  <- ot_mpi_aenc_get_stream @ 004d83d4
+  <- audio_upvqe_write_frame @ 004eb994
+  <- ot_mpi_adec_register_decoder @ 004d4838
+  <- FUN_002e3178 @ 002e3178
+  <- soap_trt_SetVideoSourceMode @ 00220d00
+  <- soap_tr2_GetAudioOutputConfigurations @ 00224f34
+  <- FUN_004c7724 @ 004c7724
+  <- soap_tds_DeleteUsers @ 0021e230
+  <- svp_npu_model_read_output_mem_reuse @ 004c4b04
+  <- isp_nr_wdr_attr_check @ 003e5920
+  <- svp_npu_model_read_layer_batch_flag @ 004c5c94
+  <- ot_mpi_ao_query_file_status @ 004e6704
+  <- FUN_004d8e48 @ 004d8e48
+  <- svp_npu_model_aicpu_dump_proc @ 004b2db4
+  <- mpi_isp_fpn_calibrate @ 003ecc3c
+  <- FUN_004d8d60 @ 004d8d60
+  <- ot_scene_set_dynamic_dehaze @ 002e1958
+  <- aiv_mem_mmap @ 00499aec
+  <- FUN_003acdcc @ 003acdcc
+  <- ot_mpi_vgs_add_draw_line_task @ 003a1584
+  <- isp_cfg_be_buf_init @ 003cca14
+  <- svp_npu_driver_send_sq_task @ 004ae260
+  <- isp_get_block_rect @ 003df50c
+  <- svp_npu_model_read_output_name @ 004c4650
+  <- ot_scene_set_static_crosstalk @ 002dfadc
+  <- ot_mpi_aibnr_disable @ 0048b5fc
+  <- ot_mpi_ao_get_vqe_attr @ 004e5bec
+  <- FUN_00494b68 @ 00494b68
+  <- FUN_004ee670 @ 004ee670
+  <- soap_tmd_GetSerialPortConfiguration @ 002237e0
+  <- mpi_isp_set_color_tone_attr @ 003ec0f0
+  <- svp_npu_model_load_with_config @ 004b2fdc
+  <- svp_npu_model_read_dump_buf_size @ 004c0e5c
+  <- aiv_sink_slv_plugin_send_frame @ 0049ecdc
+  <- soap_tr2_CreateOSD @ 0022495c
+  <- svp_npu_mem_flush_cache @ 004b05c0
+  <- isp_proc_print_title @ 003d6d4c
+  <- isp_switch_mode @ 003d5270
+  <- FUN_0041ee1c @ 0041ee1c
+  <- FUN_004c7e0c @ 004c7e0c
+  <- FUN_002d9ca0 @ 002d9ca0
+  <- isp_stt_addr_init @ 003cc704
+  <- mpi_sys_bind_register_receiver @ 003a6fd8
+  <- aibnr_vdb_get_model_info @ 004943b0
+  <- awb_check_pipe @ 00411c98
+  <- aiv_src_slv_user_send_frame @ 0049f750
+  <- ot_ivs_md_destroy_chn @ 00409120
+  <- aiv_npu_unregister_work_buf @ 0049d888
+  <- ive_check_dilate_param_user @ 004068a0
+  <- svp_npu_model_get_dataset_buffer @ 004b10b4
+  <- aiv_output_create_queue @ 0049de18
+  <- aiv_isp_get_noise_calibration @ 004982a8
+  <- svp_npu_model_read_layer_trap_instr_pc @ 004c6768
+  <- aiv_mem_create_pool @ 00499ca4
+  <- soap_tr2_GetSnapshotUri @ 00224730
+  <- soap_tds_SetRelayOutputSettings @ 0021e5b8
+  <- svp_npu_runtime_synchronize_device @ 004caabc
+  <- ot_mpi_ao_get_mute @ 004e4d60
+  <- mpi_isp_set_ldci_attr @ 003e8f18
+  <- FUN_004d8ebc @ 004d8ebc
+  <- FUN_004a270c @ 004a270c
+  <- ot_mpi_isp_mem_share @ 003d8768
+  <- mpi_isp_cal_gain_by_temp @ 0040cd64
+  <- FUN_002d8172 @ 002d8172
+  <- FUN_004a02f8 @ 004a02f8
+  <- FUN_003eda80 @ 003eda80
+  <- svp_npu_model_read_is_sort_enable @ 004c20f4
+  <- svp_npu_runtime_get_run_mode @ 004caa44
+  <- ot_opusdec_process_frame @ 004f0ca4
+  <- soap_tmd_GetAudioSources @ 00223a78
+  <- isp_nr_snr_attr_arch_check @ 004018cc
+  <- soap_ptz_GetConfigurations @ 0022211c
+  <- ot_mpi_ao_get_track_mode @ 004e4ec4
+  <- soap_tr2_GetVideoEncoderInstances @ 00224408
+  <- svp_npu_prof_subscribe_get_model_id @ 004c9d2c
+  <- ot_mpi_ive_or @ 004031e8
+  <- soap_tds_SetHostnameFromDHCP @ 0021d804
+  <- FUN_004d97fc @ 004d97fc
+  <- ot_scene_set_dynamic_false_color @ 002e51b4
+  <- soap_tev_Unsubscribe @ 0021ec94
+  <- FUN_0034f86a @ 0034f86a
+  <- soap_tr2_GetMaskOptions @ 00224d20
+  <- isp_blc_dbg_set @ 003df904
+  <- svp_npu_model_read_nets_aicpu_layer_num @ 004c28e8
+  <- ae_piris_register_callback @ 003c706c
+  <- FUN_0049fff0 @ 0049fff0
+  <- soap_tds_SetUser @ 0021e2d4
+  <- aiv_frame_queue_put_free_node @ 004a3224
+  <- FUN_004963e8 @ 004963e8
+  <- svp_npu_model_read_patch_version @ 004c0a94
+  <- svp_npu_model_read_prior_box_num @ 004c21b4
+  <- aibnr_pipe_user_disable @ 0049143c
+  <- upvqe_cache_process_frame @ 004eb424
+  <- aibnr_vdb_set_model_info @ 00494278
+  <- aiv_npu_svp_init_env @ 004a3d78
+  <- aibnr_noise_get_cmos_noise_calibration @ 004a7160
+  <- FUN_003f8ce0 @ 003f8ce0
+  <- isp_alg_stats_buf_init @ 003cc970
+  <- aiv_input_destroy_queue @ 00496320
+  <- svp_npu_model_read_instr_offset @ 004c178c
+  <- FUN_003a1b7c @ 003a1b7c
+  <- ot_mpi_ive_st_corner @ 00404f74
+  <- soap_tr2_GetMasks @ 00224be8
+  <- aiv_mem_malloc @ 00498e50
+  <- ot_scene_set_static_blc @ 002dfd6a
+  <- ot_mpi_ive_get_perspective_transform @ 00405d40
+  <- svp_npu_model_read_layer_info @ 004c542c
+  <- ot_mpi_ai_get_pub_attr @ 004d9790
+  <- aiv_npu_svp_exit_env @ 004a4104
+  <- ot_mpi_ao_enable_vqe @ 004e5e40
+  <- soap_trt_GetStreamUri @ 0022029c
+  <- FUN_003049ec @ 003049ec
+  <- FUN_004c75f4 @ 004c75f4
+  <- svp_npu_runtime_get_current_ctx @ 004ca7d0
+  <- ot_mpi_ai_get_talk_vqe_attr @ 004dfc38
+  <- ot_mpi_ai_clr_pub_attr @ 004e14f8
+  <- ot_mpi_ive_erode @ 00402c8c
+  <- iw_enum_devices @ 003413f0
+  <- mpi_isp_set_smart_exposure_attr @ 003aab04
+  <- ot_mpi_ive_st_cand_corner @ 00404a3c
+  <- isp_alg_register_fcr @ 003f1c50
+  <- soap_tds_StartSystemRestore @ 0021e50c
+  <- FUN_003013d0 @ 003013d0
+  <- aiv_ioctl_vdb_exit @ 00496958
+  <- FUN_003f1284 @ 003f1284
+  <- isp_get_pre_be_vir_addr @ 003cd930
+  <- FUN_002e1dc2 @ 002e1dc2
+  <- FUN_003f7f4c @ 003f7f4c
+  <- soap_trt_AddAudioOutputConfiguration @ 00221c8c
+  <- soap_tds_GetRemoteUser @ 0021e378
+  <- svp_npu_mdl_impl_get_output_last_aipp_info @ 004bc1c8
+  <- svp_npu_mdl_trans_data_type @ 004b9a78
+  <- FUN_002da3a0 @ 002da3a0
+  <- ot_mpi_ai_set_talk_vqe_attr @ 004deba4
+  <- svp_npu_runtime_get_device_count @ 004ca9cc
+  <- sample_common_svp_vgs_fill_rect @ 00289156
+  <- svp_acl_mdl_get_output_aipp_type @ 004acf3c
+  <- isp_set_correction_attr @ 003dd180
+  <- FUN_004bd5ac @ 004bd5ac
+  <- aibnr_nlc_init @ 004a1424
+  <- isp_init @ 003d5a18
+  <- DL_audio_vqe_dlopen @ 004eceec
+  <- FUN_004c74e0 @ 004c74e0
+  <- svp_npu_driver_free_sq_task @ 004ae8a8
+  <- FUN_0030c5d2 @ 0030c5d2
+  <- svp_npu_model_read_aicpu_prof_num @ 004c148c
+  <- svp_npu_driver_dump_ctrl @ 004aee74
+  <- ot_mpi_ao_get_pub_attr @ 004e26d0
+  <- ive_check_resize_param_user @ 00407cd0
+  <- aiv_src_slv_plugin_get_frame @ 0049f908
+  <- svp_npu_runtime_impl_reset_device @ 004cd154
+  <- FUN_0049c5c4 @ 0049c5c4
+  <- svp_npu_mem_free @ 004b0808
+  <- FUN_0048d084 @ 0048d084
+  <- ot_mpi_venc_create_chn @ 0039e844
+  <- ot_mpi_aibnr_get_model_attr @ 0048c35c
+  <- mpi_isp_get_sharpen_attr @ 003ec364
+  <- audio_dnvqe_create @ 004ee940
+  <- aiv_proc_show_blank_line @ 0049e3d8
+  <- aibnr_pipe_calc_inout_num @ 004a0c24
+  <- svp_npu_model_read_input_csc_in_bias_info @ 004c4080
+  <- ot_scene_set_static_ae @ 002db996
+  <- ot_scene_set_dynamic_blc @ 002e3d80
+  <- svp_npu_prof_create_lstm_cont @ 004c8824
+  <- isp_cac_lcac_attr_check @ 003e52d4
+  <- soap_tr2_GetVideoEncoderConfigurationOptions @ 002242cc
+  <- awb_check_pointer @ 00411e2c
+  <- FUN_00307942 @ 00307942
+  <- svp_npu_runtime_impl_destroy_stream @ 004ccbf0
+  <- FUN_002d821e @ 002d821e
+  <- ot_aacenc_open @ 005142c8
+  <- aiv_frame_destroy_queue @ 004a2fb4
+  <- svp_npu_model_read_layer_input_name @ 004c6070
+  <- mpi_isp_get_check_sum_stats @ 003dc7ac
+  <- aiv_sink_slv_plugin_enable @ 0049eb2c
+  <- svp_npu_model_read_model_name @ 004c0ef8
+  <- isp_alg_register_dpc @ 003f77f0
+  <- ot_scene_set_dynamic_ldci @ 002dfef0
+  <- bayernr_proc_write @ 0041b2a0
+  <- isp_alg_register_csc @ 003f66b4
+  <- ot_scene_set_static_drc @ 002dd770
+  <- aiv_sink_slv_user_release_frame @ 0049f17c
+  <- aiv_npu_init @ 0049ab34
+  <- soap_tds_SetDiscoveryMode @ 0021daa4
+  <- ot_mpi_aibnr_release_input_frame @ 0048c4f0
+  <- soap_tr2_GetAudioSourceConfigurations @ 002250f8
+  <- aibnr_pipe_get_attr @ 00491234
+  <- aiv_src_io_disable @ 004a6540
+  <- mpi_isp_get_demosaic_attr @ 003ec7bc
+  <- ive_check_16bit_to_8bit_param_user @ 00406e20
+  <- svp_npu_runtime_update_model_prof @ 004cad9c
+  <- svp_npu_prof_save_init @ 004c8bc8
+  <- svp_npu_runtime_impl_set_current_ctx @ 004cc7d0
+  <- svp_npu_get_data_buffer_stride @ 004ad7f8
+  <- aiv_ioctl_fq_sink_send_frame @ 00497694
+  <- soap_trt_GetVideoSourceConfigurations @ 0021fdf4
+  <- mpi_isp_set_module_ctrl @ 003e8804
+  <- aibnr_vdb_set_b_fact @ 00494720
+  <- ot_mpi_aenc_release_stream @ 004d852c
+  <- svp_npu_model_find_match_hw @ 004b930c
+  <- FUN_003c99c4 @ 003c99c4
+  <- svp_npu_model_read_input_format @ 004c2ea4
+  <- FUN_00494ad0 @ 00494ad0
+  <- svp_npu_model_get_dynamic_batch @ 004b3d6c
+  <- ot_scene_set_static_venc @ 002df832
+  <- soap_tds_GetServiceCapabilities @ 0021e054
+  <- ot_mpi_ive_query @ 00403a0c
+  <- soap_tev_GetServiceCapabilities @ 0021eae8
+  <- aibnr_source_enable @ 004925d8
+  <- FUN_004e20bc @ 004e20bc
+  <- svp_npu_model_read_input_aipp_mode @ 004c375c
+  <- soap_trt_GetAudioOutputConfigurations @ 00221a84
+  <- isp_alg_register_demosaic @ 003f8550
+  <- FUN_003c8f10 @ 003c8f10
+  <- FUN_002f86fe @ 002f86fe
+  <- isp_drc_attr_check @ 003e47dc
+  <- FUN_0039b434 @ 0039b434
+  <- svp_npu_dump_aicpu_result_file @ 004d0848
+  <- FUN_003a5c8c @ 003a5c8c
+  <- soap_trt_GetCompatibleAudioSourceConfigurations @ 00221204
+  <- ot_mpi_isp_ir_auto @ 003db8dc
+  <- FUN_002f8372 @ 002f8372
+  <- FUN_0039e220 @ 0039e220
+  <- FUN_002e2398 @ 002e2398
+  <- aiv_mem_release_blk_in_mem @ 004993b0
+  <- ot_confaccess_get_bool @ 0031766e
+  <- FUN_00305296 @ 00305296
+  <- FUN_004e1e04 @ 004e1e04
+  <- svp_npu_get_data_buffer_size @ 004ad7c0
+  <- svp_npu_model_set_total_t @ 004b1f64
+  <- aiv_agent_executor_create @ 004a261c
+  <- soap_tds_GetNetworkDefaultGateway @ 0021d970
+  <- soap_tr2_GetAudioEncoderConfigurations @ 00225068
+  <- _zbar_decode_databar @ 0034c348
+  <- FUN_0041e578 @ 0041e578
+  <- ot_mpi_awb_register @ 00414198
+  <- mpi_isp_get_nr_attr @ 003ec050
+  <- FUN_004cb590 @ 004cb590
+  <- ot_mpi_ao_pause_chn @ 004e3830
+  <- FUN_002dab90 @ 002dab90
+  <- soap_tr2_SetOSD @ 002247e4
+  <- svp_npu_driver_get_sq_real_task_info @ 004ae550
+  <- FUN_0030b610 @ 0030b610
+  <- FUN_0049815c @ 0049815c
+  <- aibnr_source_exit @ 00492598
+  <- isp_proc_write @ 003d6e48
+  <- aiv_agent_signal @ 00495850
+  <- aacenc_frame_proc @ 00514d8c
+  <- aiv_npu_tq_get_busy_node @ 0049d06c
+  <- ot_mpi_sys_mmz_alloc_only @ 003a7970
+  <- FUN_004c7a94 @ 004c7a94
+  <- mpi_isp_get_dng_image_static_info @ 003ed164
+  <- FUN_003cce40 @ 003cce40
+  <- svp_npu_model_read_input_shape @ 004c31e4
+  <- ive_check_and_param_user @ 00406a38
+  <- soap_tr2_GetAudioSourceConfigurationOptions @ 00225228
+  <- ot_mpi_ao_query_chn_status @ 004e4924
+  <- FUN_002886e0 @ 002886e0
+  <- ot_opusdec_create @ 004f0b14
+  <- ot_mpi_ive_integ @ 004037a4
+  <- FUN_002fd9c8 @ 002fd9c8
+  <- ive_check_image_dot_param_user @ 004085a4
+  <- mpi_isp_get_black_level_attr @ 003ecb90
+  <- venc_check_chn @ 0039e528
+  <- FUN_0030bf2a @ 0030bf2a
+  <- ot_scene_set_dynamic_ca @ 002e373e
+  <- ive_check_canny_hys_edge_param_user @ 0040719c
+  <- svp_npu_model_set_dynamic_batch_size @ 004b1dcc
+  <- aiv_npu_unregister_model @ 0049aea4
+  <- svp_npu_model_read_layer_input_img_bit_width @ 004c5d94
+  <- FUN_003f1688 @ 003f1688
+  <- ot_scene_set_static_sharpen @ 002dee6c
+  <- aiv_output_get_head_node @ 0049db14
+  <- svp_npu_runtime_create_stream @ 004cab04
+  <- isp_cac_comm_attr_check @ 003e4f14
+  <- aibnr_mdl_get_attr @ 0048e43c
+  <- aiv_ioctl_fq_source_create @ 00496ea8
+  <- aiv_ioctl_source_get_frame @ 00497b5c
+  <- sc2331_slave_linear_2m30_10bit_init @ 00425abc
+  <- ot_mpi_ai_save_file @ 004e12d0
+  <- aiv_npu_svp_execute @ 004a5028
+  <- aiv_output_send_node @ 0049da2c
+  <- aiv_ioctl_source_disable @ 00497a98
+  <- soap_ptz_SetConfiguration @ 00222280
+  <- isp_dng_param_check @ 003e7100
+  <- FUN_00340200 @ 00340200
+  <- aiv_output_get_free_node_num @ 0049dd90
+  <- FUN_003fbb04 @ 003fbb04
+  <- sample_common_ive_calc_stride @ 002889be
+  <- FUN_004b4c6c @ 004b4c6c
+  <- aiv_input_get_node @ 00495ec0
+  <- ot_mpi_ive_csc @ 004026fc
+  <- ot_mpi_audio_init @ 004e6cb4
+  <- FUN_0048fdd0 @ 0048fdd0
+  <- FUN_00494bd4 @ 00494bd4
+  <- ot_mpi_isp_set_fpn_attr @ 003db5b8
+  <- svp_npu_model_read_batch_num @ 004c0d54
+  <- isp_mesh_shading_calibration_cfg_check @ 003e69d4
+  <- aiv_npu_svp_get_default_cfg @ 004a3d2c
+  <- ot_mpi_sys_mem_share_all @ 003a8078
+  <- aiv_mem_share_pool @ 004992ac
+  <- FUN_002d9150 @ 002d9150
+  <- awb_check_vreg_permission @ 0040b0f8
+  <- HAL_UDP_create @ 00207870
+  <- svp_npu_model_read_run_mode @ 004c0c24
+  <- FUN_003481a4 @ 003481a4
+  <- svp_npu_model_check_inout_idx @ 004bffc4
+  <- ot_mpi_vgs_add_scale_task @ 003a14ac
+  <- sample_comm_vi_save_fpn_file @ 002d2cf0
+  <- aiv_isp_set_enable @ 00498648
+  <- FUN_002d8c18 @ 002d8c18
+  <- aiv_cond_timewait @ 0049e7b0
+  <- ae_dc_iris_register_callback @ 003c6d78
+  <- aiv_npu_svp_bind_cpu_core @ 004a438c
+  <- soap_tr2_GetServiceCapabilities @ 00223af8
+  <- svp_npu_model_get_inout_size_by_idx @ 004b285c
+  <- svp_npu_model_load @ 004b88c0
+  <- soap_trt_RemovePTZConfiguration @ 00221f00
+  <- ot_mpi_ai_enable_vqe @ 004dff9c
+  <- soap_trt_GetVideoSourceConfigurationOptions @ 0021ff78
+  <- aiv_output_query_tail_node @ 0049dcac
+  <- ot_mpi_sys_get_virt_mem_info @ 003a77b8
+  <- aibnr_fw_deinit @ 0048ca5c
+  <- FUN_00430844 @ 00430844
+  <- isp_alg_register_blc @ 003f480c
+  <- aiv_proc_exit @ 0049e004
+  <- ot_mpi_aenc_destroy_chn @ 004d76a8
+  <- soap_tds_SetSystemDateAndTime @ 0021d3a0
+  <- svp_npu_model_read_input_info @ 004c2978
+  <- ot_mpi_vb_create_pool @ 0039d048
+  <- mpi_isp_set_wdr_exposure_attr @ 003aa3b4
+  <- ot_mpi_audio_register_vqe_mod @ 004e6a20
+  <- FUN_003a42f0 @ 003a42f0
+  <- FUN_004af520 @ 004af520
+  <- soap_img_GetStatus @ 0021f440
+  <- mpi_isp_set_stats_cfg @ 003e9aa0
+  <- ot_scene_set_dynamic_color_sector @ 002e3c3a
+  <- svp_npu_model_read_aicpu_op_name @ 004c25c8
+  <- cmose_sc200ai_set_custom_i2c_addr @ 004354f0
+  <- ot_mpi_aenc_unregister_encoder @ 004d695c
+  <- ae_fast_ae_enable_read @ 003b0a8c
+  <- ot_mpi_ai_set_talk_vqe_v2_attr @ 004db704
+  <- soap_trt_SetAudioDecoderConfiguration @ 0022187c
+  <- FUN_004e1f94 @ 004e1f94
+  <- aiv_npu_link_connect @ 004a529c
+  <- svp_npu_model_init_resource @ 004b3474
+  <- ive_check_ccl_param_user @ 00407918
+  <- soap_tds_GetDot11Capabilities @ 0021deb8
+  <- isp_expander_attr_arch_check @ 00401d30
+  <- mpi_isp_get_fswdr_attr @ 003e93f4
+  <- aiv_npu_link_get_free_task @ 004a5480
+  <- aiv_npu_sta_proc_entity @ 0049c9d4
+  <- svp_npu_model_read_input_recurrent_id @ 004c3678
+  <- svp_npu_model_read_input_offline_resize_ratio @ 004c3ab0
+  <- FUN_0049b5a0 @ 0049b5a0
+  <- aiv_input_create_queue @ 00496268
+  <- aiv_vdb_set_value @ 004a078c
+  <- FUN_00300028 @ 00300028
+  <- FUN_002fbe0e @ 002fbe0e
+  <- FUN_004c7328 @ 004c7328
+  <- soap_ptz_SetHomePosition @ 002228b4
+  <- mpi_isp_set_iris_attr @ 003ab7b4
+  <- aiv_frame_queue_get_busy_node_num @ 004a34c4
+  <- isp_get_be_reg_virt_addr_base @ 003d3ffc
+  <- soap_tr2_GetAudioOutputConfigurationOptions @ 00224ea0
+  <- isp_cfg_be_buf_exit @ 003ccd08
+  <- svp_npu_runtime_get_ctx_node_from_free_list @ 004ce910
+  <- iw_get_range_info @ 0034161c
+  <- ot_scene_set_static_color_sector @ 002dceac
+  <- FUN_002fd05e @ 002fd05e
+  <- svp_npu_model_read_ddr_align @ 004c0fbc
+  <- aiv_npu_release_task @ 0049b128
+  <- ot_mpi_sys_query_mmz_status @ 003a8418
+  <- awb_wb_matrix_calculate @ 0040ef9c
+  <- ot_mpi_ive_threshold_s16 @ 00403e44
+  <- DL_audio_vqe_dlsym @ 004ecfbc
+  <- ot_mpi_vpss_get_ext_chn_attr @ 003a55f8
+  <- soap_err_rly @ 0021bb34
+  <- mpi_isp_get_dp_dynamic_attr @ 003eb704
+  <- soap_tds_StartFirmwareUpgrade @ 0021e4a0
+  <- FUN_0048f804 @ 0048f804
+  <- FUN_004d8f78 @ 004d8f78
+  <- ot_mpi_isp_awb_lib_reg_callback @ 003d9a9c
+  <- isp_check_sns_register @ 003d5064
+  <- aiv_agent_release @ 00495084
+  <- ot_mpi_ive_dilate @ 00402b40
+  <- svp_npu_model_set_output_aipp_data @ 004b44a8
+  <- isp_demosaic_manual_attr_arch_check @ 00401c90
+  <- FUN_0031382e @ 0031382e
+  <- soap_ptz_GetNodes @ 0022204c
+  <- aiv_npu_tq_get_busy_node_num @ 0049d5d0
+  <- soap_trt_GetAudioOutputConfiguration @ 00221bf8
+  <- soap_tr2_GetProfiles @ 00223b70
+  <- soap_tds_SetNetworkDefaultGateway @ 0021d9b0
+  <- aiv_src_fq_get_frame @ 004a6390
+  <- aiv_ioctl_proc_exit @ 00496648
+  <- ot_ivs_md_get_bg @ 00409704
+  <- svp_npu_model_pre_init_sub_prof_info @ 004b3950
+  <- FUN_003fc064 @ 003fc064
+  <- svp_npu_model_read_net_info @ 004c1510
+  <- FUN_0048e490 @ 0048e490
+  <- svp_npu_prof_create_file @ 004c743c
+  <- ive_check_or_param_user @ 00406b6c
+  <- aibnr_arch_check_model @ 0048c6b8
+  <- svp_npu_model_read_nets_prof_max_loop_num @ 004c5234
+  <- svp_npu_model_read_nets_prof_layer_num @ 004c5114
+  <- FUN_00419c08 @ 00419c08
+  <- soap_trt_GetProfile @ 0021f7e0
+  <- soap_tr2_SetAudioSourceConfiguration @ 00225348
+  <- aiv_npu_get_desc @ 0049af2c
+  <- ot_confaccess_get_string @ 00317130
+  <- svp_npu_dump_init @ 004cfcc8
+  <- aiv_npu_tq_get_free_node_num @ 0049d514
+  <- soap_tr2_AddConfiguration @ 00223d60
+  <- svp_npu_prof_subscribe_get_op_type @ 004c98c0
+  <- aibnr_param_fill_data @ 004a1a30
+  <- aibnr_sink_init @ 004920d8
+  <- soap_tds_GetHostname @ 0021d724
+  <- FUN_0048e664 @ 0048e664
+  <- aiv_sink_fq_send_frame @ 004a5f30
+  <- aiv_agent_unregister_model @ 004956c0
+  <- aibnr_fw_unregister_model @ 0048cc08
+  <- soap_tr2_GetAudioDecoderConfigurationOptions @ 0022551c
+  <- ot_mpi_vpss_set_ext_chn_attr @ 003a5578
+  <- FUN_003c8e6c @ 003c8e6c
+  <- svp_npu_runtime_impl_create_stream @ 004cca5c
+  <- ot_mpi_ao_set_mute @ 004e4c68
+  <- isp_check_pipe_by_line @ 003d7f88
+  <- soap_img_GetMoveOptions @ 0021f2e0
+  <- aibnr_mdl_require_info @ 0048d95c
+  <- ot_mpi_sys_mmz_free_only @ 003a7ac4
+  <- svp_npu_runtime_malloc_rt_context @ 004ce31c
+  <- aiv_npu_acl_create_dataset_pool @ 004a7e74
+  <- ot_mpi_isp_get_fpn_attr @ 003db618
+  <- FUN_003bb620 @ 003bb620
+  <- isp_fpn_calibrate_attr_check @ 003e76d0
+  <- soap_tmd_GetVideoOutputConfigurationOptions @ 00223220
+  <- FUN_00270f3a @ 00270f3a
+  <- aiv_src_vi_disable @ 0049fbec
+  <- soap_trt_GetVideoEncoderConfigurationOptions @ 0022000c
+  <- ot_scene_set_dynamic_video_gamma @ 002e4df0
+  <- svp_npu_model_set_aicpu_param_info @ 004b295c
+  <- ot_mpi_adec_query_chn_status @ 004d5288
+  <- aiv_mem_destroy_pool @ 00499ea8
+  <- aiv_npu_tq_create @ 0049cdb8
+  <- FUN_003faa74 @ 003faa74
+  <- ot_mpi_aibnr_set_cfg @ 0048bc18
+  <- ot_mpi_ive_xor @ 00404504
+  <- svp_npu_model_read_layer_seg_id @ 004c6670
+  <- svp_npu_model_calc_aipp_max_input_size @ 004b501c
+  <- soap_tmd_GetAudioOutputs @ 002232b4
+  <- isp_get_lightbox_gain @ 003dcb08
+  <- ot_mpi_ive_threshold_u16 @ 00403f90
+  <- FUN_00435540 @ 00435540
+  <- svp_npu_runtime_impl_destroy_ctx @ 004cc660
+  <- FUN_004bd148 @ 004bd148
+  <- svp_npu_model_check_dynamic_hw_param @ 004b9434
+  <- svp_npu_model_read_input_name @ 004c3024
+  <- ot_mpi_vb_pool_share_all @ 0039de9c
+  <- FUN_002d8800 @ 002d8800
+  <- soap_tds_GetScopes @ 0021d4c8
+  <- svp_npu_model_read_input_offline_padding @ 004c3870
+  <- svp_npu_model_read_input_width @ 004c2b44
+  <- vreg_release_all @ 003d3ed0
+  <- FUN_00411e64 @ 00411e64
+  <- aiv_sink_vi_enable @ 0049f294
+  <- ot_mpi_ao_set_volume @ 004e4b9c
+  <- soap_tmd_GetSerialPorts @ 002237a0
+  <- svp_npu_model_read_is_decode_bbox_enable @ 004c1eb4
+  <- FUN_004d8b48 @ 004d8b48
+  <- vreg_init @ 003d3cc0
+  <- FUN_004d8b0c @ 004d8b0c
+  <- soap_trt_GetAudioOutputs @ 00221a44
+  <- isp_get_af_grid_info @ 003de108
+  <- aiv_npu_sta_get_attr @ 0049bae8
+  <- svp_npu_mdl_impl_get_input_first_aipp_info @ 004ba6c8
+  <- ive_check_alpha_blending_param_user @ 0040844c
+  <- FUN_004ee550 @ 004ee550
+  <- ive_check_warp_perspective_param_user @ 00408348
+  <- audio_upvqe_get_volume @ 004ebdc4
+  <- aiv_output_destroy_queue @ 0049dea4
+  <- svp_npu_model_read_input_id_or_aicpu_buf_offset @ 004c34d8
+  <- aiv_mem_malloc_mmz @ 00498f98
+  <- svp_npu_model_read_output_height @ 004c43d0
+  <- soap_trt_DeleteProfile @ 0021f91c
+  <- ive_check_threshold_u16_param_user @ 00406d90
+  <- FUN_002fd6f4 @ 002fd6f4
+  <- aiv_npu_proc @ 0049ace8
+  <- FUN_0048ef30 @ 0048ef30
+  <- svp_acl_mdl_set_aipp_rbuv_swap_switch @ 004ab4d4
+  <- FUN_00341334 @ 00341334
+  <- svp_npu_model_check_config_set_param @ 004c0600
+  <- ot_ivs_md_get_chn_attr @ 0040955c
+  <- soap_tr2_GetMetadataConfigurationOptions @ 00224378
+  <- isp_block_update @ 003df494
+  <- soap_tmd_SendReceiveSerialCommand @ 002239a8
+  <- soap_tr2_StopMulticastStreaming @ 00224e00
+  <- mpi_isp_set_color_sector_attr @ 0040c918
+  <- isp_mem_unshare_vreg @ 003d45f4
+  <- dnvqe_create @ 004ef120
+  <- svp_npu_mdl_fill_input_aipp_data_buf @ 004ba904
+  <- svp_acl_mdl_set_aipp_gamma @ 004acc94
+  <- FUN_003e79c0 @ 003e79c0
+  <- aibnr_source_return_frame @ 00492984
+  <- aiv_proc_init @ 0049deec
+  <- ot_mpi_adec_create_chn @ 004d4a9c
+  <- ot_mpi_ive_norm_grad @ 00403c84
+  <- soap_ptz_GotoHomePosition @ 00222814
+  <- soap_tmd_GetDigitalInputConfigurationOptions @ 00223670
+  <- isp_update_info_init @ 00401e34
+  <- ot_mpi_vb_exit_mod_common_pool @ 0039d75c
+  <- svp_npu_prof_subscribe_get_op_duration @ 004c9cb0
+  <- cis_unregister_callback @ 00423604
+  <- svp_npu_runtime_impl_update_model_prof @ 004cdcbc
+  <- upvqe_get_volume @ 004ee01c
+  <- FUN_004cec38 @ 004cec38
+  <- aiv_ioctl_vb_copy_supp @ 00496dc0
+  <- FUN_003f11b0 @ 003f11b0
+  <- FUN_0034c048 @ 0034c048
+  <- ot_mpi_adec_get_frame @ 004d5a98
+  <- ot_scene_pause @ 002db746
+  <- soap_trt_GetMetadataConfigurationOptions @ 002209f4
+  <- aibnr_mdl_init @ 0048d71c
+  <- soap_tr2_SetAudioOutputConfiguration @ 00224fc8
+  <- ot_mpi_ai_release_frame @ 004e0b9c
+  <- aiv_src_fq_enable @ 004a6124
+  <- aiv_npu_tq_put_busy_node_head @ 0049d418
+  <- mpi_isp_get_exp_convert @ 003ac9e4
+  <- isp_alg_register_gamma @ 003fb1d0
+  <- aiv_src_vi_return_frame @ 0049fec4
+  <- isp_get_be_free_buf @ 003ccbf0
+  <- FUN_002f9a86 @ 002f9a86
+  <- svp_npu_runtime_impl_get_device @ 004cd208
+  <- ot_mpi_ai_enable_resample @ 004db25c
+  <- svp_acl_mdl_check_aipp_nearest_scf_params @ 004ab6dc
+  <- svp_npu_model_read_layer_type @ 004c560c
+  <- soap_tds_GetRelayOutputs @ 0021e578
+  <- mpi_ai_get_pool_addr @ 004daad4
+  <- svp_npu_mem_malloc_inner @ 004b04f0
+  <- soap_tev_Renew @ 0021ed54
+  <- aiv_agent_monitor_create @ 004a2ce4
+  <- aiv_model_parse @ 0049a7f8
+  <- ot_mpi_isp_mem_init @ 003d841c
+  <- MODULE_audio_vqe_module_handle_init @ 004ec274
+  <- svp_acl_mdl_set_input_aipp @ 004acfc0
+  <- svp_npu_driver_get_dev_info @ 004adbc8
+  <- soap_trt_GetVideoSources @ 0021fc3c
+  <- ive_check_acc_param_user @ 004084f8
+  <- svp_npu_model_read_layer_output_lut_4_to_8 @ 004c5f84
+  <- aiv_src_fq_send_frame @ 004a62e0
+  <- FUN_003022a2 @ 003022a2
+  <- soap_tds_UpgradeSystemFirmware @ 0021e478
+  <- svp_npu_model_read_output_aipp_height @ 004c4f54
+  <- svp_npu_model_read_input_mem_reuse @ 004c3414
+  <- FUN_002daa28 @ 002daa28
+  <- aiv_pthread_bind_cpu_core @ 0049e530
+  <- FUN_0034e96c @ 0034e96c
+  <- soap_tmd_GetServiceCapabilities @ 00223034
+  <- FUN_00288b84 @ 00288b84
+  <- soap_ptz_GotoPreset @ 00222774
+  <- ot_mpi_ive_ncc @ 00403b38
+  <- soap_tds_AddScopes @ 0021d508
+  <- utl_fcfg_set_value @ 0032613a
+  <- _zbar_qr_decode @ 0035b930
+  <- svp_npu_model_update_prof_op_info @ 004b3824
+  <- mpi_isp_set_awb_attr_ex @ 0040bc50
+  <- ot_mpi_isp_mem_unshare @ 003d88ec
+  <- ot_mpi_ai_set_dmic_gain @ 004e1c84
+  <- aiv_mem_copy_supp @ 0049a6a4
+  <- svp_acl_mdl_get_input_aipp_type @ 004acec0
+  <- isp_sensor_exit @ 003d79d4
+  <- aiv_src_slv_plugin_disable @ 0049f65c
+  <- aiv_npu_acl_set_aipp_info @ 004a76f0
+  <- FUN_0039e5c8 @ 0039e5c8
+  <- svp_npu_model_check_dynamic_hw_size @ 004c07fc
+  <- soap_ptz_SendAuxiliaryCommand @ 00222db8
+  <- svp_acl_mdl_set_aipp_scf_params @ 004ab88c
+  <- ot_mpi_ive_hist @ 004038f0
+  <- svp_npu_runtime_set_current_ctx @ 004ca760
+  <- aiv_ioctl_fq_sink_release_frame @ 00497908
+  <- mpi_isp_set_auto_color_shading_attr @ 003ebb90
+  <- RES_resampler_process_frame @ 004ec994
+  <- ot_mpi_sys_get_mem_info_by_handle @ 003a8324
+  <- ot_scene_set_dynamic_nr @ 002e20a8
+  <- soap_trt_GetAudioDecoderConfigurations @ 002216f8
+  <- soap_tds_GetDot11Status @ 0021def8
+  <- ot_scene_set_static_dpc @ 002dd5da
+  <- FUN_00307c34 @ 00307c34
+  <- sc235hai_vc_wdr_2t1_2m30_10bit_init @ 00428150
+  <- FUN_0040211c @ 0040211c
+  <- svp_npu_model_get_inout_default_stride @ 004b275c
+  <- ot_mpi_ai_get_frame @ 004e091c
+  <- aiv_npu_acl_prepare_dataset @ 004a8320
+  <- ot_mpi_ae_sensor_unreg_callback @ 003b23a8
+  <- aiv_agent_monitor_disable_pipe @ 004a2e2c
+  <- upvqe_create_extend_vqe @ 004ede74
+  <- FUN_00345dde @ 00345dde
+  <- ot_scene_set_dynamic_linear_ca @ 002e2cb2
+  <- aiv_npu_sta_register_link @ 0049bfe8
+  <- ot_mpi_aibnr_init @ 0048b288
+  <- svp_npu_runtime_impl_unsubscribe_report @ 004cc408
+  <- isp_dng_info_init @ 003e0368
+  <- soap_tmd_GetRelayOutputOptions @ 0022345c
+  <- aiv_isp_get_pipe_pub_attr @ 004981e8
+  <- ot_mpi_vi_get_ext_chn_attr @ 003a3490
+  <- svp_npu_model_check_set_config_opt_param @ 004c0070
+  <- soap_trt_SetSynchronizationPoint @ 00220200
+  <- aiv_ioctl_vdb_set_value @ 00496a34
+  <- soap_tev_PullMessages @ 0021ef2c
+  <- soap_tr2_SetVideoSourceMode @ 0022468c
+  <- aiv_npu_tq_get_busy_node_tail @ 0049d148
+  <- aiv_frame_create_queue @ 004a2e9c
+  <- svp_npu_dump_set_info @ 004cfe54
+  <- sc235hai_get_standby_cfg @ 004281e0
+  <- iw_in_addr @ 00342b08
+  <- ot_mpi_ao_get_volume @ 004e4bfc
+  <- ive_check_threshold_s16_param_user @ 00406d00
+  <- svp_npu_model_execute_async @ 004b1954
+  <- soap_trt_GetOSDs @ 00220404
+  <- audio_upvqe_process_frame @ 004eb3a4
+  <- ive_check_csc_param_user @ 0040658c
+  <- svp_acl_mdl_create_aipp @ 004aae68
+  <- ot_mpi_ai_enable @ 004dab80
+  <- aibnr_pipe_proc_show_tnr @ 004a118c
+  <- ot_scene_create_param @ 00314064
+  <- vreg_get_virt_addr @ 003d42e0
+  <- mpi_isp_set_dp_dynamic_attr @ 003eb5a4
+  <- aiv_mem_get_blk_virt @ 004995a0
+  <- svp_npu_model_execute @ 004b16e0
+  <- svp_npu_model_read_original_net_ops @ 004c1284
+  <- soap_trt_RemoveAudioOutputConfiguration @ 00221d2c
+  <- connect_wifi_ap @ 0033fcd0
+  <- svp_npu_model_read_output_dim_type @ 004c4590
+  <- ot_mpi_ai_get_record_vqe_attr @ 004de7c0
+  <- aiv_npu_sta_start @ 0049b648
+  <- svp_npu_runtime_free_model_id_resource @ 004cad4c
+  <- sc200ai_set_custom_i2c_addr @ 00435878
+  <- sc450ai_linear_5m30_10bit_init @ 0042ced0
+  <- aiv_npu_tq_get_free_node @ 0049cf94
+  <- ot_mpi_sys_mmz_unmap @ 003a7e1c
+  <- ot_mpi_ive_and @ 00402f24
+  <- FUN_003f56e8 @ 003f56e8
+  <- ot_scene_set_static_shading @ 002de8b8
+  <- aacOpenSbrEncLib @ 005150b4
+  <- soap_ptz_GetConfigurationOptions @ 00222320
+  <- aiv_ioctl_fq_source_send_frame @ 004970fc
+  <- audio_dnvqe_process_frame @ 004eef88
+  <- soap_trt_GetOSD @ 00220498
+  <- isp_alg_register_lsc @ 003fd0ac
+  <- svp_npu_prof_subscribe_get_op_start @ 004c9bb8
+  <- soap_tds_GetNTP @ 0021dcf8
+  <- svp_npu_model_set_dynamic_hw_size @ 004b46a4
+  <- soap_tds_ScanAvailableDot11Networks @ 0021dfa4
+  <- FUN_0030715a @ 0030715a
+  <- svp_npu_model_read_net_type @ 004c16cc
+  <- ive_check_dma_param_user @ 0040640c
+  <- soap_ptz_ModifyPresetTour @ 00222bd8
+  <- svp_npu_model_read_output_id_or_aicpu_buf_offset @ 004c4bc8
+  <- FUN_004062a8 @ 004062a8
+  <- FUN_002f8b76 @ 002f8b76
+  <- aiv_sink_slv_plugin_disable @ 0049ebd8
+  <- soap_trt_GetAudioEncoderConfigurationOptions @ 002215c4
+  <- mpi_isp_get_cac_attr @ 003ebe84
+  <- ive_check_canny_edge_param_user @ 00407248
+  <- ive_check_norm_grad_param_user @ 0040741c
+  <- svp_npu_model_format_name @ 004b9618
+  <- ot_mpi_ao_set_pub_attr @ 004e2664
+  <- vreg_check_close @ 003d3ba4
+  <- aiv_npu_mdl_prepare_node @ 004a5bd4
+  <- FUN_002ffb90 @ 002ffb90
+  <- RES_resampler_create @ 004ec690
+  <- soap_trt_SetAudioSourceConfiguration @ 002213e0
+  <- svp_npu_model_read_bandwidth_size @ 004c11f8
+  <- FUN_004a284c @ 004a284c
+  <- mpi_isp_get_ldci_attr @ 003e8fa4
+  <- ot_mpi_ao_resume_chn @ 004e38d8
+  <- FUN_003cec2c @ 003cec2c
+  <- aiv_mem_free @ 00498f50
+  <- svp_npu_model_get_inout_num @ 004b0b14
+  <- mpi_isp_set_drc_attr @ 003e901c
+  <- isp_sharpen_comm_attr_check @ 003e4688
+  <- ot_opusenc_process_frame @ 004f1088
+  <- soap_tds_SetNetworkInterfaces @ 0021d17c
+  <- ot_mpi_isp_set_sns_slave_attr @ 003d9584
+  <- soap_tr2_DeleteOSD @ 00224a00
+  <- FUN_003a1bfc @ 003a1bfc
+  <- svp_npu_runtime_impl_check_input_ctx @ 004ce744
+  <- mpi_isp_get_gamma_attr @ 003eb170
+  <- FUN_003f5204 @ 003f5204
+  <- ot_mpi_isp_run @ 003d9084
+  <- isp_alg_register_sharpen @ 00401164
+  <- FUN_004cb6a0 @ 004cb6a0
+  <- ot_mpi_aibnr_get_cfg @ 0048bd44
+  <- aiv_mem_get_pool_id @ 00499534
+  <- svp_npu_model_read_output_format @ 004c4754
+  <- FUN_0041308c @ 0041308c
+  <- FUN_00348cb4 @ 00348cb4
+  <- aibnr_noise_get_calibrate_lut @ 004a6ee0
+  <- soap_trt_GetCompatibleAudioDecoderConfigurations @ 002219b0
+  <- ot_scene_set_dynamic_fswdr @ 002e0e7a
+  <- svp_acl_mdl_set_aipp_src_image_size @ 004ab5f4
+  <- isp_get_pipe_differ_attr @ 003de4d4
+  <- isp_reg_cfg_init @ 003d2a68
+  <- aiv_isp_set_disable @ 004986dc
+  <- ot_mpi_ai_get_chn_attr @ 004e1b0c
+  <- aiv_npu_sta_release_node @ 0049c338
+  <- FUN_002de9a6 @ 002de9a6
+  <- aiv_npu_link_release_task @ 004a5510
+  <- svp_npu_model_read_input_num @ 004c1a2c
+  <- FUN_004ea728 @ 004ea728
+  <- soap_trt_GetAudioEncoderConfiguration @ 00221480
+  <- ot_mpi_ive_canny_hys_edge @ 00404b88
+  <- FUN_0048ce20 @ 0048ce20
+  <- aiv_sink_vi_disable @ 0049f2f8
+  <- svp_npu_model_read_input_height @ 004c2c24
+  <- soap_trt_RemoveAudioSourceConfiguration @ 00220ed8
+  <- isp_share_mem_all @ 003d4cf4
+  <- isp_alg_register_ca @ 003f50e4
+  <- aibnr_mdl_unload_all @ 0048d90c
+  <- ot_scene_deinit @ 002db33c
+  <- ive_check_gmm2_param_user @ 004079a8
+  <- cis_wdr_range_check @ 00423968
+  <- FUN_0041e8ac @ 0041e8ac
+  <- svp_npu_model_read_class_len_info_input_flag @ 004c24a8
+  <- svp_acl_mdl_set_aipp_dtc_pixel_mean @ 004ac0a8
+  <- isp_get_vicap_chn_reg_virt_addr_base @ 003d40c0
+  <- aiv_npu_disconnect @ 0049b03c
+  <- soap_ptz_GetCompatibleConfigurations @ 0022215c
+  <- ot_mpi_ai_get_fd @ 004e1558
+  <- isp_cac_acac_attr_check @ 003e5024
+  <- cmos_mirror_flip @ 0042b02c
+  <- isp_dynamic_blc_attr_check @ 003e637c
+  <- mpi_isp_set_expander_attr @ 003ed7e4
+  <- soap_tr2_StartMulticastStreaming @ 00224d60
+  <- FUN_002ff4f2 @ 002ff4f2
+  <- ot_scene_set_dynamic_dpc @ 002e2874
+  <- soap_img_GetPresets @ 0021f584
+  <- FUN_004d8c14 @ 004d8c14
+  <- FUN_003cbd28 @ 003cbd28
+  <- mpi_audio_init @ 004e6bdc
+  <- cis_i2c_init @ 004236d8
+  <- aibnr_fw_proc @ 0048cdbc
+  <- FUN_004a7bd0 @ 004a7bd0
+  <- ot_mpi_vb_get_mod_pool_cfg @ 0039d7c0
+  <- aiv_ioctl_sink_send_frame @ 00497fa8
+  <- ive_check_st_candi_corner_param_user @ 00407568
+  <- ot_mpi_ai_set_track_mode @ 004e11d8
+  <- ot_mpi_ae_register @ 003b20ac
+  <- FUN_0034d0f6 @ 0034d0f6
+  <- mpi_sys_bind_check_null @ 003a68d4
+  <- svp_acl_mdl_set_output_aipp @ 004ad37c
+  <- ot_mpi_vgs_add_cover_task @ 003a164c
+  <- FUN_004b96cc @ 004b96cc
+  <- soap_trt_GetVideoSourceConfiguration @ 0021fe34
+  <- aiv_mem_get_blk_in_mem @ 00499640
+  <- soap_tds_GetUsers @ 0021e14c
+  <- soap_img_GetCurrentPreset @ 0021f618
+  <- svp_npu_model_read_is_high_detection_accuracy @ 004c1d34
+  <- isp_switch_reg_set @ 003d3664
+  <- isp_mem_share_vreg @ 003d4498
+  <- svp_npu_model_read_instr_size @ 004c186c
+  <- svp_npu_runtime_get_sub_stream_id @ 004caec8
+  <- vreg_check_permission @ 003d3c50
+  <- FUN_004da9e4 @ 004da9e4
+  <- isp_alg_register_acs @ 0041fb38
+  <- soap_tds_GetDeviceInformation @ 0021cf4c
+  <- FUN_003b02c8 @ 003b02c8
+  <- aibnr_mdl_unload @ 0048d890
+  <- FUN_004cb1fc @ 004cb1fc
+  <- soap_tds_GetCapabilities @ 0021cffc
+  <- isp_get_viproc_reg_virt_addr_base @ 003d4064
+  <- aibnr_arch_check_attr @ 0048c720
+  <- FUN_003f1cfc @ 003f1cfc
+  <- FUN_002ffc3a @ 002ffc3a
+  <- FUN_003bb5a8 @ 003bb5a8
+  <- isp_alg_register_fpn @ 003dd2d0
+  <- soap_trt_GetAudioSourceConfigurationOptions @ 002212a8
+  <- aibnr_sink_exit @ 004921bc
+  <- aiv_src_io_enable @ 004a64d4
+  <- ot_scene_set_dynamic_venc_mode @ 002e4c3e
+  <- ot_ivs_md_exit @ 00408b24
+  <- mpi_isp_set_be_frame_pos_attr @ 003ed908
+  <- isp_share_mem @ 003d4b8c
+  <- svp_npu_runtime_impl_check_input_stream @ 004ce800
+  <- soap_trt_GetOSDOptions @ 002205d0
+  <- svp_npu_model_read_pb_share_mode @ 004c2360
+  <- ot_scene_set_static_demosaic @ 002df3f6
+  <- soap_tds_GetDynamicDNS @ 0021dc18
+  <- audio_upvqe_create @ 004eaad4
+  <- ae_check_lib_name @ 003ae918
+  <- isp_proc_exit @ 003d6cb0
+  <- awb_check_dev_open @ 0040af6c
+  <- mpi_isp_get_focus_stats @ 003e947c
+  <- soap_trt_GetGuaranteedNumberOfVideoEncoderInstances @ 00220da4
+  <- FUN_002d922e @ 002d922e
+  <- FUN_004a3868 @ 004a3868
+  <- svp_npu_model_read_recurrent_t_max @ 004c1bb4
+  <- ot_mpi_vb_set_mod_pool_cfg @ 0039d890
+  <- ive_check_add_param_user @ 00406fd0
+  <- aibnr_pipe_extra_mem_init @ 004a0e2c
+  <- soap_ptz_GetStatus @ 00222e64
+  <- FUN_003c89ec @ 003c89ec
+  <- ot_mpi_ai_get_dmic_gain @ 004e1ce4
+  <- soap_img_SetImagingSettings @ 0021f1ac
+  <- svp_npu_driver_finish_report @ 004aec74
+  <- onvif_resolve_rly @ 00245288
+  <- ot_mpi_isp_run_once @ 003d8cf4
+  <- isp_mesh_shading_calibration @ 003dd680
+  <- soap_tev_SetSynchronizationPoint @ 0021f030
+  <- FUN_003a5aa8 @ 003a5aa8
+  <- aiv_npu_acl_prepare_aipp_databuf @ 004a7660
+  <- isp_run_thread @ 003d6408
+  <- FUN_003fac40 @ 003fac40
+  <- svp_npu_dump_deinit @ 004d0410
+  <- FUN_003a4240 @ 003a4240
+  <- aiv_ioctl_fq_source_set_depth @ 00497030
+  <- FUN_003a4278 @ 003a4278
+  <- aibnr_sink_disable @ 004922c8
+  <- soap_trt_SetVideoSourceConfiguration @ 0021fed8
+  <- svp_npu_runtime_malloc @ 004caff4
+  <- aiv_src_slv_plugin_enable @ 0049f5b0
+  <- svp_npu_rt_impl_recv_task @ 004cbff4
+  <- ot_mpi_ive_gmm2 @ 0040595c
+  <- svp_npu_model_get_input_aipp_type @ 004b3c0c
+  <- FUN_0039e6a4 @ 0039e6a4
+  <- FUN_003c8cdc @ 003c8cdc
+  <- svp_npu_model_get_model_prof_acl_api_info @ 004b35d0
+  <- FUN_003d38e4 @ 003d38e4
+  <- FUN_0034be7a @ 0034be7a
+  <- aiv_npu_mdl_execute_node @ 004a5ce4
+  <- svp_npu_model_prof_get_roi_num @ 004b4a68
+  <- ot_ivs_md_proc @ 00409958
+  <- mpi_sys_unbind @ 003a6c34
+  <- soap_trt_RemoveAudioDecoderConfiguration @ 002217dc
+  <- FUN_0039e7b0 @ 0039e7b0
+  <- FUN_004e2cec @ 004e2cec
+  <- mpi_isp_set_fswdr_attr @ 003e9348
+  <- svp_npu_model_read_item_value @ 004bc860
+  <- FUN_00427f14 @ 00427f14
+  <- svp_npu_model_read_input_quant_param @ 004c3e10
+  <- soap_trt_SetOSD @ 0022052c
+  <- ot_scene_set_dynamic_linear_drc @ 002e163a
+  <- FUN_0049026c @ 0049026c
+  <- svp_npu_runtime_free_model_id @ 004cacfc
+  <- svp_npu_math_float_to_fp16 @ 004b0298
+  <- svp_npu_model_calc_input_size @ 004b521c
+  <- iw_set_basic_config @ 0034198c
+  <- aiv_isp_get_ynet_cfg @ 00498930
+  <- soap_tds_SetZeroConfiguration @ 0021de18
+  <- mpi_sys_bind_unregister_sender @ 003a70c4
+  <- svp_npu_model_read_is_filter_bbox_enable @ 004c2034
+  <- ae_check_mem_init_func @ 003a971c
+  <- secu_mdetect_start @ 0028ae82
+  <- svp_npu_driver_wait_report @ 004aeb38
+  <- aiv_npu_svp_load @ 004a4428
+  <- svp_npu_prof_subscribe_start @ 004c92ac
+  <- FUN_0030a962 @ 0030a962
+  <- ot_mpi_isp_mem_unshare_all @ 003d8b88
+  <- soap_trt_GetSnapshotUri @ 00220350
+  <- aiv_proc_show_title @ 0049e270
+  <- mpi_isp_get_auto_color_shading_attr @ 003ebcb4
+  <- svp_npu_runtime_execute_model_async @ 004cae3c
+  <- ot_mpi_ai_disable @ 004dad04
+  <- mpi_isp_get_anti_false_color_attr @ 003ec690
+  <- svp_acl_mdl_set_aipp_input_format @ 004aaffc
+  <- ive_check_equalize_hist_param_user @ 00406f40
+  <- svp_npu_model_read_mapper_version @ 004c099c
+  <- svp_npu_runtime_impl_launch_callback @ 004cd520
+  <- aibnr_pipe_copy @ 004a0ae4
+  <- soap_tds_RemoveScopes @ 0021d670
+  <- svp_npu_model_read_input_csc_matrix_param @ 004c3f48
+  <- isp_unshare_mem_all @ 003d4da0
+  <- aiv_pthread_show_proc @ 0049e654
+  <- FUN_003fb810 @ 003fb810
+  <- svp_npu_model_calc_output_size @ 004b5900
+  <- onvif_probe_rly @ 00245080
+  <- svp_npu_mem_malloc @ 004b03f0
+  <- svp_npu_model_read_output_type @ 004c4a3c
+  <- svp_npu_model_read_layer_output_shape @ 004c5818
+  <- svp_npu_runtime_impl_process_aicpu_task @ 004cd7b8
+  <- soap_tev_GetEventProperties @ 0021eb64
+  <- FUN_0030c14c @ 0030c14c
+  <- FUN_002ff88e @ 002ff88e
+  <- awb_check_mem_init_func @ 0040b044
+  <- FUN_003a8d4c @ 003a8d4c
+  <- FUN_00439708 @ 00439708
+  <- mVisca_init @ 00271adc
+  <- soap_tr2_GetVideoEncoderConfigurations @ 00223ea8
+  <- ot_mpi_ive_warp_perspective @ 00405ddc
+  <- dnvqe_cache_process_write_in_buf @ 004eeb80
+  <- isp_smart_info_param_check @ 003e7448
+  <- ot_mpi_vb_set_cfg @ 0039d5a8
+  <- ot_scene_set_static_dehaze @ 002ddcf0
+  <- svp_npu_driver_get_sq_mem @ 004ae104
+  <- aiv_isp_set_aidrc_dataflow_status @ 004985b4
+  <- vreg_get_virt_addr_base @ 003d41b8
+  <- soap_tmd_GetSerialPortConfigurationOptions @ 00223874
+  <- sc235hai_set_custom_i2c_addr @ 00428234
+  <- aiv_src_release @ 0049f4e0
+  <- svp_npu_model_get_aicpu_task_num @ 004b0dec
+  <- soap_img_GetImagingSettings @ 0021f118
+  <- isp_demosaic_attr_check @ 003e4c90
+  <- aiv_npu_sta_proc @ 0049bc68
+  <- aiv_ioctl_fq_source_destroy @ 00496f6c
+  <- FUN_00313f9e @ 00313f9e
+  <- ot_mpi_ai_enable_chn @ 004daee4
+  <- FUN_003cfc28 @ 003cfc28
+  <- svp_npu_model_get_inout_format @ 004b23a4
+  <- aiv_npu_link_submit_task @ 004a55f0
+  <- isp_check_pointer_by_line @ 003d7fc0
+  <- FUN_003baec0 @ 003baec0
+  <- FUN_003a5984 @ 003a5984
+  <- soap_tds_GetDNS @ 0021db38
+  <- soap_trt_GetServiceCapabilities @ 0021f728
+  <- soap_trt_StopMulticastStreaming @ 002207f0
+  <- FUN_002f956e @ 002f956e
+  <- mpi_isp_set_wb_attr @ 0040b138
+  <- mpi_isp_get_drc_attr @ 003e90bc
+  <- ot_mpi_venc_destroy_chn @ 0039eb2c
+  <- aiv_sink_vi_send_frame @ 0049f35c
+  <- svp_npu_model_fill_model_info @ 004b63e8
+  <- ot_mpi_aibnr_unload_model @ 0048c0f4
+  <- FUN_004d8b84 @ 004d8b84
+  <- aiv_sink_slv_user_get_frame @ 0049eee4
+  <- isp_ca_attr_check @ 003e6098
+  <- FUN_004d9470 @ 004d9470
+  <- FUN_0034f33a @ 0034f33a
+  <- aiv_agent_get_attr @ 004953b4
+  <- FUN_004cb4b0 @ 004cb4b0
+  <- mpi_isp_get_expander_attr @ 003ed890
+  <- ot_confaccess_init @ 00316d38
+  <- ive_check_sub_param_user @ 00406ac0
+  <- ot_ivs_md_set_chn_attr @ 00409290
+  <- FUN_0039e410 @ 0039e410
+  <- FUN_00316a4e @ 00316a4e
+  <- ot_mpi_ive_acc @ 004034b4
+  <- ot_mpi_aibnr_get_attr @ 0048bb64
+  <- ot_mpi_ive_resize @ 00405b7c
+  <- ae_check_dev_open @ 003a9640
+  <- sc465sl_linear_4m30_12bit_init @ 00430c2c
+  <- aiv_ioctl_close_fd @ 004964d8
+  <- isp_fpn_correction_attr_check @ 003e75d0
+  <- FUN_004a192c @ 004a192c
+  <- ot_mpi_ao_disable_resample @ 004e3d24
+  <- soap_tr2_SetMetadataConfiguration @ 00224198
+  <- svp_npu_runtime_impl_get_current_ctx @ 004cc904
+  <- aibnr_fw_set_thread_attr @ 0048cca0
+  <- soap_tr2_GetMetadataConfigurations @ 00223fc8
+  <- svp_npu_model_read_model_type @ 004c0dd8
+  <- soap_tds_SetScopes @ 0021d5bc
+  <- aibnr_pipe_check_pattern @ 004a0aac
+  <- mpi_isp_set_piris_attr @ 003ac5ac
+  <- aacRegisterSbrEncLib @ 00515000
+  <- calc_flicker_type @ 0041d8b4
+  <- ot_mpi_ao_clr_pub_attr @ 004e4f30
+  <- ot_scene_set_static_csc @ 002ddf4c
+  <- ot_mpi_ive_map @ 004057e4
+  <- aiv_npu_tq_put_free_node @ 0049d224
+  <- soap_trt_GetCompatibleVideoEncoderConfigurations @ 0021fcbc
+  <- svp_npu_model_get_inout_idx_by_name @ 004b25e0
+  <- ot_scene_set_ae_weight_table @ 002db82c
+  <- audio_vqe_register_module_handle @ 004ebe04
+  <- aibnr_mdl_load @ 0048d818
+  <- isp_get_wb_grid_info @ 003de32c
+  <- aibnr_source_release_frame @ 00492780
+  <- FUN_0030b8f2 @ 0030b8f2
+  <- aiv_npu_load @ 0049ad30
+  <- svp_npu_runtime_impl_execute_model_async @ 004ce198
+  <- FUN_003f9ba0 @ 003f9ba0
+  <- svp_npu_model_read_input_batch_num @ 004c35b8
+  <- svp_npu_runtime_create_ctx @ 004ca64c
+  <- adec_send_ao_proc @ 004d5dc0
+  <- svp_npu_model_read_output_info @ 004c4200
+  <- svp_npu_model_set_model_axi_params @ 004b3320
+  <- svp_acl_mdl_destroy_aipp @ 004aaf30
+  <- isp_check_bool @ 003d80a4
+  <- aiv_agent_proc @ 004958ec
+  <- FUN_004d3ee8 @ 004d3ee8
+  <- FUN_002896c6 @ 002896c6
+  <- soap_tmd_SetDigitalInputConfigurations @ 00223704
+  <- ot_confaccess_get_int @ 003173f2
+  <- soap_tr2_SetVideoSourceConfiguration @ 002240f8
+  <- svp_npu_model_read_recurrent_seq_max @ 004c1c74
+  <- svp_npu_model_set_config_opt @ 004b317c
+  <- aiv_isp_get_long_frame_mode_enable @ 00498404
+  <- FUN_003f4574 @ 003f4574
+  <- svp_npu_driver_wait_sq_task @ 004ae638
+  <- ot_mpi_sys_flush_cache @ 003a76b8
+  <- isp_get_ae_grid_info @ 003dde9c
+  <- svp_npu_model_check_priority_timeout_config_opt @ 004b8fb8
+  <- ot_mpi_ao_set_track_mode @ 004e4e64
+  <- FUN_0034dbc8 @ 0034dbc8
+  <- svp_npu_mdl_get_output_info_by_aipp_node_index @ 004bc360
+  <- aiv_agent_callback_failure @ 004a210c
+  <- soap_ptz_Stop @ 00222ef4
+  <- aiv_mem_vb_sub @ 0049a574
+  <- soap_ptz_GetNode @ 0022208c
+  <- ot_mpi_sys_init @ 0039c284
+  <- ot_mpi_isp_mem_share_all @ 003d8a1c
+  <- soap_tr2_DeleteProfile @ 00223cc0
+  <- isp_demosaic_auto_attr_arch_check @ 00401cd4
+  <- mpi_svp_npu_prof_start @ 004c7110
+  <- svp_npu_runtime_impl_func_enter @ 004cba08
+  <- FUN_004a36a4 @ 004a36a4
+  <- ot_mpi_aibnr_query_model_list @ 0048c3e4
+  <- svp_npu_model_get_inout_data_type @ 004b24ac
+  <- soap_tr2_GetVideoSourceConfigurationOptions @ 0022423c
+  <- ive_check_xor_param_user @ 0040707c
+  <- isp_check_isp_kernel_init @ 003d7edc
+  <- soap_trt_GetAudioDecoderConfigurationOptions @ 0022191c
+  <- FUN_002d9a78 @ 002d9a78
+  <- ot_scene_set_dynamic_fpn @ 002e58be
+  <- FUN_003d7df0 @ 003d7df0
+  <- ot_mpi_vb_get_blk @ 0039d1ac
+  <- md_check_image_user @ 0040a53c
+  <- soap_trt_GetProfiles @ 0021f7a0
+  <- aibnr_fw_init @ 0048c878
+  <- FUN_003e7810 @ 003e7810
+  <- FUN_00289950 @ 00289950
+  <- soap_trt_SetAudioOutputConfiguration @ 00221ac4
+  <- ot_mpi_adec_send_stream @ 004d5368
+  <- svp_npu_runtime_destroy_ctx @ 004ca6fc
+  <- soap_tr2_GetVideoSourceModes @ 002245fc
+  <- svp_npu_model_check_model_info @ 004bde84
+  <- FUN_004153ac @ 004153ac
+  <- svp_npu_model_get_inout_reuse_type @ 004b0cdc
+  <- soap_ptz_GeoMove @ 00222f94
+  <- aiv_src_fq_release_frame @ 004a6428
+  <- svp_npu_runtime_process_report @ 004ca538
+  <- soap_tds_SystemReboot @ 0021d228
+  <- ot_mpi_vi_send_pipe_raw @ 003a2934
+  <- ot_scene_get_scene_fps @ 002db6c2
+  <- FUN_002d8b8e @ 002d8b8e
+  <- soap_tr2_GetStreamUri @ 002244b0
+  <- FUN_002d9844 @ 002d9844
+  <- svp_npu_model_calc_model_info_size @ 004b6070
+  <- FUN_0030c36c @ 0030c36c
+  <- ae_check_handle @ 003ae440
+  <- FUN_004cb898 @ 004cb898
+  <- soap_tds_GetWsdlUrl @ 0021e0cc
+  <- ot_mpi_vb_get_common_pool_id @ 0039dc20
+  <- ot_mpi_ao_send_frame @ 004e3e10
+  <- isp_alg_register_drc @ 00419db4
+  <- ot_mpi_ao_enable_chn @ 004e336c
+  <- ot_mpi_ai_set_record_vqe_attr @ 004dd75c
+  <- isp_sensor_update_all @ 003d7370
+  <- svp_npu_model_create_config_handle @ 004b8ecc
+  <- ot_mpi_sys_mmz_remap_cached @ 003a7cf8
+  <- isp_alg_en_exit @ 003d2698
+  <- FUN_003495d0 @ 003495d0
+  <- FUN_0030c854 @ 0030c854
+  <- isp_get_be_buf_first @ 003ccb50
+  <- svp_acl_mdl_set_aipp_dtc_pixel_max @ 004ac3a8
+  <- ot_mpi_isp_sensor_reg_callback @ 003d9804
+  <- aiv_ioctl_vdb_get_value @ 00496b10
+  <- ive_check_sad_param_user @ 004077a8
+  <- svp_npu_mem_malloc_host @ 004b0724
+  <- ot_scene_set_scene_fps @ 002db5bc
+  <- FUN_003a1b44 @ 003a1b44
+  <- svp_npu_prof_subscribe_get_op_end @ 004c9c34
+  <- FUN_004d642c @ 004d642c
+  <- svp_npu_model_calc_stride @ 004b4f64
+  <- svp_npu_model_read_layer_dump_en @ 004c6298
+  <- FUN_002f73ee @ 002f73ee
+  <- get_wifi_wpa_status @ 0033fe70
+  <- aiv_vdb_init @ 004a03b8
+  <- FUN_00302568 @ 00302568
+  <- soap_ptz_RelativeMove @ 002224f0
+  <- svp_npu_mem_get_smmz_mem_info @ 004b03b8
+  <- FUN_003a1b04 @ 003a1b04
+  <- ot_mpi_isp_set_dcf_info @ 003da318
+  <- isp_sharpen_auto_attr_arch_check @ 00401434
+  <- svp_npu_model_read_aicpu_attr_param @ 004c27f4
+  <- imx678_linear_8m25_10bit_init @ 0043733c
+  <- soap_tev_Subscribe @ 0021ebac
+  <- ot_confaccess_get_double @ 0031759c
+  <- scene_set_qp @ 002f6396
+  <- FUN_0028a2f2 @ 0028a2f2
+  <- svp_npu_destroy_data_buffer @ 004ad744
+  <- aiv_input_send_node @ 00495df4
+  <- build_trt_GetStreamUri_rly_xml @ 0023ee7c
+  <- mpi_isp_set_dehaze_attr @ 003e9134
+  <- soap_trt_GetVideoEncoderConfigurations @ 0021fc7c
+  <- FUN_0035001a @ 0035001a
+  <- svp_npu_model_read_nets_roi_layer_num @ 004c52e8
+  <- svp_npu_prof_subscribe_get_op_desc_size @ 004c96b0
+  <- isp_dng_ext_regs_initialize @ 003dfe38
+  <- soap_tds_GetSystemDateAndTime @ 0021d0fc
+  <- soap_tev_CreatePullPointSubscription @ 0021ee14
+  <- svp_npu_model_read_input_offline_crop_pos @ 004c3930
+  <- ot_mpi_vi_set_wdr_fusion_grp_attr @ 003a20f0
+  <- isp_sharpen_manual_attr_arch_check @ 00401250
+  <- isp_stt_buf_init @ 003cc600
+  <- svp_npu_driver_set_op_wait_timeout @ 004aede4
+  <- soap_ptz_GetPresets @ 00222630
+  <- aiv_ioctl_check_chipid @ 00498098
+  <- soap_ptz_OperatePresetTour @ 00222c78
+  <- FUN_003df270 @ 003df270
+  <- isp_nr_dering_attr_check @ 003e5470
+  <- aiv_ioctl_sink_get_frame @ 00497eac
+  <- FUN_00408790 @ 00408790
+
+======================================================================
+FUNCTION: isp_malloc
+ADDRESS:  003d6ad4
+SIZE:     8 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_malloc(size_t param_1)
+
+{
+  if (param_1 != 0) {
+    malloc(param_1);
+    return;
+  }
+  return;
+}
+
+
+--- CALLS TO ---
+  -> malloc @ 00161fa4
+--- CALLED BY ---
+  <- FUN_003f7f4c @ 003f7f4c
+  <- calc_flicker_type @ 0041d8b4
+  <- FUN_0041308c @ 0041308c
+  <- FUN_0041aba0 @ 0041aba0
+  <- drc_ctx_init @ 0041862c
+  <- FUN_003f1688 @ 003f1688
+  <- isp_sensor_ctx_init @ 003d7278
+  <- isp_get_lightbox_gain @ 003dcb08
+  <- FUN_004153ac @ 004153ac
+  <- isp_reg_cfg_init @ 003d2a68
+  <- FUN_003f921c @ 003f921c
+  <- isp_mesh_shading_calibration @ 003dd680
+  <- FUN_003fbe54 @ 003fbe54
+  <- FUN_003fb810 @ 003fb810
+  <- mpi_isp_set_gamma_attr @ 003eaf94
+  <- FUN_003f5204 @ 003f5204
+  <- FUN_003f71c4 @ 003f71c4
+  <- FUN_003fac40 @ 003fac40
+  <- FUN_0041bf08 @ 0041bf08
+  <- FUN_003fee24 @ 003fee24
+  <- FUN_003f8ce0 @ 003f8ce0
+
+======================================================================
+FUNCTION: memset_s
+ADDRESS:  00395b08
+SIZE:     56 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 memset_s(void *param_1,uint param_2,int param_3,uint param_4)
+
+{
+  if (-1 < (int)param_2) {
+    if (param_1 == (void *)0x0) {
+      if (param_2 != 0) {
+        return 0x16;
+      }
+      return 0x22;
+    }
+    if (param_4 <= param_2) {
+      memset(param_1,param_3,param_4);
+      return 0;
+    }
+    if (param_2 != 0) {
+      memset(param_1,param_3,param_2);
+      return 0xa2;
+    }
+  }
+  return 0x22;
+}
+
+
+--- CALLS TO ---
+  -> memset @ 00161b68
+--- CALLED BY ---
+  <- isp_global_initialize @ 003dfd4c
+  <- FUN_0041e7f4 @ 0041e7f4
+  <- mpi_isp_get_ae_route_sf_attr_ex @ 003ac388
+  <- ot_scene_init @ 002dae44
+  <- aiv_frame_create_queue @ 004a2e9c
+  <- aiv_mem_free_mmz @ 00499230
+  <- unify_uapi_cipher_hash_update @ 004aa93c
+  <- FUN_0049026c @ 0049026c
+  <- FUN_00316260 @ 00316260
+  <- dehaze_init_param @ 00415710
+  <- FUN_002f67b2 @ 002f67b2
+  <- svp_npu_model_calc_input_size @ 004b521c
+  <- isp_drc_param_init @ 004188a4
+  <- sample_comm_send_roimap_frame_proc @ 002cb3e8
+  <- FUN_002d5826 @ 002d5826
+  <- FUN_003f1284 @ 003f1284
+  <- OT_PQ_GetStructParamLen @ 00399438
+  <- FUN_003f7f4c @ 003f7f4c
+  <- svp_acl_mdl_create_aipp @ 004aae68
+  <- ot_scene_create_param @ 00314064
+  <- FUN_002d5698 @ 002d5698
+  <- ot_mpi_ao_disable_vqe @ 004e6238
+  <- awb_wb_matrix_calculate @ 0040ef9c
+  <- ot_mpi_ai_set_talk_vqe_attr @ 004deba4
+  <- unify_uapi_cipher_hash_destroy @ 004aabc8
+  <- FUN_003f71c4 @ 003f71c4
+  <- FUN_002bc6e4 @ 002bc6e4
+  <- upvqe_create @ 004eda54
+  <- FUN_002d857a @ 002d857a
+  <- FUN_004e7610 @ 004e7610
+  <- FUN_002bc85a @ 002bc85a
+  <- FUN_002cee7e @ 002cee7e
+  <- FUN_003fee24 @ 003fee24
+  <- svp_npu_dump_search_dump_info @ 004d0e24
+  <- FUN_004ea448 @ 004ea448
+  <- unify_uapi_cipher_hash_get @ 004aaab8
+  <- FUN_002d3c3a @ 002d3c3a
+  <- svp_npu_prof_subscribe_init @ 004c934c
+  <- FUN_0048d084 @ 0048d084
+  <- sample_comm_venc_stop_rateauto @ 002cdeee
+  <- FUN_003fb810 @ 003fb810
+  <- audio_dnvqe_create @ 004ee940
+  <- ot_ivs_md_init @ 00408990
+  <- secu_ivp_start @ 003151b2
+  <- svp_npu_model_calc_output_size @ 004b5900
+  <- ot_mpi_ai_disable_resample @ 004db5f8
+  <- sample_comm_venc_get_venc_stream_proc @ 002cc21e
+  <- FUN_00314b3e @ 00314b3e
+  <- mpi_isp_get_ae_route_attr @ 003aafdc
+  <- FUN_002ce9e0 @ 002ce9e0
+  <- FUN_00314d78 @ 00314d78
+  <- svp_npu_model_format_name @ 004b9618
+  <- FUN_003148f6 @ 003148f6
+  <- FUN_004e24c4 @ 004e24c4
+  <- unify_uapi_cipher_hash_finish @ 004aa9e4
+  <- svp_npu_model_security_unload @ 004b8c14
+  <- RES_resampler_create @ 004ec690
+  <- ot_mpi_ai_disable_chn @ 004db114
+  <- FUN_002bceea @ 002bceea
+  <- HalVgsAddLumaTask @ 00480f38
+  <- FUN_002c4834 @ 002c4834
+  <- svp_npu_mdl_fill_output_aipp_data_buf @ 004bc3ac
+  <- ot_mpi_awb_sensor_unreg_callback @ 00414480
+  <- FUN_004e7144 @ 004e7144
+  <- isp_wdr_cfg_set @ 003d5140
+  <- ot_mpi_rgn_get_attr @ 0039b698
+  <- FUN_004ed0a0 @ 004ed0a0
+  <- FUN_00436ef4 @ 00436ef4
+  <- FUN_002bc7b4 @ 002bc7b4
+  <- PQ_BIN_SetNRDataV2 @ 00399538
+  <- ot_mpi_ai_enable_chn @ 004daee4
+  <- mpi_sys_bind_init @ 003a7250
+  <- mpi_adec_exit @ 004d47b8
+  <- FUN_003f5204 @ 003f5204
+  <- FUN_004a8fcc @ 004a8fcc
+  <- ot_mpi_ao_set_mute @ 004e4c68
+  <- FUN_002ceed8 @ 002ceed8
+  <- ot_mpi_ae_iris_unregister_callback @ 003c6904
+  <- svp_npu_prof_save_init @ 004c8bc8
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 003d9e68
+  <- FUN_003149e0 @ 003149e0
+  <- FUN_002c4b9c @ 002c4b9c
+  <- FUN_0041308c @ 0041308c
+  <- osal_opendev @ 004a9bc4
+  <- aiv_npu_acl_create_dataset_pool @ 004a7e74
+  <- FUN_002bca4c @ 002bca4c
+  <- isp_sensor_ctx_init @ 003d7278
+  <- aiv_mem_zalloc @ 00498eb8
+  <- svp_npu_model_fill_model_info @ 004b63e8
+  <- isp_reg_cfg_init @ 003d2a68
+  <- aiv_mem_get_blk_in_frame @ 004997c0
+  <- FUN_003fbe54 @ 003fbe54
+  <- svp_npu_prof_subscribe_postend @ 004c91f8
+  <- FUN_002ccef2 @ 002ccef2
+  <- FUN_002ce678 @ 002ce678
+  <- aiv_npu_tq_create @ 0049cdb8
+  <- af_buf_init @ 004e6e1c
+  <- FUN_004e74d4 @ 004e74d4
+  <- unify_uapi_cipher_hash_set @ 004aab40
+  <- isp_mem_info_set @ 003d50ac
+  <- mpi_aenc_exit @ 004d77f0
+  <- mpi_isp_get_ae_route_attr_ex @ 003ac0c0
+  <- FUN_002cae58 @ 002cae58
+  <- FUN_002bcd5c @ 002bcd5c
+  <- SecInputS @ 00397ac4
+  <- FUN_0040d25c @ 0040d25c
+  <- mpi_sys_bind @ 003a6a18
+  <- mpi_ai_exit @ 004d9690
+  <- FUN_002c4904 @ 002c4904
+  <- ot_mpi_ao_disable_resample @ 004e3d24
+  <- FUN_00408690 @ 00408690
+  <- calc_flicker_type @ 0041d8b4
+  <- svp_npu_dump_aicpu_result_file @ 004d0848
+  <- FUN_00411e64 @ 00411e64
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 003d9d3c
+  <- svp_npu_runtime_impl_deinit_resource @ 004ce5a0
+  <- mpi_aenc_init @ 004d67a8
+  <- osal_dev_register @ 004aa22c
+  <- open_aac_encoder @ 004eff3c
+  <- FUN_004ea3b4 @ 004ea3b4
+  <- ot_ivs_md_create_chn @ 00408c5c
+  <- isp_get_af_grid_info @ 003de108
+  <- FUN_004ee550 @ 004ee550
+  <- isp_get_wb_grid_info @ 003de32c
+  <- FUN_002d5388 @ 002d5388
+  <- FUN_002cbe58 @ 002cbe58
+  <- FUN_004a915c @ 004a915c
+  <- drc_ctx_init @ 0041862c
+  <- isp_exit @ 003d6568
+  <- isp_be_stats_estimate @ 00416b5c
+  <- dehaze_reg_update @ 00415774
+  <- dnvqe_create @ 004ef120
+  <- svp_npu_dump_deinit_dump_info_list @ 004d0d28
+  <- isp_get_ae_grid_info @ 003dde9c
+  <- svp_npu_mdl_fill_input_aipp_data_buf @ 004ba904
+  <- ot_mpi_ai_disable_vqe @ 004e0628
+  <- ot_mpi_adec_create_chn @ 004d4a9c
+  <- FUN_003992dc @ 003992dc
+  <- ot_mpi_adec_unregister_decoder @ 004d4978
+  <- mpi_ao_init @ 004e2544
+  <- svp_npu_prof_json_exit @ 004c8b24
+  <- PaddingYuv400 @ 0046348c
+  <- cis_register_callback @ 0042341c
+  <- FUN_00397654 @ 00397654
+  <- FUN_002d5020 @ 002d5020
+  <- FUN_002bcfb6 @ 002bcfb6
+  <- FUN_002d4dc2 @ 002d4dc2
+  <- sample_comm_venc_mosaic_map_send_frame_proc @ 002cdb18
+  <- FUN_003ba484 @ 003ba484
+  <- aibnr_task_fill_channel @ 00492a58
+  <- svp_npu_start_parse_json_data @ 004afbb4
+  <- ot_mpi_aenc_create_chn @ 004d6a7c
+  <- FUN_004a8a98 @ 004a8a98
+  <- FUN_003f1688 @ 003f1688
+  <- FUN_004da80c @ 004da80c
+  <- aac_deinit_enc_lib @ 004ef6d0
+  <- mpi_isp_get_ae_route_sf_attr @ 003ab240
+  <- acs_light_model @ 00420950
+  <- mpi_ai_init @ 004d95e4
+  <- mpi_adec_init @ 004d46a4
+  <- FUN_002d5196 @ 002d5196
+  <- aiv_npu_acl_destroy_dataset_pool @ 004a7d58
+  <- ot_mpi_vb_get_blk @ 0039d1ac
+  <- unify_uapi_cipher_hash_start @ 004aa868
+  <- FUN_003b02c8 @ 003b02c8
+  <- mpi_ao_exit @ 004e25f8
+  <- FUN_004153ac @ 004153ac
+  <- FUN_003f921c @ 003f921c
+  <- ot_mpi_aenc_send_frame @ 004d7924
+  <- __parse_bin_data @ 0028f38e
+  <- FUN_002d50f0 @ 002d50f0
+  <- FUN_002ce748 @ 002ce748
+  <- FUN_002ce41a @ 002ce41a
+  <- upvqe_process_extend_vqe @ 004edc1c
+  <- aiv_output_create_queue @ 0049de18
+  <- HalVgsAddScaleTask @ 00480e30
+  <- FUN_004e72ac @ 004e72ac
+  <- audio_upvqe_create @ 004eaad4
+  <- FUN_0031473c @ 0031473c
+  <- ot_mpi_ao_enable_chn @ 004e336c
+  <- isp_set_ldci_image_size @ 0041a9cc
+  <- ot_mpi_ai_set_record_vqe_attr @ 004dd75c
+  <- svp_npu_model_create_config_handle @ 004b8ecc
+  <- FUN_002ca76c @ 002ca76c
+  <- ot_aacenc_init_default_config @ 0051428c
+  <- aiv_mem_zalloc_mmz @ 004990cc
+  <- FUN_0041a604 @ 0041a604
+  <- sample_comm_vi_get_default_vi_cfg @ 002d005c
+  <- svp_npu_model_create_dataset @ 004b8564
+  <- secu_mdetect_init @ 0028aad8
+  <- svp_npu_model_load @ 004b88c0
+  <- open_opus_decoder @ 004f0368
+  <- ot_mpi_ai_enable_vqe @ 004dff9c
+  <- svp_npu_prof_save_start @ 004c8d74
+  <- ot_mpi_sys_get_mem_cfg @ 0039c5c4
+  <- dnvqe_process_frame @ 004ef4e4
+  <- FUN_004ee4bc @ 004ee4bc
+  <- PaddingYvu420sp @ 004634a0
+  <- FUN_00430844 @ 00430844
+  <- FUN_002c45d6 @ 002c45d6
+  <- svp_npu_prof_json_init @ 004c89e8
+  <- FUN_0041bf08 @ 0041bf08
+  <- FUN_0039e5c8 @ 0039e5c8
+  <- FUN_003a69cc @ 003a69cc
+  <- aiv_npu_acl_clear_aipp_mem @ 004a763c
+  <- osal_dev_create @ 004a9fbe
+  <- FUN_002bc486 @ 002bc486
+  <- ot_mpi_sys_set_mem_cfg @ 0039c4dc
+  <- ot_mpi_vb_create_pool @ 0039d048
+  <- FUN_004d9150 @ 004d9150
+  <- open_opus_encoder @ 004f0520
+  <- FUN_004d94f4 @ 004d94f4
+  <- FUN_0041fd54 @ 0041fd54
+  <- RES_resampler_process_frame @ 004ec994
+  <- FUN_004af520 @ 004af520
+  <- isp_mesh_shading_calibration @ 003dd680
+  <- ae_sup_quick_start_initialize @ 003ba5d0
+  <- mpi_audio_get_mem_cfg @ 004e6910
+  <- svp_npu_runtime_impl_init_resource @ 004ce3fc
+  <- FUN_002d5880 @ 002d5880
+  <- ot_mpi_aenc_unregister_encoder @ 004d695c
+  <- FUN_002cecf0 @ 002cecf0
+  <- FUN_003fac40 @ 003fac40
+  <- svp_npu_model_set_prof_addr_and_stride @ 004b5f30
+  <- FUN_00399a84 @ 00399a84
+  <- FUN_003f8ce0 @ 003f8ce0
+  <- FUN_002c5168 @ 002c5168
+  <- FUN_004e743c @ 004e743c
+  <- FUN_002c503a @ 002c503a
+  <- FUN_0041aba0 @ 0041aba0
+  <- sample_comm_venc_get_venc_stream_proc_svc_t @ 002cd1aa
+  <- sample_comm_sys_get_default_vb_cfg @ 002c5846
+  <- ot_mpi_ive_st_corner @ 00404f74
+  <- aiv_npu_link_get_free_task @ 004a5480
+  <- FUN_002c4eac @ 002c4eac
+  <- ot_mpi_ae_sensor_unreg_callback @ 003b23a8
+  <- FUN_002c49aa @ 002c49aa
+  <- upvqe_create_extend_vqe @ 004ede74
+  <- FUN_0040d162 @ 0040d162
+  <- FUN_004e2290 @ 004e2290
+  <- FUN_00314658 @ 00314658
+  <- svp_npu_prof_subscribe_prestart @ 004c9018
+  <- FUN_002ce7ee @ 002ce7ee
+  <- aiv_input_create_queue @ 00496268
+  <- secu_stream_read @ 00283060
+  <- mpi_sys_bind_register_sender @ 003a6e9c
+
+======================================================================
+FUNCTION: isp_mem_init_update_ctx
+ADDRESS:  003d4e4c
+SIZE:     424 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int isp_mem_init_update_ctx(undefined4 param_1,int param_2)
+
+{
+  int iVar1;
+  int iVar2;
+  char *__format;
+  char *pcVar3;
+  undefined4 uVar4;
+  undefined4 local_6c [19];
+  int local_20;
+  int local_1c;
+  
+  local_1c = __stack_chk_guard;
+  iVar1 = isp_get_fd();
+  iVar1 = ioctl(iVar1,0xc0087045,param_2 + 0x164c);
+  if (iVar1 == 0) {
+    iVar1 = isp_get_fd(param_1);
+    iVar1 = ioctl(iVar1,0x801c7071,param_2 + 0x176c);
+    if (iVar1 == 0) {
+      iVar1 = isp_get_fd(param_1);
+      iVar1 = ioctl(iVar1,0xc0047041,param_2 + 0x1654);
+      if (iVar1 == 0) {
+        iVar1 = isp_get_fd(param_1);
+        iVar1 = ioctl(iVar1,0x80047023,param_2 + 0x98);
+        if (iVar1 == 0) {
+          iVar1 = isp_get_fd(param_1);
+          iVar1 = ioctl(iVar1,0x80017060,param_2 + 0x78);
+          if (iVar1 == 0) {
+            iVar1 = isp_get_fd(param_1);
+            iVar1 = ioctl(iVar1,0xc0087008,&DAT_0076f1f8);
+            if (iVar1 == 0) {
+              iVar1 = isp_block_init(param_1,param_2 + 0x30);
+              if (iVar1 == 0) {
+                *(undefined4 *)(param_2 + 0x2774) = 0xffffffff;
+                *(undefined4 *)(param_2 + 0x2778) = 0xffffffff;
+                *(undefined4 *)(param_2 + 0x2770) = 0;
+                iVar1 = isp_get_fd(param_1);
+                iVar1 = ioctl(iVar1,0x8050703e,local_6c);
+                if (iVar1 == 0) {
+                  *(undefined4 *)(param_2 + 0xa0) = local_6c[0];
+                  if (local_20 != 1) {
+                    if (local_20 == 0) {
+                      *(undefined4 *)(param_2 + 8) = 0;
+                    }
+                    goto LAB_003d4eba;
+                  }
+                  *(undefined4 *)(param_2 + 8) = 1;
+                  iVar2 = isp_sensor_ctx_init(param_1);
+                  if (iVar2 == 0) goto LAB_003d4eba;
+                }
+                else {
+                  fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:ISP[%d] work mode get failed!\n",
+                          "isp_yuv_mode_get",0xa8,param_1);
+                  iVar2 = iVar1;
+                }
+                iVar1 = iVar2;
+              }
+            }
+            else {
+              fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:register ISP[%d] lib info ec %x!\n",
+                      "isp_get_version",0x73,param_1,iVar1);
+              iVar1 = -0x5fe37ff9;
+            }
+            goto LAB_003d4eba;
+          }
+          uVar4 = 0xee;
+          pcVar3 = "isp_mem_init_update_ctx";
+          __format = "[Func]:%s [Line]:%d [Info]:ISP[%d] get be buf num failed\n";
+        }
+        else {
+          uVar4 = 0xe7;
+          pcVar3 = "isp_mem_init_update_ctx";
+          __format = "[Func]:%s [Line]:%d [Info]:ISP[%d] get p2en info failed\n";
+        }
+      }
+      else {
+        uVar4 = 0xd9;
+        pcVar3 = "isp_mem_init_update_ctx";
+        __format = "[Func]:%s [Line]:%d [Info]:ISP[%d] get HDR attr failed\n";
+      }
+    }
+    else {
+      uVar4 = 0xd2;
+      pcVar3 = "isp_mem_init_update_ctx";
+      __format = "[Func]:%s [Line]:%d [Info]:ISP[%d] get stagger failed\n";
+    }
+  }
+  else {
+    uVar4 = 0xc0;
+    pcVar3 = "isp_get_pipe_size";
+    __format = "[Func]:%s [Line]:%d [Info]:ISP[%d] get pipe size failed\n";
+  }
+  fprintf((FILE *)0x0,__format,pcVar3,uVar4,param_1);
+LAB_003d4eba:
+  if (__stack_chk_guard == local_1c) {
+    return iVar1;
+  }
+                    /* WARNING: Subroutine does not return */
+  __stack_chk_fail();
+}
+
+
+--- CALLS TO ---
+  -> __stack_chk_fail @ 00161978
+  -> fprintf @ 00161568
+  -> isp_block_init @ 003df40c
+  -> isp_sensor_ctx_init @ 003d7278
+  -> ioctl @ 001617c4
+  -> isp_get_fd @ 003d82dc
+--- CALLED BY ---
+  <- ot_mpi_isp_mem_init @ 003d841c
+
+======================================================================
+FUNCTION: memcpy_s
+ADDRESS:  00394b72
+SIZE:     60 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 memcpy_s(void *param_1,uint param_2,void *param_3,uint param_4)
+
+{
+  undefined4 uVar1;
+  
+  if (((((param_4 <= param_2) && (param_1 != (void *)0x0)) && (param_3 != (void *)0x0)) &&
+      ((-1 < (int)param_2 && (param_4 != 0)))) &&
+     (((param_3 < param_1 && ((void *)((int)param_3 + param_4) <= param_1)) ||
+      ((param_1 < param_3 && ((void *)((int)param_1 + param_4) <= param_3)))))) {
+    memcpy(param_1,param_3,param_4);
+    return 0;
+  }
+  if ((int)param_2 < 1) {
+    uVar1 = 0x22;
+  }
+  else if (param_1 == (void *)0x0) {
+    uVar1 = 0x16;
+  }
+  else if (param_3 == (void *)0x0) {
+    memset(param_1,0,param_2);
+    uVar1 = 0x96;
+  }
+  else if (param_2 < param_4) {
+    memset(param_1,0,param_2);
+    uVar1 = 0xa2;
+  }
+  else if (((param_3 < param_1) && (param_1 < (void *)((int)param_3 + param_4))) ||
+          ((param_1 < param_3 && (param_3 < (void *)(param_4 + (int)param_1))))) {
+    memset(param_1,0,param_2);
+    uVar1 = 0xb6;
+  }
+  else {
+    uVar1 = 0;
+  }
+  return uVar1;
+}
+
+
+--- CALLS TO ---
+  -> memcpy @ 001620e4
+--- CALLED BY ---
+  <- ot_mpi_ive_add @ 00404228
+  <- ot_scene_set_scene_mode @ 002db0f2
+  <- sample_comm_vi_enable_fpn_correction @ 002d31b4
+  <- ot_mpi_rgn_set_chn_display_attr @ 0039bcc0
+  <- ot_mpi_ive_alpha_blending @ 00403334
+  <- FUN_002cf44c @ 002cf44c
+  <- ot_mpi_ai_get_talk_vqe_attr @ 004dfc38
+  <- ot_mpi_rgn_get_chn_display_attr @ 0039bd6c
+  <- ot_mpi_ive_erode @ 00402c8c
+  <- FUN_0049026c @ 0049026c
+  <- ot_mpi_ive_st_cand_corner @ 00404a3c
+  <- FUN_002f67b2 @ 002f67b2
+  <- isp_drc_param_init @ 004188a4
+  <- ot_mpi_rgn_detach_from_dev @ 0039bc2c
+  <- svp_npu_prof_thread @ 004c818c
+  <- ot_mpi_vi_get_wdr_fusion_grp_attr @ 003a21a4
+  <- ot_scene_create_param @ 00314064
+  <- ot_mpi_ao_disable_vqe @ 004e6238
+  <- awb_wb_matrix_calculate @ 0040ef9c
+  <- ot_mpi_ive_threshold_s16 @ 00403e44
+  <- ot_mpi_aenc_register_encoder @ 004d684c
+  <- ot_mpi_ai_set_talk_vqe_attr @ 004deba4
+  <- sample_common_svp_vgs_fill_rect @ 00289156
+  <- ot_mpi_vb_get_pool_info @ 0039d660
+  <- aiv_npu_svp_load @ 004a4428
+  <- FUN_003f79c8 @ 003f79c8
+  <- ot_mpi_isp_set_frame_info @ 003da56c
+  <- svp_npu_model_read_original_net_ops @ 004c1284
+  <- FUN_002bd006 @ 002bd006
+  <- osal_copy_from_user @ 004a87b2
+  <- FUN_002bc6e4 @ 002bc6e4
+  <- upvqe_create @ 004eda54
+  <- isp_init @ 003d5a18
+  <- FUN_004d8f78 @ 004d8f78
+  <- ot_mpi_isp_awb_lib_reg_callback @ 003d9a9c
+  <- ot_mpi_rgn_set_dev_display_attr @ 0039be24
+  <- FUN_003e7c50 @ 003e7c50
+  <- ot_mpi_ai_release_raw_frame @ 004e0f58
+  <- ot_mpi_ao_save_file @ 004e6420
+  <- ot_mpi_ai_get_record_vqe_attr @ 004de7c0
+  <- ot_mpi_ive_dilate @ 00402b40
+  <- aiv_npu_sta_start @ 0049b648
+  <- aiv_src_slv_plugin_get_frame @ 0049f908
+  <- isp_csc_param_init @ 003f6548
+  <- ot_mpi_ive_sad @ 00405348
+  <- FUN_0048d084 @ 0048d084
+  <- aibnr_pipe_copy @ 004a0ae4
+  <- ot_mpi_ive_and @ 00402f24
+  <- FUN_002be0c2 @ 002be0c2
+  <- ot_mpi_venc_query_status @ 0039ea20
+  <- isp_update_dng_image_dynamic_info @ 003e0400
+  <- ot_mpi_vi_set_distribute_grp_attr @ 003a3e80
+  <- ot_mpi_vpss_send_frame_ex @ 003a48c4
+  <- FUN_003fb810 @ 003fb810
+  <- aiv_ioctl_fq_source_send_frame @ 004970fc
+  <- ot_ivs_md_get_bg @ 00409704
+  <- aiv_ioctl_fq_sink_get_frame @ 004977d8
+  <- FUN_0048e490 @ 0048e490
+  <- upvqe_process_frame @ 004ee070
+  <- FUN_003fc1b8 @ 003fc1b8
+  <- ot_mpi_ive_warp_perspective @ 00405ddc
+  <- FUN_003f2d04 @ 003f2d04
+  <- isp_reg_cfg_ctrl @ 003d34c8
+  <- FUN_004201a0 @ 004201a0
+  <- svp_npu_model_format_name @ 004b9618
+  <- dnvqe_cache_process_write_in_buf @ 004eeb80
+  <- aiv_input_get_tail_node @ 00495fd4
+  <- sample_comm_vi_enable_fpn_correction_for_scene @ 002d35f4
+  <- svp_npu_mdl_impl_get_input_extra_dims @ 004b9c38
+  <- ot_scene_set_pipe_param @ 002e6020
+  <- HalVgsAddLumaTask @ 00480f38
+  <- ot_mpi_ae_unregister @ 003b21e4
+  <- ae_route_initialize @ 003bec08
+  <- FUN_002c4834 @ 002c4834
+  <- ot_mpi_rgn_set_bmp @ 0039b83c
+  <- ot_scene_get_scene_mode @ 002db42c
+  <- ot_mpi_ae_sensor_reg_callback @ 003b22cc
+  <- FUN_003c8a84 @ 003c8a84
+  <- aibnr_tnr_fill_in_channel @ 004930e4
+  <- ot_mpi_rgn_detach_from_chn @ 0039baec
+  <- ot_mpi_rgn_attach_to_dev @ 0039bb80
+  <- aiv_src_vi_release_frame @ 0049fd98
+  <- svp_npu_prof_subscribe_get_op_type @ 004c98c0
+  <- isp_wdr_cfg_set @ 003d5140
+  <- ot_mpi_rgn_get_attr @ 0039b698
+  <- FUN_003f15b0 @ 003f15b0
+  <- FUN_004ed0a0 @ 004ed0a0
+  <- isp_sensor_reg_callback @ 003d72e0
+  <- FUN_00418388 @ 00418388
+  <- FUN_00436ef4 @ 00436ef4
+  <- isp_sync_cfg_set @ 003d32ec
+  <- FUN_0048f93c @ 0048f93c
+  <- PQ_BIN_SetNRDataV2 @ 00399538
+  <- ot_mpi_rgn_attach_to_chn @ 0039ba40
+  <- mpi_svp_npu_prof_update_info @ 004c6fe4
+  <- FUN_003f5204 @ 003f5204
+  <- ot_mpi_ao_set_mute @ 004e4c68
+  <- sample_comm_isp_get_pub_attr_by_sns @ 002c3a28
+  <- ot_mpi_rgn_create @ 0039b558
+  <- ot_mpi_ive_filter @ 004025b8
+  <- ot_mpi_sys_get_vi_wrap_buffer_line @ 0039ccf8
+  <- FUN_003f3b06 @ 003f3b06
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 003d9e68
+  <- ot_mpi_isp_get_dcf_info @ 003da44c
+  <- FUN_003ef56c @ 003ef56c
+  <- FUN_004ee7c8 @ 004ee7c8
+  <- osal_opendev @ 004a9bc4
+  <- FUN_00419ed0 @ 00419ed0
+  <- aiv_ioctl_fq_sink_send_frame @ 00497694
+  <- aibnr_noise_get_calibrate_lut @ 004a6ee0
+  <- FUN_0041a44c @ 0041a44c
+  <- ot_mpi_sys_bind @ 003a6298
+  <- gen_lut_degamma @ 003fb384
+  <- FUN_004173fc @ 004173fc
+  <- ot_mpi_venc_send_multi_frame @ 0039f47c
+  <- HalGetHashValue @ 0048af98
+  <- svp_npu_mdl_impl_get_aipp_setted_input_dims @ 004b9cdc
+  <- ot_mpi_ao_set_vqe_attr @ 004e5010
+  <- FUN_003f14dc @ 003f14dc
+  <- aiv_sink_slv_user_get_frame @ 0049eee4
+  <- ot_mpi_ab_get_pool_info @ 004e806c
+  <- aiv_agent_get_attr @ 004953b4
+  <- FUN_004ea728 @ 004ea728
+  <- FUN_0041e6bc @ 0041e6bc
+  <- FUN_002ce678 @ 002ce678
+  <- ot_ivs_md_set_chn_attr @ 00409290
+  <- aiv_ioctl_fq_source_get_frame @ 00497244
+  <- FUN_002d58d0 @ 002d58d0
+  <- ot_mpi_ive_canny_hys_edge @ 00404b88
+  <- FUN_003faa74 @ 003faa74
+  <- FUN_002cf3a8 @ 002cf3a8
+  <- ot_mpi_sys_set_scale_coef_level @ 0039c66c
+  <- ot_mpi_ive_acc @ 004034b4
+  <- FUN_004e74d4 @ 004e74d4
+  <- FUN_003a5d64 @ 003a5d64
+  <- ot_mpi_ive_xor @ 00404504
+  <- ot_mpi_ive_resize @ 00405b7c
+  <- FUN_004ec614 @ 004ec614
+  <- FUN_002cf8ac @ 002cf8ac
+  <- FUN_004e273c @ 004e273c
+  <- ot_mpi_ive_threshold_u16 @ 00403f90
+  <- FUN_004e20bc @ 004e20bc
+  <- mpi_sys_bind @ 003a6a18
+  <- svp_npu_dump_add_model_node_to_list @ 004d09f0
+  <- FUN_00408690 @ 00408690
+  <- ot_mpi_venc_get_stream @ 0039ecd0
+  <- aiv_npu_mdl_load @ 004a56c8
+  <- ot_mpi_ive_dma @ 00402464
+  <- ot_mpi_ive_sobel @ 00402848
+  <- svp_npu_dump_add_layer_node_to_list @ 004d0b78
+  <- svp_npu_dump_aicpu_result_file @ 004d0848
+  <- FUN_004d63a0 @ 004d63a0
+  <- ot_mpi_ive_map @ 004057e4
+  <- FUN_004da048 @ 004da048
+  <- svp_npu_model_read_cube_ops @ 004c1388
+  <- FUN_00411e64 @ 00411e64
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 003d9d3c
+  <- isp_demosaic_param_init @ 003f7c44
+  <- open_aac_encoder @ 004eff3c
+  <- FUN_00413adc @ 00413adc
+  <- ot_ivs_md_create_chn @ 00408c5c
+  <- aiv_npu_sta_get_attr @ 0049bae8
+  <- FUN_004e1e04 @ 004e1e04
+  <- ot_mpi_ive_lbp @ 00404650
+  <- mpi_sys_get_bind_by_dest @ 003a6db4
+  <- FUN_004cbba8 @ 004cbba8
+  <- OT_PQ_BIN_ImportISPData @ 0039a0f0
+  <- ot_mpi_rgn_get_dev_display_attr @ 0039bed0
+  <- FUN_002cf4dc @ 002cf4dc
+  <- ot_mpi_vgs_add_corner_rect_task @ 003a18b0
+  <- aiv_npu_sta_set_attr @ 0049bb9c
+  <- sample_comm_vi_enable_fpn_correction_for_thermo @ 002d33a8
+  <- ot_mpi_sys_get_scale_coef_level @ 0039c700
+  <- ot_mpi_ive_image_dot @ 0040362c
+  <- OT_PQ_BIN_ExportNRXData @ 00399700
+  <- adec_send_ao_proc @ 004d5dc0
+  <- ot_mpi_awb_register @ 00414198
+  <- ot_mpi_venc_send_frame_ex @ 0039f274
+  <- osal_copy_to_user @ 004a87e0
+  <- FUN_00417ec0 @ 00417ec0
+  <- aiv_input_query_head_node @ 004960e8
+  <- aiv_npu_get_work_buf @ 0049d924
+  <- FUN_004184f8 @ 004184f8
+  <- ot_ivs_md_get_chn_attr @ 0040955c
+  <- FUN_004d8c14 @ 004d8c14
+  <- aiv_src_io_get_frame @ 004a65ac
+  <- FUN_003eddb4 @ 003eddb4
+  <- isp_get_check_sum_stats @ 003de508
+  <- ot_mpi_sys_unbind @ 003a6370
+  <- FUN_004118c8 @ 004118c8
+  <- dnvqe_create @ 004ef120
+  <- ot_mpi_vb_get_mod_pool_cfg @ 0039d7c0
+  <- FUN_002d3ed8 @ 002d3ed8
+  <- svp_npu_mdl_fill_input_aipp_data_buf @ 004ba904
+  <- FUN_003cabc4 @ 003cabc4
+  <- FUN_003fd1c8 @ 003fd1c8
+  <- ot_mpi_ai_disable_vqe @ 004e0628
+  <- ot_mpi_adec_create_chn @ 004d4a9c
+  <- FUN_003992dc @ 003992dc
+  <- ot_mpi_awb_sensor_reg_callback @ 004143a4
+  <- ot_mpi_ae_register @ 003b20ac
+  <- ot_mpi_ive_norm_grad @ 00403c84
+  <- svp_npu_mdl_impl_get_input_dims @ 004ba000
+  <- FUN_002cf164 @ 002cf164
+  <- FUN_002d2df8 @ 002d2df8
+  <- aiv_acc_copy @ 004a1e08
+  <- FUN_00397654 @ 00397654
+  <- FUN_004cec38 @ 004cec38
+  <- ot_mpi_ive_sub @ 00403070
+  <- UpdateInternalBuffer @ 00486d18
+  <- FUN_002d5020 @ 002d5020
+  <- ot_mpi_vgs_add_cover_task @ 003a164c
+  <- ot_mpi_ive_integ @ 004037a4
+  <- FUN_004b96cc @ 004b96cc
+  <- ot_mpi_ive_threshold @ 00402dd8
+  <- ot_mpi_awb_unregister @ 004142bc
+  <- FUN_003fc2f4 @ 003fc2f4
+  <- ot_mpi_adec_register_decoder @ 004d4838
+  <- FUN_0041e5fc @ 0041e5fc
+  <- aibnr_task_fill_channel @ 00492a58
+  <- FUN_003e7be8 @ 003e7be8
+  <- FUN_004e1da4 @ 004e1da4
+  <- ot_mpi_ai_release_frame @ 004e0b9c
+  <- FUN_003f1688 @ 003f1688
+  <- ot_scene_set_static_sharpen @ 002dee6c
+  <- aiv_output_get_head_node @ 0049db14
+  <- ot_mpi_ive_16bit_to_8bit @ 004043a0
+  <- mpi_isp_fpn_calibrate @ 003ecc3c
+  <- FUN_003e7cbc @ 003e7cbc
+  <- ot_mpi_ive_order_stats_filter @ 004040dc
+  <- aiv_src_vi_return_frame @ 0049fec4
+  <- mpi_isp_set_gamma_attr @ 003eaf94
+  <- ae_route_ex_initialize @ 003bf900
+  <- aiv_output_send_node @ 0049da2c
+  <- ot_mpi_vgs_add_draw_line_task @ 003a1584
+  <- ot_mpi_ae_iris_register_callback @ 003c68ac
+  <- FUN_003998b0 @ 003998b0
+  <- ot_mpi_sys_start_sync_frame_rate_ctrl @ 0039cb40
+  <- ot_mpi_adec_send_stream @ 004d5368
+  <- FUN_003b02c8 @ 003b02c8
+  <- FUN_002d4190 @ 002d4190
+  <- aiv_input_get_node @ 00495ec0
+  <- ot_mpi_ive_csc @ 004026fc
+  <- svp_npu_mdl_impl_get_output_dims @ 004ba110
+  <- ot_mpi_ao_get_vqe_attr @ 004e5bec
+  <- ot_mpi_ai_enable_resample @ 004db25c
+  <- FUN_003f921c @ 003f921c
+  <- FUN_0048fa78 @ 0048fa78
+  <- FUN_004ee670 @ 004ee670
+  <- aiv_listener_init @ 00498af8
+  <- ot_mpi_aenc_send_frame @ 004d7924
+  <- ot_mpi_rgn_get_canvas_info @ 0039b8cc
+  <- aiv_sink_slv_plugin_send_frame @ 0049ecdc
+  <- sample_comm_isp_get_pub_attr_by_sns_part1 @ 002c39c0
+  <- ot_mpi_isp_get_bind_attr @ 003da0dc
+  <- isp_switch_mode @ 003d5270
+  <- cis_init_attr @ 004239b0
+  <- SoftCrop @ 004609b4
+  <- FUN_004ea568 @ 004ea568
+  <- ot_mpi_rgn_set_attr @ 0039b73c
+  <- ot_mpi_ive_mag_and_ang @ 004029c4
+  <- ot_mpi_venc_send_frame @ 0039f1bc
+  <- ot_mpi_venc_send_frame_batch_crop @ 0039f3e8
+  <- ot_mpi_vi_get_distribute_grp_attr @ 003a3f04
+  <- ot_mpi_vpss_send_frame @ 003a4838
+  <- aiv_model_parse @ 0049a7f8
+  <- ot_mpi_sys_stop_sync_frame_rate_ctrl @ 0039cbd4
+  <- isp_bayernr_param_init @ 0041ba14
+  <- aiv_src_slv_user_send_frame @ 0049f750
+  <- MODULE_audio_vqe_module_handle_init @ 004ec274
+  <- ot_scene_get_scene_fps @ 002db6c2
+  <- upvqe_process_extend_vqe @ 004edc1c
+  <- FUN_003f8b88 @ 003f8b88
+  <- FUN_003f790c @ 003f790c
+  <- svp_npu_prof_subscribe_get_op_name @ 004c9a90
+  <- ot_mpi_ao_send_frame @ 004e3e10
+  <- ot_mpi_vgs_add_scale_task @ 003a14ac
+  <- aiv_output_get_tail_node @ 0049dbe0
+  <- ot_mpi_ive_equalize_hist @ 0040479c
+  <- FUN_004e29a8 @ 004e29a8
+  <- ot_mpi_ai_set_record_vqe_attr @ 004dd75c
+  <- ot_mpi_venc_omx_send_frame @ 003a0f00
+  <- aiv_agent_acquire @ 00494c0c
+  <- ot_mpi_ai_set_chn_attr @ 004e18a4
+  <- isp_bayernr_reg_update @ 0041c048
+  <- mpi_vpp_set_chn_rotation @ 003a5ed0
+  <- ot_mpi_ai_get_talk_vqe_v2_attr @ 004dd2a8
+  <- PaddingResize @ 004636f0
+  <- FUN_00315b44 @ 00315b44
+  <- FUN_0041a604 @ 0041a604
+  <- RecoverContentInPlace @ 00481b00
+  <- svp_npu_model_load @ 004b88c0
+  <- FUN_002bd40a @ 002bd40a
+  <- ot_scene_set_scene_fps @ 002db5bc
+  <- RecoverContent @ 00481a30
+  <- open_opus_decoder @ 004f0368
+  <- ot_mpi_ai_enable_vqe @ 004dff9c
+  <- ot_mpi_ive_ncc @ 00403b38
+  <- aiv_output_query_tail_node @ 0049dcac
+  <- ot_mpi_vb_set_mod_pool_cfg @ 0039d890
+  <- ot_mpi_sys_get_mem_cfg @ 0039c5c4
+  <- dnvqe_process_frame @ 004ef4e4
+  <- svp_npu_model_update_prof_op_info @ 004b3824
+  <- aiv_mem_copy_supp @ 0049a6a4
+  <- FUN_00430844 @ 00430844
+  <- ot_mpi_ao_clr_chn_buf @ 004e472c
+  <- mpi_ai_chn_get_frm_proc @ 004da68c
+  <- ot_mpi_vgs_add_luma_task @ 003a17dc
+  <- ot_mpi_sys_get_bind_by_dst @ 003a642c
+  <- ot_mpi_ive_hist @ 004038f0
+  <- isp_get_yuv_default @ 003def00
+  <- ot_mpi_sys_set_mem_cfg @ 0039c4dc
+  <- ot_mpi_ive_or @ 004031e8
+  <- FUN_004d9150 @ 004d9150
+  <- open_opus_encoder @ 004f0520
+  <- FUN_004d97fc @ 004d97fc
+  <- sample_comm_venc_plan_to_semi @ 002ce180
+  <- ot_mpi_isp_set_dcf_info @ 003da318
+  <- FUN_003f59fc @ 003f59fc
+  <- RES_resampler_process_frame @ 004ec994
+  <- ot_mpi_vpss_set_chn_rotation @ 003a4e68
+  <- isp_get_correction_attr @ 003dd268
+  <- ot_mpi_isp_ae_lib_reg_callback @ 003d98e8
+  <- mpi_audio_get_mem_cfg @ 004e6910
+  <- svp_npu_mdl_impl_get_aipp_setted_output_dims @ 004b9e50
+  <- gen_lut_gamma @ 003fb340
+  <- ot_mpi_ive_ccl @ 004048e8
+  <- FUN_003fac40 @ 003fac40
+  <- upvqe_cache_process_frame @ 004eb424
+  <- ot_mpi_ai_set_talk_vqe_v2_attr @ 004db704
+  <- ae_dc_iris_ctrl_init @ 003c62fc
+  <- ot_mpi_sys_get_vpss_venc_wrap_buf_line @ 0039cc68
+  <- FUN_00399a84 @ 00399a84
+  <- aiv_input_send_node @ 00495df4
+  <- aiv_npu_link_connect @ 004a529c
+  <- aiv_npu_svp_init_env @ 004a3d78
+  <- ot_mpi_ao_enable_resample @ 004e3964
+  <- aiv_src_vi_get_frame @ 0049fc74
+  <- aibnr_noise_get_cmos_noise_calibration @ 004a7160
+  <- FUN_003f8ce0 @ 003f8ce0
+  <- ot_mpi_isp_set_bind_attr @ 003d9f94
+  <- FUN_0041d808 @ 0041d808
+  <- mpi_isp_set_fpn_attr @ 003ece14
+  <- ot_mpi_vgs_add_rotation_task @ 003a1724
+  <- FUN_003e7d28 @ 003e7d28
+  <- ot_mpi_ive_gmm2 @ 0040595c
+  <- aiv_src_io_release_frame @ 004a66f4
+  <- FUN_002bd0f6 @ 002bd0f6
+  <- FUN_003f3ee8 @ 003f3ee8
+  <- FUN_003a690c @ 003a690c
+  <- FUN_003c8cdc @ 003c8cdc
+  <- ot_mpi_vi_set_wdr_fusion_grp_attr @ 003a20f0
+  <- ot_mpi_vgs_add_online_task @ 003a1984
+  <- FUN_00417b9c @ 00417b9c
+  <- sample_comm_vi_get_isp_run_state @ 002d1724
+  <- FUN_003f41a4 @ 003f41a4
+  <- FUN_004e2290 @ 004e2290
+  <- FUN_004d6300 @ 004d6300
+  <- ot_ivs_md_proc @ 00409958
+  <- aiv_agent_set_attr @ 0049548c
+  <- ot_mpi_ao_enable_vqe @ 004e5e40
+  <- FUN_003df270 @ 003df270
+  <- secu_stream_read @ 00283060
+  <- ot_mpi_ive_lk_optical_flow_pyr @ 00405568
+  <- ot_mpi_sys_get_bind_by_src @ 003a64fc
+
+======================================================================
+FUNCTION: isp_check_pointer_by_line
+ADDRESS:  003d7fc0
+SIZE:     34 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4
+isp_check_pointer_by_line(int param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+
+{
+  undefined4 uVar1;
+  
+  if (param_1 == 0) {
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Null Pointer!\n",param_2,param_3,param_4);
+    uVar1 = 0xa01c800a;
+  }
+  else {
+    uVar1 = 0;
+  }
+  return uVar1;
+}
+
+
+--- CALLS TO ---
+  -> fprintf @ 00161568
+--- CALLED BY ---
+  <- ot_mpi_isp_exit @ 003d9328
+  <- FUN_003c9c48 @ 003c9c48
+  <- isp_expander_attr_read @ 003e3b18
+  <- isp_exit @ 003d6568
+  <- isp_be_stats_estimate @ 00416b5c
+  <- FUN_0041a0f8 @ 0041a0f8
+  <- FUN_003c9adc @ 003c9adc
+  <- FUN_003cbd28 @ 003cbd28
+  <- isp_alg_register_expander @ 003f8fc4
+  <- FUN_003c968c @ 003c968c
+  <- isp_alg_register_fcr @ 003f1c50
+  <- isp_drc_param_init @ 004188a4
+  <- isp_alg_register_af @ 003f106c
+  <- isp_trans_info_init @ 003e3d84
+  <- dehaze_reg_update @ 00415774
+  <- FUN_003f4574 @ 003f4574
+  <- FUN_003cabc4 @ 003cabc4
+  <- isp_alg_register_dg @ 003f8988
+  <- FUN_003fcc78 @ 003fcc78
+  <- isp_reg_cfg_info_init @ 003d2b48
+  <- isp_sensor_init @ 003d7874
+  <- isp_alg_register_ldci @ 0041af40
+  <- FUN_003f7f4c @ 003f7f4c
+  <- isp_sensor_switch @ 003d7924
+  <- FUN_003cce40 @ 003cce40
+  <- FUN_003cc47c @ 003cc47c
+  <- isp_sensor_set_pixel_detect @ 003d7744
+  <- isp_get_reg_cfg_ctx @ 003d2afc
+  <- isp_alg_register_cac @ 003f5fcc
+  <- isp_user_black_level_write @ 003e2654
+  <- FUN_003ce804 @ 003ce804
+  <- FUN_00419380 @ 00419380
+  <- isp_sensor_get_awb_gain @ 003d7790
+  <- FUN_003fc2f4 @ 003fc2f4
+  <- isp_init @ 003d5a18
+  <- isp_alg_register_bayer_nr @ 0041d6c0
+  <- FUN_003f4a68 @ 003f4a68
+  <- FUN_003fee24 @ 003fee24
+  <- FUN_003f717c @ 003f717c
+  <- mpi_isp_register_alg @ 003dbcd8
+  <- mpi_isp_set_mesh_shading_attr @ 003dc94c
+  <- FUN_003f1688 @ 003f1688
+  <- isp_alg_register_mcds @ 003fd284
+  <- isp_sensor_get_blc @ 003d7470
+  <- FUN_003c9200 @ 003c9200
+  <- isp_user_black_level_read @ 003e2774
+  <- mpi_isp_get_ai_mode_attr @ 003dbf5c
+  <- isp_sensor_update_sns_reg @ 003d7828
+  <- isp_alg_register_gamma @ 003fb1d0
+  <- FUN_003f681c @ 003f681c
+  <- FUN_003f56e8 @ 003f56e8
+  <- isp_update_dng_image_dynamic_info @ 003e0400
+  <- FUN_003ceb08 @ 003ceb08
+  <- isp_switch_reg_set @ 003d3664
+  <- FUN_003fb810 @ 003fb810
+  <- FUN_003c9de4 @ 003c9de4
+  <- FUN_003fc064 @ 003fc064
+  <- FUN_003fcf3c @ 003fcf3c
+  <- isp_alg_register_lsc @ 003fd0ac
+  <- FUN_003acdcc @ 003acdcc
+  <- isp_dng_param_check @ 003e7100
+  <- FUN_003fb43c @ 003fb43c
+  <- FUN_0041932c @ 0041932c
+  <- FUN_003fbb04 @ 003fbb04
+  <- isp_ext_regs_initialize @ 003dfca4
+  <- isp_alg_register_acs @ 0041fb38
+  <- isp_reg_cfg_ctrl @ 003d34c8
+  <- isp_sensor_update_blc @ 003d761c
+  <- isp_expander_attr_check @ 003e6c94
+  <- FUN_0041694c @ 0041694c
+  <- isp_sensor_get_id @ 003d7438
+  <- FUN_004153ac @ 004153ac
+  <- FUN_00419c08 @ 00419c08
+  <- FUN_003f921c @ 003f921c
+  <- mpi_isp_get_check_sum_stats @ 003dc7ac
+  <- FUN_003f6ef4 @ 003f6ef4
+  <- FUN_003f7548 @ 003f7548
+  <- isp_switch_mode @ 003d5270
+  <- FUN_0041d478 @ 0041d478
+  <- FUN_0041ee1c @ 0041ee1c
+  <- FUN_003cec2c @ 003cec2c
+  <- isp_alg_register_dpc @ 003f77f0
+  <- FUN_003ca0cc @ 003ca0cc
+  <- isp_sensor_update_default @ 003d7668
+  <- isp_alg_register_fpn @ 003dd2d0
+  <- isp_alg_register_csc @ 003f66b4
+  <- isp_dehaze_param_init @ 00415158
+  <- isp_wdr_cfg_set @ 003d5140
+  <- mpi_isp_calc_flicker_type @ 003ed670
+  <- isp_bayernr_param_init @ 0041ba14
+  <- isp_sensor_get_default @ 003d7554
+  <- isp_sensor_reg_callback @ 003d72e0
+  <- isp_sync_cfg_set @ 003d32ec
+  <- FUN_003f8b88 @ 003f8b88
+  <- mpi_isp_get_drc_blend @ 003dc530
+  <- FUN_003cfc28 @ 003cfc28
+  <- isp_alg_register_drc @ 00419db4
+  <- isp_sensor_update_blc_clamp_info @ 003d77dc
+  <- isp_dp_dynamic_attr_check @ 003e6e44
+  <- isp_set_ldci_image_size @ 0041a9cc
+  <- isp_ctrl_param_get @ 003cc56c
+  <- FUN_003ce8a0 @ 003ce8a0
+  <- isp_sensor_update_all @ 003d7370
+  <- FUN_003f5204 @ 003f5204
+  <- isp_sensor_init_standby_cfg @ 003d74c0
+  <- isp_alg_register_ge @ 003fbcd4
+  <- FUN_003f1a10 @ 003f1a10
+  <- isp_black_level_actual_value_read @ 003e28e8
+  <- isp_bayernr_reg_update @ 0041c048
+  <- isp_alg_en_exit @ 003d2698
+  <- isp_reset_fe_stt_en @ 003d25d4
+  <- FUN_003cdd84 @ 003cdd84
+  <- isp_alg_register_sharpen @ 00401164
+  <- FUN_0041a604 @ 0041a604
+  <- FUN_003cdb74 @ 003cdb74
+  <- FUN_00419ed0 @ 00419ed0
+  <- FUN_003cf268 @ 003cf268
+  <- mpi_isp_get_master_pipe @ 003dbd74
+  <- FUN_003cb508 @ 003cb508
+  <- isp_sensor_set_wdr_mode @ 003d76b4
+  <- mpi_isp_set_drc_blend @ 003dc28c
+  <- isp_statistics_get_buf @ 003d7bdc
+  <- FUN_003c9570 @ 003c9570
+  <- isp_sensor_exit @ 003d79d4
+  <- FUN_003f1878 @ 003f1878
+  <- FUN_003fdf84 @ 003fdf84
+  <- isp_alg_register_blc @ 003f480c
+  <- FUN_003fb0bc @ 003fb0bc
+  <- FUN_0041bf08 @ 0041bf08
+  <- isp_alg_register_ae @ 003f0458
+  <- mpi_isp_set_isp_stitch_transform_info @ 003dca34
+  <- FUN_00401044 @ 00401044
+  <- mpi_isp_set_mesh_shading_gain_lut_attr @ 003dc864
+  <- FUN_003faa74 @ 003faa74
+  <- isp_get_yuv_default @ 003def00
+  <- FUN_003f4928 @ 003f4928
+  <- FUN_003f9e14 @ 003f9e14
+  <- isp_sensor_get_max_resolution @ 003d75a4
+  <- isp_alg_register_ca @ 003f50e4
+  <- isp_alg_register_dehaze @ 00416a5c
+  <- FUN_003f59fc @ 003f59fc
+  <- isp_sensor_set_image_mode @ 003d7700
+  <- isp_dehaze_ctrl @ 00415590
+  <- FUN_003cb124 @ 003cb124
+  <- isp_dcf_info_check @ 003e6fe4
+  <- FUN_003cf354 @ 003cf354
+  <- io_read32_ex @ 003d438c
+  <- isp_expander_attr_write @ 003e3a88
+  <- black_level_actual_value_write @ 003e27d0
+  <- isp_alg_register_frame_wdr @ 003fa7e4
+  <- isp_dbg_reg_get @ 003df7f8
+  <- FUN_0041e9f0 @ 0041e9f0
+  <- FUN_003fac40 @ 003fac40
+  <- isp_alg_register_demosaic @ 003f8550
+  <- FUN_003fbf2c @ 003fbf2c
+  <- isp_black_level_value_check @ 003e63c4
+  <- sns_black_level_actual_value_read @ 003e29ac
+  <- FUN_003c9844 @ 003c9844
+  <- FUN_003f8ce0 @ 003f8ce0
+  <- FUN_0041e8ac @ 0041e8ac
+  <- FUN_003cda48 @ 003cda48
+  <- isp_sensor_get_sns_reg @ 003d75e0
+  <- calc_flicker_type @ 0041d8b4
+  <- isp_reg_cfg_info_set @ 003d2e70
+  <- FUN_003f3ee8 @ 003f3ee8
+  <- FUN_0041a360 @ 0041a360
+  <- isp_demosaic_param_init @ 003f7c44
+  <- FUN_003ca674 @ 003ca674
+  <- isp_sensor_update_all_yuv @ 003d73f0
+  <- FUN_003f41a4 @ 003f41a4
+  <- mpi_isp_get_ynet_cfg @ 003dc65c
+  <- FUN_003f843c @ 003f843c
+  <- isp_lut2stt_apb_reg @ 003d37a8
+  <- isp_alg_register_awb @ 003f38fc
+  <- FUN_003f9ba0 @ 003f9ba0
+  <- mpi_isp_set_ynet_cfg @ 003dc5ec
+
+======================================================================
+FUNCTION: isp_mutex_unlock
+ADDRESS:  003d7e98
+SIZE:     48 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_mutex_unlock(int param_1)
+
+{
+  int iVar1;
+  
+  iVar1 = pthread_mutex_unlock((pthread_mutex_t *)(&DAT_009b6150 + param_1 * 0x18));
+  if (iVar1 == 0) {
+    return;
+  }
+  fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:pthread_mutex_unlock failed!\n","isp_mutex_unlock"
+          ,0x3d);
+  return;
+}
+
+
+--- CALLS TO ---
+  -> pthread_mutex_unlock @ 00161a54
+--- CALLED BY ---
+  <- ot_mpi_isp_set_pipe_differ_attr @ 003da6e4
+  <- ot_mpi_isp_get_dp_dynamic_attr @ 003dad9c
+  <- ot_mpi_isp_set_module_ctrl @ 003da764
+  <- ot_mpi_isp_exit @ 003d9328
+  <- ot_mpi_isp_sensor_unreg_callback @ 003d9c2c
+  <- ot_mpi_isp_get_motion_stats @ 003dbc78
+  <- mpi_isp_set_aidrc_mode @ 003dc1cc
+  <- ot_mpi_isp_set_dciris_attr @ 003a89ec
+  <- ot_mpi_isp_get_ca_attr @ 003db458
+  <- ot_mpi_isp_set_ccm_attr @ 0040ad00
+  <- ot_mpi_isp_set_fswdr_attr @ 003da9d4
+  <- mpi_isp_set_algs_update @ 003dcab4
+  <- ot_mpi_isp_set_hdr_exposure_attr @ 003a872c
+  <- ot_mpi_isp_get_sharpen_attr @ 003db258
+  <- ot_mpi_isp_get_saturation_attr @ 0040adc0
+  <- ot_mpi_isp_set_demosaic_attr @ 003db398
+  <- ot_mpi_isp_set_smart_info @ 003db9f8
+  <- ot_mpi_isp_get_smart_info @ 003dba38
+  <- ot_mpi_isp_get_wb_stats @ 003dab04
+  <- mpi_isp_set_ai_mode_attr @ 003dbea8
+  <- ot_mpi_isp_get_isp_reg_attr @ 003db694
+  <- ot_mpi_isp_set_piris_attr @ 003a8a6c
+  <- ot_mpi_isp_set_color_sector_attr @ 0040ae00
+  <- ot_mpi_isp_get_ae_route_sf_attr_ex @ 003a8bac
+  <- ot_mpi_isp_get_csc_attr @ 003dacdc
+  <- ot_mpi_isp_get_color_sector_attr @ 0040ae40
+  <- ot_mpi_isp_get_module_ctrl @ 003da7a4
+  <- ot_mpi_isp_set_dehaze_attr @ 003da954
+  <- ot_mpi_isp_set_wdr_exposure_attr @ 003a86ac
+  <- mpi_isp_set_binary_enable @ 003dc6cc
+  <- ot_mpi_isp_get_dciris_attr @ 003a8a2c
+  <- ot_mpi_isp_set_mesh_shading_attr @ 003dae1c
+  <- ot_mpi_isp_get_ae_route_sf_attr @ 003a88ec
+  <- ot_mpi_isp_awb_lib_reg_callback @ 003d9a9c
+  <- ot_mpi_isp_set_debug @ 003db6d4
+  <- ot_mpi_isp_get_ldci_attr @ 003da894
+  <- ot_mpi_isp_set_auto_color_shading_attr @ 003daf1c
+  <- ot_mpi_isp_get_demosaic_attr @ 003db3d8
+  <- ot_mpi_isp_set_ae_route_attr_ex @ 003a8aec
+  <- ot_mpi_isp_set_black_level_attr @ 003db4d8
+  <- ot_mpi_isp_get_exposure_attr @ 003a866c
+  <- ot_mpi_isp_get_drc_attr @ 003da914
+  <- mpi_isp_set_mesh_shading_attr @ 003dc94c
+  <- ot_mpi_isp_query_exposure_info @ 003a892c
+  <- ot_mpi_isp_get_awb_attr_ex @ 0040acc0
+  <- ot_mpi_isp_get_ae_route_attr @ 003a886c
+  <- ot_mpi_isp_set_fast_face_ae_attr @ 003a8cac
+  <- mpi_isp_get_ai_mode_attr @ 003dbf5c
+  <- mpi_isp_fpn_calibrate @ 003ecc3c
+  <- ot_mpi_isp_set_noise_calibration @ 003dbbc8
+  <- ot_mpi_isp_set_exposure_attr @ 003a862c
+  <- ot_mpi_isp_query_wb_info @ 0040ae80
+  <- ot_mpi_isp_get_dng_image_static_info @ 003db81c
+  <- ot_mpi_isp_set_dng_color_param @ 003db85c
+  <- ot_mpi_isp_get_fmw_state @ 003da814
+  <- ot_mpi_isp_set_awb_attr_ex @ 0040ac80
+  <- ot_mpi_isp_set_saturation_attr @ 0040ad80
+  <- ot_mpi_isp_set_ae_route_sf_attr_ex @ 003a8b6c
+  <- ot_mpi_isp_get_dng_color_param @ 003db89c
+  <- ot_mpi_isp_cal_gain_by_temp @ 0040aec0
+  <- ot_mpi_isp_set_ae_route_sf_attr @ 003a88ac
+  <- ot_mpi_isp_set_be_frame_attr @ 003dbb48
+  <- ot_mpi_isp_get_debug @ 003db714
+  <- mpi_isp_get_check_sum_stats @ 003dc7ac
+  <- ot_mpi_isp_get_smart_exposure_attr @ 003a87ec
+  <- ot_mpi_isp_get_bind_attr @ 003da0dc
+  <- ot_mpi_isp_get_focus_stats @ 003daa54
+  <- ot_mpi_isp_get_mesh_shading_gain_lut_attr @ 003daedc
+  <- ot_mpi_isp_get_expander_attr @ 003dbb08
+  <- ot_mpi_isp_get_fswdr_attr @ 003daa14
+  <- ot_mpi_isp_set_drc_attr @ 003da8d4
+  <- ot_mpi_isp_set_fmw_state @ 003da7e4
+  <- ot_mpi_isp_set_ae_route_attr @ 003a882c
+  <- ot_mpi_isp_mem_init @ 003d841c
+  <- ot_mpi_isp_set_wb_attr @ 0040ac00
+  <- ot_mpi_isp_get_ae_stats @ 003daa94
+  <- ot_mpi_isp_get_ccm_attr @ 0040ad40
+  <- ot_mpi_isp_get_wdr_exposure_attr @ 003a86ec
+  <- mpi_isp_get_drc_blend @ 003dc530
+  <- ot_mpi_isp_get_ae_route_attr_ex @ 003a8b2c
+  <- ot_mpi_isp_get_mesh_shading_attr @ 003dae5c
+  <- ot_mpi_isp_get_wb_attr @ 0040ac40
+  <- ot_mpi_isp_run @ 003d9084
+  <- ot_mpi_isp_set_mesh_shading_gain_lut_attr @ 003dae9c
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 003d9e68
+  <- ot_mpi_isp_set_exp_convert @ 003a8bec
+  <- ot_mpi_isp_set_stats_cfg @ 003dab64
+  <- ot_mpi_isp_get_dcf_info @ 003da44c
+  <- ot_mpi_isp_get_cac_attr @ 003db078
+  <- ot_mpi_isp_sensor_reg_callback @ 003d9804
+  <- ot_mpi_isp_get_pub_attr @ 003da6a4
+  <- FUN_003e8020 @ 003e8020
+  <- ot_mpi_isp_get_noise_calibration @ 003dbc08
+  <- ot_mpi_isp_set_crosstalk_attr @ 003db298
+  <- ot_mpi_isp_set_expander_attr @ 003dbac8
+  <- ot_mpi_isp_get_be_frame_attr @ 003dbb88
+  <- ot_mpi_isp_set_iris_attr @ 003a896c
+  <- ot_mpi_isp_set_sharpen_attr @ 003db218
+  <- mpi_isp_set_drc_blend @ 003dc28c
+  <- ot_mpi_isp_get_color_tone_attr @ 003db1d8
+  <- ot_mpi_isp_set_color_tone_attr @ 003db198
+  <- ot_mpi_isp_get_crosstalk_attr @ 003db2d8
+  <- ot_mpi_isp_get_black_level_attr @ 003db518
+  <- ot_mpi_isp_get_gamma_attr @ 003dac3c
+  <- ot_mpi_isp_get_fast_face_ae_attr @ 003a8c6c
+  <- ot_mpi_isp_set_anti_false_color_attr @ 003db318
+  <- ot_mpi_isp_set_ca_attr @ 003db418
+  <- ot_mpi_isp_set_nr_attr @ 003db0f8
+  <- mpi_isp_set_isp_stitch_transform_info @ 003dca34
+  <- mpi_isp_set_mesh_shading_gain_lut_attr @ 003dc864
+  <- ot_mpi_isp_set_smart_exposure_attr @ 003a87ac
+  <- mpi_isp_enable_aiisp @ 003dbff0
+  <- ot_mpi_isp_get_nr_attr @ 003db138
+  <- ot_mpi_isp_init @ 003d85e8
+  <- ot_mpi_isp_set_dcf_info @ 003da318
+  <- mpi_isp_disable_aiisp @ 003dc104
+  <- ot_mpi_isp_get_pipe_differ_attr @ 003da724
+  <- ot_mpi_isp_run_once @ 003d8cf4
+  <- ot_mpi_isp_ae_lib_reg_callback @ 003d98e8
+  <- ot_mpi_isp_get_auto_color_shading_attr @ 003daf5c
+  <- ot_mpi_isp_set_pub_attr @ 003da664
+  <- ot_mpi_isp_get_piris_attr @ 003a8aac
+  <- isp_run_thread @ 003d6408
+  <- ot_mpi_isp_set_dp_dynamic_attr @ 003dad5c
+  <- ot_mpi_isp_get_anti_false_color_attr @ 003db358
+  <- ot_mpi_isp_set_csc_attr @ 003dac9c
+  <- ot_mpi_isp_set_bind_attr @ 003d9f94
+  <- mpi_isp_set_fpn_attr @ 003ece14
+  <- mpi_isp_set_check_sum_enable @ 003dc73c
+  <- ot_mpi_isp_get_hdr_exposure_attr @ 003a876c
+  <- mpi_isp_set_aidrc_dataflow_status @ 003dc22c
+  <- ot_mpi_isp_set_ldci_attr @ 003da854
+  <- ot_mpi_isp_get_stats_cfg @ 003dabb0
+  <- ot_mpi_isp_query_inner_state_info @ 003db7dc
+  <- ot_mpi_isp_ir_auto @ 003db8dc
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 003d9d3c
+  <- ot_mpi_isp_set_cac_attr @ 003db038
+  <- mpi_isp_get_ynet_cfg @ 003dc65c
+  <- ot_mpi_isp_get_exp_convert @ 003a8c2c
+  <- mpi_isp_set_ynet_cfg @ 003dc5ec
+  <- ot_mpi_isp_get_dehaze_attr @ 003da994
+  <- ot_mpi_isp_set_gamma_attr @ 003dabfc
+  <- ot_mpi_isp_get_iris_attr @ 003a89ac
+
+======================================================================
+FUNCTION: isp_check_pipe
+ADDRESS:  003d802c
+SIZE:     42 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 isp_check_pipe(uint param_1,undefined4 param_2)
+
+{
+  undefined4 uVar1;
+  
+  if (param_1 < 4) {
+    uVar1 = 0;
+  }
+  else {
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Err isp pipe %d!\n","isp_check_pipe",0x88,
+            param_1,param_2);
+    uVar1 = 0xa01c8007;
+  }
+  return uVar1;
+}
+
+
+--- CALLS TO ---
+  -> fprintf @ 00161568
+--- CALLED BY ---
+  <- ot_mpi_isp_set_pipe_differ_attr @ 003da6e4
+  <- ot_mpi_isp_get_dp_dynamic_attr @ 003dad9c
+  <- ot_mpi_isp_set_module_ctrl @ 003da764
+  <- ot_mpi_isp_exit @ 003d9328
+  <- ot_mpi_isp_sensor_unreg_callback @ 003d9c2c
+  <- ot_mpi_isp_get_motion_stats @ 003dbc78
+  <- ot_mpi_isp_get_ca_attr @ 003db458
+  <- ot_mpi_isp_set_fswdr_attr @ 003da9d4
+  <- ot_mpi_isp_get_sharpen_attr @ 003db258
+  <- ot_mpi_isp_get_lightbox_gain @ 003daf9c
+  <- ot_mpi_isp_set_demosaic_attr @ 003db398
+  <- ot_mpi_isp_set_smart_info @ 003db9f8
+  <- ot_mpi_isp_get_smart_info @ 003dba38
+  <- ot_mpi_isp_get_wb_stats @ 003dab04
+  <- ot_mpi_isp_get_isp_reg_attr @ 003db694
+  <- ot_mpi_isp_get_csc_attr @ 003dacdc
+  <- ot_mpi_isp_get_module_ctrl @ 003da7a4
+  <- ot_mpi_isp_set_frame_info @ 003da56c
+  <- ot_mpi_isp_set_dehaze_attr @ 003da954
+  <- ot_mpi_isp_mem_unshare_all @ 003d8b88
+  <- ot_mpi_isp_mem_share_all @ 003d8a1c
+  <- ot_mpi_isp_set_mesh_shading_attr @ 003dae1c
+  <- ot_mpi_isp_awb_lib_reg_callback @ 003d9a9c
+  <- ot_mpi_isp_set_debug @ 003db6d4
+  <- ot_mpi_isp_get_ldci_attr @ 003da894
+  <- ot_mpi_isp_set_auto_color_shading_attr @ 003daf1c
+  <- ot_mpi_isp_get_demosaic_attr @ 003db3d8
+  <- ot_mpi_isp_set_black_level_attr @ 003db4d8
+  <- ot_mpi_isp_get_drc_attr @ 003da914
+  <- ot_mpi_isp_set_noise_calibration @ 003dbbc8
+  <- ot_mpi_isp_get_dng_image_static_info @ 003db81c
+  <- ot_mpi_isp_get_vd_time_out @ 003da134
+  <- ot_mpi_isp_set_dng_color_param @ 003db85c
+  <- ot_mpi_isp_get_fmw_state @ 003da814
+  <- ot_mpi_isp_get_dng_color_param @ 003db89c
+  <- ot_mpi_isp_calc_flicker_type @ 003dba78
+  <- ot_mpi_isp_set_be_frame_attr @ 003dbb48
+  <- ot_mpi_isp_get_debug @ 003db714
+  <- ot_mpi_isp_get_bind_attr @ 003da0dc
+  <- ot_mpi_isp_get_focus_stats @ 003daa54
+  <- ot_mpi_isp_get_mesh_shading_gain_lut_attr @ 003daedc
+  <- ot_mpi_isp_get_expander_attr @ 003dbb08
+  <- ot_mpi_isp_get_fswdr_attr @ 003daa14
+  <- ot_mpi_isp_set_drc_attr @ 003da8d4
+  <- ot_mpi_isp_set_fmw_state @ 003da7e4
+  <- ot_mpi_isp_mem_init @ 003d841c
+  <- ot_mpi_isp_get_ae_stats @ 003daa94
+  <- ot_mpi_isp_get_ctrl_param @ 003db798
+  <- ot_mpi_isp_get_mesh_shading_attr @ 003dae5c
+  <- ot_mpi_isp_run @ 003d9084
+  <- ot_mpi_isp_set_mesh_shading_gain_lut_attr @ 003dae9c
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 003d9e68
+  <- ot_mpi_isp_set_stats_cfg @ 003dab64
+  <- ot_mpi_isp_get_dcf_info @ 003da44c
+  <- ot_mpi_isp_get_cac_attr @ 003db078
+  <- ot_mpi_isp_sensor_reg_callback @ 003d9804
+  <- ot_mpi_isp_get_pub_attr @ 003da6a4
+  <- ot_mpi_isp_mem_share @ 003d8768
+  <- ot_mpi_isp_get_noise_calibration @ 003dbc08
+  <- ot_mpi_isp_set_crosstalk_attr @ 003db298
+  <- ot_mpi_isp_set_expander_attr @ 003dbac8
+  <- ot_mpi_isp_get_be_frame_attr @ 003dbb88
+  <- ot_mpi_isp_set_sharpen_attr @ 003db218
+  <- ot_mpi_isp_mem_unshare @ 003d88ec
+  <- ot_mpi_isp_get_color_tone_attr @ 003db1d8
+  <- ot_mpi_isp_set_color_tone_attr @ 003db198
+  <- ot_mpi_isp_get_crosstalk_attr @ 003db2d8
+  <- ot_mpi_isp_get_black_level_attr @ 003db518
+  <- ot_mpi_isp_set_mod_param @ 003d8394
+  <- ot_mpi_isp_get_gamma_attr @ 003dac3c
+  <- ot_mpi_isp_set_anti_false_color_attr @ 003db318
+  <- ot_mpi_isp_set_ca_attr @ 003db418
+  <- ot_mpi_isp_set_nr_attr @ 003db0f8
+  <- ot_mpi_isp_get_mod_param @ 003d83d8
+  <- ot_mpi_isp_get_nr_attr @ 003db138
+  <- ot_mpi_isp_init @ 003d85e8
+  <- ot_mpi_isp_set_dcf_info @ 003da318
+  <- ot_mpi_isp_get_pipe_differ_attr @ 003da724
+  <- ot_mpi_isp_run_once @ 003d8cf4
+  <- ot_mpi_isp_ae_lib_reg_callback @ 003d98e8
+  <- ot_mpi_isp_get_auto_color_shading_attr @ 003daf5c
+  <- ot_mpi_isp_set_pub_attr @ 003da664
+  <- ot_mpi_isp_set_dp_dynamic_attr @ 003dad5c
+  <- ot_mpi_isp_get_anti_false_color_attr @ 003db358
+  <- ot_mpi_isp_set_csc_attr @ 003dac9c
+  <- ot_mpi_isp_set_bind_attr @ 003d9f94
+  <- ot_mpi_isp_set_ldci_attr @ 003da854
+  <- ot_mpi_isp_get_stats_cfg @ 003dabb0
+  <- ot_mpi_isp_mesh_shading_calibration @ 003dafe4
+  <- ot_mpi_isp_query_inner_state_info @ 003db7dc
+  <- ot_mpi_isp_ir_auto @ 003db8dc
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 003d9d3c
+  <- ot_mpi_isp_get_frame_info @ 003da5e8
+  <- ot_mpi_isp_set_cac_attr @ 003db038
+  <- ot_mpi_isp_set_ctrl_param @ 003db754
+  <- mpi_isp_set_expander_attr @ 003ed7e4
+  <- ot_mpi_isp_get_dehaze_attr @ 003da994
+  <- ot_mpi_isp_set_gamma_attr @ 003dabfc
+
+======================================================================
+FUNCTION: isp_check_pointer
+ADDRESS:  003d806c
+SIZE:     36 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined4 isp_check_pointer(int param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+
+{
+  undefined4 uVar1;
+  
+  if (param_1 == 0) {
+    fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Null Pointer!\n","isp_check_pointer",0xb1,
+            param_4);
+    uVar1 = 0xa01c800a;
+  }
+  else {
+    uVar1 = 0;
+  }
+  return uVar1;
+}
+
+
+--- CALLS TO ---
+  -> fprintf @ 00161568
+--- CALLED BY ---
+  <- ot_mpi_isp_set_pipe_differ_attr @ 003da6e4
+  <- ot_mpi_isp_get_dp_dynamic_attr @ 003dad9c
+  <- ot_mpi_isp_set_module_ctrl @ 003da764
+  <- ot_mpi_isp_exit @ 003d9328
+  <- ot_mpi_isp_sensor_unreg_callback @ 003d9c2c
+  <- ot_mpi_isp_get_motion_stats @ 003dbc78
+  <- ot_mpi_isp_get_ca_attr @ 003db458
+  <- ot_mpi_isp_set_fswdr_attr @ 003da9d4
+  <- ot_mpi_isp_get_sharpen_attr @ 003db258
+  <- ot_mpi_isp_get_lightbox_gain @ 003daf9c
+  <- ot_mpi_isp_set_demosaic_attr @ 003db398
+  <- ot_mpi_isp_set_smart_info @ 003db9f8
+  <- ot_mpi_isp_get_smart_info @ 003dba38
+  <- ot_mpi_isp_get_wb_stats @ 003dab04
+  <- ot_mpi_isp_get_isp_reg_attr @ 003db694
+  <- ot_mpi_isp_get_csc_attr @ 003dacdc
+  <- ot_mpi_isp_get_module_ctrl @ 003da7a4
+  <- ot_mpi_isp_set_frame_info @ 003da56c
+  <- ot_mpi_isp_set_dehaze_attr @ 003da954
+  <- ot_mpi_isp_mem_unshare_all @ 003d8b88
+  <- ot_mpi_isp_mem_share_all @ 003d8a1c
+  <- ot_mpi_isp_set_mesh_shading_attr @ 003dae1c
+  <- ot_mpi_isp_awb_lib_reg_callback @ 003d9a9c
+  <- ot_mpi_isp_set_debug @ 003db6d4
+  <- ot_mpi_isp_get_ldci_attr @ 003da894
+  <- ot_mpi_isp_set_auto_color_shading_attr @ 003daf1c
+  <- ot_mpi_isp_get_demosaic_attr @ 003db3d8
+  <- ot_mpi_isp_set_black_level_attr @ 003db4d8
+  <- ot_mpi_isp_get_drc_attr @ 003da914
+  <- ot_mpi_isp_set_noise_calibration @ 003dbbc8
+  <- ot_mpi_isp_get_dng_image_static_info @ 003db81c
+  <- ot_mpi_isp_set_dng_color_param @ 003db85c
+  <- ot_mpi_isp_get_fmw_state @ 003da814
+  <- ot_mpi_isp_get_dng_color_param @ 003db89c
+  <- ot_mpi_isp_calc_flicker_type @ 003dba78
+  <- ot_mpi_isp_set_be_frame_attr @ 003dbb48
+  <- ot_mpi_isp_get_debug @ 003db714
+  <- ot_mpi_isp_set_fpn_attr @ 003db5b8
+  <- ot_mpi_isp_get_bind_attr @ 003da0dc
+  <- ot_mpi_isp_get_focus_stats @ 003daa54
+  <- ot_mpi_isp_get_mesh_shading_gain_lut_attr @ 003daedc
+  <- ot_mpi_isp_get_expander_attr @ 003dbb08
+  <- ot_mpi_isp_get_fswdr_attr @ 003daa14
+  <- ot_mpi_isp_set_drc_attr @ 003da8d4
+  <- ot_mpi_isp_set_sns_slave_attr @ 003d9584
+  <- ot_mpi_isp_mem_init @ 003d841c
+  <- ot_mpi_isp_get_ae_stats @ 003daa94
+  <- ot_mpi_isp_get_ctrl_param @ 003db798
+  <- ot_mpi_isp_get_mesh_shading_attr @ 003dae5c
+  <- ot_mpi_isp_run @ 003d9084
+  <- ot_mpi_isp_set_mesh_shading_gain_lut_attr @ 003dae9c
+  <- ot_mpi_isp_fpn_calibrate @ 003db558
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 003d9e68
+  <- ot_mpi_isp_set_stats_cfg @ 003dab64
+  <- ot_mpi_isp_get_dcf_info @ 003da44c
+  <- ot_mpi_isp_get_cac_attr @ 003db078
+  <- ot_mpi_isp_sensor_reg_callback @ 003d9804
+  <- ot_mpi_isp_get_pub_attr @ 003da6a4
+  <- ot_mpi_isp_get_fpn_attr @ 003db618
+  <- ot_mpi_isp_mem_share @ 003d8768
+  <- ot_mpi_isp_get_noise_calibration @ 003dbc08
+  <- ot_mpi_isp_set_crosstalk_attr @ 003db298
+  <- ot_mpi_isp_set_expander_attr @ 003dbac8
+  <- ot_mpi_isp_get_be_frame_attr @ 003dbb88
+  <- ot_mpi_isp_set_sharpen_attr @ 003db218
+  <- ot_mpi_isp_mem_unshare @ 003d88ec
+  <- ot_mpi_isp_get_color_tone_attr @ 003db1d8
+  <- ot_mpi_isp_set_color_tone_attr @ 003db198
+  <- ot_mpi_isp_get_crosstalk_attr @ 003db2d8
+  <- ot_mpi_isp_get_black_level_attr @ 003db518
+  <- ot_mpi_isp_set_mod_param @ 003d8394
+  <- ot_mpi_isp_get_gamma_attr @ 003dac3c
+  <- ot_mpi_isp_set_anti_false_color_attr @ 003db318
+  <- ot_mpi_isp_set_ca_attr @ 003db418
+  <- ot_mpi_isp_set_nr_attr @ 003db0f8
+  <- ot_mpi_isp_get_mod_param @ 003d83d8
+  <- ot_mpi_isp_get_nr_attr @ 003db138
+  <- ot_mpi_isp_init @ 003d85e8
+  <- ot_mpi_isp_set_dcf_info @ 003da318
+  <- ot_mpi_isp_get_pipe_differ_attr @ 003da724
+  <- ot_mpi_isp_run_once @ 003d8cf4
+  <- ot_mpi_isp_ae_lib_reg_callback @ 003d98e8
+  <- ot_mpi_isp_get_auto_color_shading_attr @ 003daf5c
+  <- ot_mpi_isp_set_pub_attr @ 003da664
+  <- ot_mpi_isp_set_dp_dynamic_attr @ 003dad5c
+  <- ot_mpi_isp_get_anti_false_color_attr @ 003db358
+  <- ot_mpi_isp_set_csc_attr @ 003dac9c
+  <- ot_mpi_isp_set_bind_attr @ 003d9f94
+  <- ot_mpi_isp_set_ldci_attr @ 003da854
+  <- ot_mpi_isp_get_stats_cfg @ 003dabb0
+  <- ot_mpi_isp_mesh_shading_calibration @ 003dafe4
+  <- ot_mpi_isp_query_inner_state_info @ 003db7dc
+  <- ot_mpi_isp_ir_auto @ 003db8dc
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 003d9d3c
+  <- ot_mpi_isp_get_frame_info @ 003da5e8
+  <- ot_mpi_isp_set_cac_attr @ 003db038
+  <- ot_mpi_isp_set_ctrl_param @ 003db754
+  <- ot_mpi_isp_get_sns_slave_attr @ 003d974c
+  <- mpi_isp_set_expander_attr @ 003ed7e4
+  <- mpi_isp_set_pub_attr @ 003e8070
+  <- ot_mpi_isp_get_dehaze_attr @ 003da994
+  <- ot_mpi_isp_set_gamma_attr @ 003dabfc
+
+======================================================================
+FUNCTION: isp_get_usr_ctx
+ADDRESS:  003d82f4
+SIZE:     18 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+undefined1 * isp_get_usr_ctx(int param_1)
+
+{
+  return g_isp_ctx + param_1 * 0x27e0;
+}
+
+
+--- CALLS TO ---
+--- CALLED BY ---
+  <- ot_mpi_isp_exit @ 003d9328
+  <- ot_mpi_isp_sensor_unreg_callback @ 003d9c2c
+  <- isp_global_initialize @ 003dfd4c
+  <- isp_algs_unregister @ 003df222
+  <- get_linear_inter_info @ 003d6b44
+  <- FUN_003eda24 @ 003eda24
+  <- isp_dehaze_dbg_set @ 003dfafc
+  <- FUN_003c90e8 @ 003c90e8
+  <- FUN_003f20b0 @ 003f20b0
+  <- isp_cfg_be_buf_exit @ 003ccd08
+  <- FUN_003c968c @ 003c968c
+  <- isp_dist_trans_pipe @ 003d8330
+  <- isp_alg_register_fcr @ 003f1c50
+  <- isp_drc_param_init @ 004188a4
+  <- isp_alg_register_af @ 003f106c
+  <- isp_run @ 003d5e94
+  <- isp_frame_cnt_get @ 003d58ac
+  <- isp_alg_register_dg @ 003f8988
+  <- FUN_003fcc78 @ 003fcc78
+  <- isp_get_pre_be_vir_addr @ 003cd930
+  <- isp_reg_cfg_info_init @ 003d2b48
+  <- isp_alg_register_ldci @ 0041af40
+  <- FUN_003cc47c @ 003cc47c
+  <- FUN_003f0f00 @ 003f0f00
+  <- FUN_003c98ac @ 003c98ac
+  <- isp_alg_register_cac @ 003f5fcc
+  <- FUN_003fd7b4 @ 003fd7b4
+  <- isp_dng_info_exit @ 003e03dc
+  <- ot_mpi_isp_set_frame_info @ 003da56c
+  <- ot_mpi_isp_mem_unshare_all @ 003d8b88
+  <- FUN_003f69a4 @ 003f69a4
+  <- isp_init @ 003d5a18
+  <- ot_mpi_isp_awb_lib_reg_callback @ 003d9a9c
+  <- isp_check_no_fe_pipe @ 003d8310
+  <- FUN_003fee24 @ 003fee24
+  <- FUN_00416f50 @ 00416f50
+  <- isp_alg_register_mcds @ 003fd284
+  <- FUN_003f0abe @ 003f0abe
+  <- isp_update_dng_image_dynamic_info @ 003e0400
+  <- FUN_003ceb08 @ 003ceb08
+  <- FUN_003fb810 @ 003fb810
+  <- FUN_003c9de4 @ 003c9de4
+  <- FUN_003f87d4 @ 003f87d4
+  <- isp_alg_register_lsc @ 003fd0ac
+  <- FUN_003f8770 @ 003f8770
+  <- FUN_003e3d28 @ 003e3d28
+  <- isp_ext_regs_initialize @ 003dfca4
+  <- FUN_003f2d04 @ 003f2d04
+  <- isp_reg_cfg_ctrl @ 003d34c8
+  <- FUN_0041694c @ 0041694c
+  <- FUN_00419c08 @ 00419c08
+  <- FUN_003f7548 @ 003f7548
+  <- FUN_003c8a84 @ 003c8a84
+  <- FUN_003cec2c @ 003cec2c
+  <- isp_alg_register_dpc @ 003f77f0
+  <- FUN_003ca0cc @ 003ca0cc
+  <- isp_alg_register_csc @ 003f66b4
+  <- isp_wdr_cfg_set @ 003d5140
+  <- isp_sync_cfg_set @ 003d32ec
+  <- FUN_003cfc28 @ 003cfc28
+  <- FUN_003f280c @ 003f280c
+  <- FUN_003ce8a0 @ 003ce8a0
+  <- FUN_003f5204 @ 003f5204
+  <- FUN_003c8e6c @ 003c8e6c
+  <- ot_mpi_isp_run @ 003d9084
+  <- FUN_003f1a10 @ 003f1a10
+  <- isp_reset_fe_stt_en @ 003d25d4
+  <- FUN_003cdd84 @ 003cdd84
+  <- isp_alg_register_sharpen @ 00401164
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 003d9e68
+  <- ot_mpi_isp_get_dcf_info @ 003da44c
+  <- FUN_003ef56c @ 003ef56c
+  <- FUN_003cdb74 @ 003cdb74
+  <- FUN_003cf268 @ 003cf268
+  <- isp_ldci_buf_exit @ 003cc748
+  <- dehaze_set_image_size @ 00414df8
+  <- FUN_003fdf84 @ 003fdf84
+  <- FUN_003c99c4 @ 003c99c4
+  <- FUN_003dcf48 @ 003dcf48
+  <- FUN_003f6760 @ 003f6760
+  <- isp_alg_register_ca @ 003f50e4
+  <- ot_mpi_isp_init @ 003d85e8
+  <- isp_alg_register_dehaze @ 00416a5c
+  <- FUN_003cb124 @ 003cb124
+  <- isp_alg_register_frame_wdr @ 003fa7e4
+  <- FUN_003f0df8 @ 003f0df8
+  <- isp_alg_register_demosaic @ 003f8550
+  <- FUN_003c8f10 @ 003c8f10
+  <- FUN_003fbf2c @ 003fbf2c
+  <- isp_reg_cfg_info_set @ 003d2e70
+  <- isp_update_info_exit @ 00401ec0
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 003d9d3c
+  <- isp_demosaic_param_init @ 003f7c44
+  <- FUN_003ca674 @ 003ca674
+  <- isp_lut2stt_apb_reg @ 003d37a8
+  <- FUN_003f9ba0 @ 003f9ba0
+  <- mpi_isp_set_pub_attr @ 003e8070
+  <- isp_exit @ 003d6568
+  <- FUN_003c9adc @ 003c9adc
+  <- isp_awb_dbg_set @ 003dfac4
+  <- FUN_003cbd28 @ 003cbd28
+  <- isp_alg_register_expander @ 003f8fc4
+  <- FUN_003eddb4 @ 003eddb4
+  <- isp_trans_info_init @ 003e3d84
+  <- dehaze_reg_update @ 00415774
+  <- FUN_003cabc4 @ 003cabc4
+  <- FUN_003f8600 @ 003f8600
+  <- FUN_003fd1c8 @ 003fd1c8
+  <- FUN_003cce40 @ 003cce40
+  <- isp_ae_dbg_set @ 003dfa80
+  <- isp_get_reg_cfg_ctx @ 003d2afc
+  <- isp_update_info_init @ 00401e34
+  <- FUN_003f11b0 @ 003f11b0
+  <- FUN_003ce804 @ 003ce804
+  <- ot_mpi_isp_mem_share_all @ 003d8a1c
+  <- isp_drc_reg_update @ 00419548
+  <- isp_alg_register_bayer_nr @ 0041d6c0
+  <- FUN_003f4a68 @ 003f4a68
+  <- FUN_003c8978 @ 003c8978
+  <- FUN_003f21d0 @ 003f21d0
+  <- FUN_003c888c @ 003c888c
+  <- isp_be_vreg_addr_init @ 003ccdd0
+  <- mpi_isp_register_alg @ 003dbcd8
+  <- FUN_003f1688 @ 003f1688
+  <- FUN_003c9200 @ 003c9200
+  <- isp_alg_register_gamma @ 003fb1d0
+  <- isp_switch_reg_set @ 003d3664
+  <- isp_get_be_free_buf @ 003ccbf0
+  <- FUN_003acdcc @ 003acdcc
+  <- isp_cfg_be_buf_init @ 003cca14
+  <- FUN_003fb43c @ 003fb43c
+  <- isp_alg_register_acs @ 0041fb38
+  <- isp_demosaic_set_long_frame_mode @ 003f7a84
+  <- FUN_003fd18a @ 003fd18a
+  <- FUN_003f0504 @ 003f0504
+  <- isp_demosaic_reg_update @ 003f808c
+  <- FUN_003f921c @ 003f921c
+  <- FUN_003f6ef4 @ 003f6ef4
+  <- ot_mpi_isp_get_bind_attr @ 003da0dc
+  <- isp_switch_mode @ 003d5270
+  <- FUN_0041d478 @ 0041d478
+  <- FUN_003e3d64 @ 003e3d64
+  <- isp_alg_register_fpn @ 003dd2d0
+  <- drc_res_switch @ 00418694
+  <- isp_bayernr_param_init @ 0041ba14
+  <- ot_mpi_isp_mem_init @ 003d841c
+  <- FUN_003f8b88 @ 003f8b88
+  <- isp_alg_register_drc @ 00419db4
+  <- isp_set_ldci_image_size @ 0041a9cc
+  <- isp_ext_regs_default @ 003dfb3c
+  <- isp_alg_register_ge @ 003fbcd4
+  <- isp_bayernr_reg_update @ 0041c048
+  <- isp_alg_en_exit @ 003d2698
+  <- isp_get_be_buf_first @ 003ccb50
+  <- FUN_0041a604 @ 0041a604
+  <- ot_mpi_isp_sensor_reg_callback @ 003d9804
+  <- isp_all_cfgs_be_buf_init @ 003ccd74
+  <- isp_libs_unregister @ 003df24a
+  <- ot_mpi_isp_mem_share @ 003d8768
+  <- FUN_003cb508 @ 003cb508
+  <- FUN_003eda80 @ 003eda80
+  <- ot_mpi_isp_mem_unshare @ 003d88ec
+  <- FUN_003f0c80 @ 003f0c80
+  <- FUN_003c89ec @ 003c89ec
+  <- FUN_003c9570 @ 003c9570
+  <- isp_alg_register_blc @ 003f480c
+  <- isp_alg_register_ae @ 003f0458
+  <- FUN_00401044 @ 00401044
+  <- isp_stt_buf_exit @ 003cc594
+  <- FUN_003f9e14 @ 003f9e14
+  <- ot_mpi_isp_set_dcf_info @ 003da318
+  <- FUN_003f59fc @ 003f59fc
+  <- ot_mpi_isp_run_once @ 003d8cf4
+  <- FUN_003e3d46 @ 003e3d46
+  <- ot_mpi_isp_ae_lib_reg_callback @ 003d98e8
+  <- isp_get_be_last_buf @ 003ccc68
+  <- FUN_003ed9f2 @ 003ed9f2
+  <- isp_run_thread @ 003d6408
+  <- FUN_003fac40 @ 003fac40
+  <- isp_ldci_buf_init @ 003cc7e4
+  <- FUN_003f8ce0 @ 003f8ce0
+  <- ot_mpi_isp_set_bind_attr @ 003d9f94
+  <- FUN_003cda48 @ 003cda48
+  <- FUN_0041aba0 @ 0041aba0
+  <- FUN_003f3ee8 @ 003f3ee8
+  <- ot_mpi_isp_get_frame_info @ 003da5e8
+  <- isp_stt_buf_init @ 003cc600
+  <- FUN_003f41a4 @ 003f41a4
+  <- FUN_003f843c @ 003f843c
+  <- FUN_003efa4c @ 003efa4c
+  <- isp_dng_info_init @ 003e0368
+  <- isp_alg_register_awb @ 003f38fc
+  <- FUN_003f1ed0 @ 003f1ed0
+  <- isp_alg_register_agamma @ 003f1418
+
+======================================================================
+FUNCTION: isp_mutex_lock
+ADDRESS:  003d7e54
+SIZE:     48 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+void isp_mutex_lock(int param_1)
+
+{
+  int iVar1;
+  
+  iVar1 = pthread_mutex_lock((pthread_mutex_t *)(&DAT_009b6150 + param_1 * 0x18));
+  if (iVar1 == 0) {
+    return;
+  }
+  fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:pthread_mutex_lock failed!\n","isp_mutex_lock",
+          0x36);
+  return;
+}
+
+
+--- CALLS TO ---
+  -> pthread_mutex_lock @ 00161ce8
+--- CALLED BY ---
+  <- ot_mpi_isp_set_pipe_differ_attr @ 003da6e4
+  <- ot_mpi_isp_get_dp_dynamic_attr @ 003dad9c
+  <- ot_mpi_isp_set_module_ctrl @ 003da764
+  <- ot_mpi_isp_exit @ 003d9328
+  <- ot_mpi_isp_sensor_unreg_callback @ 003d9c2c
+  <- ot_mpi_isp_get_motion_stats @ 003dbc78
+  <- mpi_isp_set_aidrc_mode @ 003dc1cc
+  <- ot_mpi_isp_set_dciris_attr @ 003a89ec
+  <- ot_mpi_isp_get_ca_attr @ 003db458
+  <- ot_mpi_isp_set_ccm_attr @ 0040ad00
+  <- ot_mpi_isp_set_fswdr_attr @ 003da9d4
+  <- mpi_isp_set_algs_update @ 003dcab4
+  <- ot_mpi_isp_set_hdr_exposure_attr @ 003a872c
+  <- ot_mpi_isp_get_sharpen_attr @ 003db258
+  <- ot_mpi_isp_get_saturation_attr @ 0040adc0
+  <- ot_mpi_isp_set_demosaic_attr @ 003db398
+  <- ot_mpi_isp_set_smart_info @ 003db9f8
+  <- ot_mpi_isp_get_smart_info @ 003dba38
+  <- ot_mpi_isp_get_wb_stats @ 003dab04
+  <- mpi_isp_set_ai_mode_attr @ 003dbea8
+  <- ot_mpi_isp_get_isp_reg_attr @ 003db694
+  <- ot_mpi_isp_set_piris_attr @ 003a8a6c
+  <- ot_mpi_isp_set_color_sector_attr @ 0040ae00
+  <- ot_mpi_isp_get_ae_route_sf_attr_ex @ 003a8bac
+  <- ot_mpi_isp_get_csc_attr @ 003dacdc
+  <- ot_mpi_isp_get_color_sector_attr @ 0040ae40
+  <- ot_mpi_isp_get_module_ctrl @ 003da7a4
+  <- ot_mpi_isp_set_dehaze_attr @ 003da954
+  <- ot_mpi_isp_set_wdr_exposure_attr @ 003a86ac
+  <- mpi_isp_set_binary_enable @ 003dc6cc
+  <- ot_mpi_isp_get_dciris_attr @ 003a8a2c
+  <- ot_mpi_isp_set_mesh_shading_attr @ 003dae1c
+  <- ot_mpi_isp_get_ae_route_sf_attr @ 003a88ec
+  <- ot_mpi_isp_awb_lib_reg_callback @ 003d9a9c
+  <- ot_mpi_isp_set_debug @ 003db6d4
+  <- ot_mpi_isp_get_ldci_attr @ 003da894
+  <- ot_mpi_isp_set_auto_color_shading_attr @ 003daf1c
+  <- ot_mpi_isp_get_demosaic_attr @ 003db3d8
+  <- ot_mpi_isp_set_ae_route_attr_ex @ 003a8aec
+  <- ot_mpi_isp_set_black_level_attr @ 003db4d8
+  <- ot_mpi_isp_get_exposure_attr @ 003a866c
+  <- ot_mpi_isp_get_drc_attr @ 003da914
+  <- mpi_isp_set_mesh_shading_attr @ 003dc94c
+  <- ot_mpi_isp_query_exposure_info @ 003a892c
+  <- ot_mpi_isp_get_awb_attr_ex @ 0040acc0
+  <- ot_mpi_isp_get_ae_route_attr @ 003a886c
+  <- ot_mpi_isp_set_fast_face_ae_attr @ 003a8cac
+  <- mpi_isp_get_ai_mode_attr @ 003dbf5c
+  <- mpi_isp_fpn_calibrate @ 003ecc3c
+  <- ot_mpi_isp_set_noise_calibration @ 003dbbc8
+  <- ot_mpi_isp_set_exposure_attr @ 003a862c
+  <- ot_mpi_isp_query_wb_info @ 0040ae80
+  <- ot_mpi_isp_get_dng_image_static_info @ 003db81c
+  <- ot_mpi_isp_set_dng_color_param @ 003db85c
+  <- ot_mpi_isp_get_fmw_state @ 003da814
+  <- ot_mpi_isp_set_awb_attr_ex @ 0040ac80
+  <- ot_mpi_isp_set_saturation_attr @ 0040ad80
+  <- ot_mpi_isp_set_ae_route_sf_attr_ex @ 003a8b6c
+  <- ot_mpi_isp_get_dng_color_param @ 003db89c
+  <- ot_mpi_isp_cal_gain_by_temp @ 0040aec0
+  <- ot_mpi_isp_set_ae_route_sf_attr @ 003a88ac
+  <- ot_mpi_isp_set_be_frame_attr @ 003dbb48
+  <- ot_mpi_isp_get_debug @ 003db714
+  <- mpi_isp_get_check_sum_stats @ 003dc7ac
+  <- ot_mpi_isp_get_smart_exposure_attr @ 003a87ec
+  <- ot_mpi_isp_get_bind_attr @ 003da0dc
+  <- ot_mpi_isp_get_focus_stats @ 003daa54
+  <- ot_mpi_isp_get_mesh_shading_gain_lut_attr @ 003daedc
+  <- ot_mpi_isp_get_expander_attr @ 003dbb08
+  <- ot_mpi_isp_get_fswdr_attr @ 003daa14
+  <- ot_mpi_isp_set_drc_attr @ 003da8d4
+  <- ot_mpi_isp_set_fmw_state @ 003da7e4
+  <- ot_mpi_isp_set_ae_route_attr @ 003a882c
+  <- ot_mpi_isp_mem_init @ 003d841c
+  <- ot_mpi_isp_set_wb_attr @ 0040ac00
+  <- ot_mpi_isp_get_ae_stats @ 003daa94
+  <- ot_mpi_isp_get_ccm_attr @ 0040ad40
+  <- ot_mpi_isp_get_wdr_exposure_attr @ 003a86ec
+  <- mpi_isp_get_drc_blend @ 003dc530
+  <- ot_mpi_isp_get_ae_route_attr_ex @ 003a8b2c
+  <- ot_mpi_isp_get_mesh_shading_attr @ 003dae5c
+  <- ot_mpi_isp_get_wb_attr @ 0040ac40
+  <- ot_mpi_isp_run @ 003d9084
+  <- ot_mpi_isp_set_mesh_shading_gain_lut_attr @ 003dae9c
+  <- ot_mpi_isp_awb_lib_unreg_callback @ 003d9e68
+  <- ot_mpi_isp_set_exp_convert @ 003a8bec
+  <- ot_mpi_isp_set_stats_cfg @ 003dab64
+  <- ot_mpi_isp_get_dcf_info @ 003da44c
+  <- ot_mpi_isp_get_cac_attr @ 003db078
+  <- ot_mpi_isp_sensor_reg_callback @ 003d9804
+  <- ot_mpi_isp_get_pub_attr @ 003da6a4
+  <- FUN_003e8020 @ 003e8020
+  <- ot_mpi_isp_get_noise_calibration @ 003dbc08
+  <- ot_mpi_isp_set_crosstalk_attr @ 003db298
+  <- ot_mpi_isp_set_expander_attr @ 003dbac8
+  <- ot_mpi_isp_get_be_frame_attr @ 003dbb88
+  <- ot_mpi_isp_set_iris_attr @ 003a896c
+  <- ot_mpi_isp_set_sharpen_attr @ 003db218
+  <- mpi_isp_set_drc_blend @ 003dc28c
+  <- ot_mpi_isp_get_color_tone_attr @ 003db1d8
+  <- ot_mpi_isp_set_color_tone_attr @ 003db198
+  <- ot_mpi_isp_get_crosstalk_attr @ 003db2d8
+  <- ot_mpi_isp_get_black_level_attr @ 003db518
+  <- ot_mpi_isp_get_gamma_attr @ 003dac3c
+  <- ot_mpi_isp_get_fast_face_ae_attr @ 003a8c6c
+  <- ot_mpi_isp_set_anti_false_color_attr @ 003db318
+  <- ot_mpi_isp_set_ca_attr @ 003db418
+  <- ot_mpi_isp_set_nr_attr @ 003db0f8
+  <- mpi_isp_set_isp_stitch_transform_info @ 003dca34
+  <- mpi_isp_set_mesh_shading_gain_lut_attr @ 003dc864
+  <- ot_mpi_isp_set_smart_exposure_attr @ 003a87ac
+  <- mpi_isp_enable_aiisp @ 003dbff0
+  <- ot_mpi_isp_get_nr_attr @ 003db138
+  <- ot_mpi_isp_init @ 003d85e8
+  <- ot_mpi_isp_set_dcf_info @ 003da318
+  <- mpi_isp_disable_aiisp @ 003dc104
+  <- ot_mpi_isp_get_pipe_differ_attr @ 003da724
+  <- ot_mpi_isp_run_once @ 003d8cf4
+  <- ot_mpi_isp_ae_lib_reg_callback @ 003d98e8
+  <- ot_mpi_isp_get_auto_color_shading_attr @ 003daf5c
+  <- ot_mpi_isp_set_pub_attr @ 003da664
+  <- ot_mpi_isp_get_piris_attr @ 003a8aac
+  <- isp_run_thread @ 003d6408
+  <- ot_mpi_isp_set_dp_dynamic_attr @ 003dad5c
+  <- ot_mpi_isp_get_anti_false_color_attr @ 003db358
+  <- ot_mpi_isp_set_csc_attr @ 003dac9c
+  <- ot_mpi_isp_set_bind_attr @ 003d9f94
+  <- mpi_isp_set_fpn_attr @ 003ece14
+  <- mpi_isp_set_check_sum_enable @ 003dc73c
+  <- ot_mpi_isp_get_hdr_exposure_attr @ 003a876c
+  <- mpi_isp_set_aidrc_dataflow_status @ 003dc22c
+  <- ot_mpi_isp_set_ldci_attr @ 003da854
+  <- ot_mpi_isp_get_stats_cfg @ 003dabb0
+  <- ot_mpi_isp_query_inner_state_info @ 003db7dc
+  <- ot_mpi_isp_ir_auto @ 003db8dc
+  <- ot_mpi_isp_ae_lib_unreg_callback @ 003d9d3c
+  <- ot_mpi_isp_set_cac_attr @ 003db038
+  <- mpi_isp_get_ynet_cfg @ 003dc65c
+  <- ot_mpi_isp_get_exp_convert @ 003a8c2c
+  <- mpi_isp_set_ynet_cfg @ 003dc5ec
+  <- ot_mpi_isp_get_dehaze_attr @ 003da994
+  <- ot_mpi_isp_set_gamma_attr @ 003dabfc
+  <- ot_mpi_isp_get_iris_attr @ 003a89ac
+
+======================================================================
+FUNCTION: cis_register_callback
+ADDRESS:  0042341c
+SIZE:     396 bytes
+======================================================================
+
+--- DECOMPILED C ---
+
+int cis_register_callback(undefined4 *param_1,undefined4 *param_2)
+
+{
+  void *pvVar1;
+  char *__format;
+  undefined4 uVar2;
+  int iVar3;
+  undefined4 *puVar4;
+  undefined4 local_28;
+  int local_24;
+  
+  local_24 = __stack_chk_guard;
+  if (param_1 == (undefined4 *)0x0) {
+    uVar2 = 0x5a;
+  }
+  else {
+    if (param_2 != (undefined4 *)0x0) {
+      puVar4 = param_1 + 1;
+      FUN_0042337c(puVar4,param_2,&__DT_PLTGOT,0);
+      if (param_1[0x15d] == 0) {
+        pvVar1 = malloc(0xd3c);
+        if (pvVar1 != (void *)0x0) {
+          memset_s(pvVar1,0xd3c,0);
+          param_1[0x15d] = pvVar1;
+          FUN_004233b4(puVar4);
+          local_28 = param_1[7];
+          iVar3 = ot_mpi_isp_sensor_reg_callback(*param_1,&local_28,param_2 + 2);
+          if (iVar3 == 0) {
+            iVar3 = ot_mpi_ae_sensor_reg_callback(*param_1,*param_2,&local_28,param_2 + 0xe);
+            if (iVar3 == 0) {
+              iVar3 = ot_mpi_awb_sensor_reg_callback(*param_1,param_2[1],&local_28,param_2 + 0x1c);
+              if (iVar3 == 0) goto LAB_00423456;
+              fprintf((FILE *)0x0,
+                      "[Func]:%s [Line]:%d [Info]:sensor register callback function to awb lib failed!\n"
+                      ,"cis_register_callback",0x6e);
+              ot_mpi_ae_sensor_unreg_callback(*param_1,*param_2,param_1[7]);
+            }
+            else {
+              fprintf((FILE *)0x0,
+                      "[Func]:%s [Line]:%d [Info]:sensor register callback function to ae lib failed!\n"
+                      ,"cis_register_callback",0x68);
+            }
+            ot_mpi_isp_sensor_unreg_callback(*param_1,param_1[7]);
+          }
+          else {
+            fprintf((FILE *)0x0,
+                    "[Func]:%s [Line]:%d [Info]:sensor register callback function failed!\n",
+                    "cis_register_callback",0x62);
+          }
+          FUN_004233ec(param_1);
+          goto LAB_00423456;
+        }
+        uVar2 = 0x37;
+        __format = "[Func]:%s [Line]:%d [Info]:malloc memory failed!\n";
+      }
+      else {
+        uVar2 = 0x31;
+        __format = "[Func]:%s [Line]:%d [Info]:sns has been created!\n";
+      }
+      iVar3 = -0x5fe37fbb;
+      fprintf((FILE *)0x0,__format,"cis_create_state",uVar2);
+      FUN_004233b4(puVar4);
+      fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:failed! ret:0x%x\n","cis_register_callback",
+              0x5d,0xa01c8045);
+      goto LAB_00423456;
+    }
+    uVar2 = 0x5b;
+  }
+  iVar3 = -0x5fe37ff6;
+  fprintf((FILE *)0x0,"[Func]:%s [Line]:%d [Info]:Null Pointer!\n","cis_register_callback",uVar2);
+LAB_00423456:
+  if (__stack_chk_guard != local_24) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return iVar3;
+}
+
+
+--- CALLS TO ---
+  -> ot_mpi_isp_sensor_reg_callback @ 003d9804
+  -> ot_mpi_isp_sensor_unreg_callback @ 003d9c2c
+  -> __stack_chk_fail @ 00161978
+  -> ot_mpi_awb_sensor_reg_callback @ 004143a4
+  -> fprintf @ 00161568
+  -> FUN_0042337c @ 0042337c
+  -> malloc @ 00161fa8
+  -> FUN_004233ec @ 004233ec
+  -> ot_mpi_ae_sensor_reg_callback @ 003b22cc
+  -> FUN_004233b4 @ 004233b4
+  -> ot_mpi_ae_sensor_unreg_callback @ 003b23a8
+  -> memset_s @ 00395b08
+--- CALLED BY ---
+
