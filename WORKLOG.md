@@ -236,3 +236,66 @@ password prompt). Password auth also works as fallback.
 **Next:** Consider cross-compiling dropbear with SCP support (it's MIT
 licensed, we have the ARM toolchain). Then Phase 1 (audio) or Phase 2
 (NPU).
+
+---
+
+## 2026-05-15 ~21:00 [Phase 0] -- Custom dropbear v2026.91 with SCP
+
+**Context:** The pre-compiled dropbear v2025.89 had no SCP or SFTP.
+File transfer relied on recv/send_file.py (custom TCP, unencrypted) or
+cat-piping over SSH. We have the ARM musl toolchain; dropbear is MIT
+licensed and supports SCP natively.
+
+**Did:** Downloaded dropbear 2026.91 source. Reviewed all compile-time
+options in `default_options.h`. Created `localoptions.h` disabling
+post-quantum crypto (sntrup761, mlkem768), U2F keys, agent forwarding,
+inetd mode, MOTD, and re-exec (ASLR irrelevant on LAN). Kept Ed25519,
+ECDSA, RSA, chacha20-poly1305, AES. Set `DEFAULT_PATH` to include
+`/progs/rec/00/ipc_drv` so the SCP binary is found by the server.
+
+Cross-compiled in WSL as static multi-binary (`MULTI=1`) with
+`-Os -ffunction-sections -fdata-sections` and `--gc-sections`. Had to
+fix NTFS-broken symlinks in the toolchain (liblto_plugin.so was a
+22-byte text file from git checkout on Windows). Result: 226 KB
+stripped ARM ELF, containing dropbear + scp + dropbearkey.
+
+Deployed to camera via send_file.py (binary-safe, unlike PowerShell
+`cat` which mangled the file from 231KB to 376KB via text encoding).
+FAT32 on SD card doesn't support symlinks, so made hard copies:
+`dropbearmulti`, `dropbear`, `scp`, `dropbearkey` (4x 226KB = ~900KB).
+
+Hot-swapped: started new dropbear on port 2222, tested SSH login,
+tested SCP upload+download (text and binary with MD5 verification),
+then killed old dropbear and started new one on port 22.
+
+**Issues resolved:**
+1. **PowerShell `cat` corrupts binaries** -- `Get-Content` applies text
+   encoding to binary data. Use send_file.py or SCP for binary transfer.
+2. **FAT32 remounted read-only** -- the corrupted binary write triggered
+   `errors=remount-ro`. Fix: `mount -o remount,rw`.
+3. **FAT32 has no symlinks** -- multi-binary needs copies, not symlinks.
+4. **Windows `scp.exe` defaults to SFTP** -- OpenSSH 8.6+ uses SFTP
+   protocol by default. Camera has no sftp-server. Must use `scp -O`
+   flag to force legacy SCP protocol.
+
+**New repo files:**
+- `tools/build_dropbear.sh` -- reproducible cross-compile script (WSL)
+- `tools/dropbear_localoptions.h` -- our compile-time config
+
+**Updated docs:**
+- CAMERA.md: process tree, BusyBox note, auth table, boot hook steps
+  updated for v2026.91 + SCP.
+- README.md: SCP as primary file transfer, `-O` flag documented,
+  legacy recv/send_file demoted, tools listing, constraints section.
+- WORKLOG.md: this entry.
+
+**Status:** Complete. SCP verified working both directions with binary
+integrity (MD5 match). recv/send_file.py kept as legacy fallback.
+
+**SD card layout** (`/progs/rec/00/ipc_drv/`):
+- `dropbearmulti` (226 KB) -- master binary
+- `dropbear` -- hard copy, SSH server (argv[0] selects mode)
+- `scp` -- hard copy, SCP protocol handler
+- `dropbearkey` -- hard copy, host key generator
+
+**Next:** Phase 1 (audio capture) or Phase 2 (NPU research).

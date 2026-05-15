@@ -51,11 +51,20 @@ if [ -f $CONFDIR/dropbear/authorized_keys ]; then
     chmod 600 /root/.ssh/authorized_keys
 fi
 
+# Set PATH for SSH sessions (dropbear's compiled-in DEFAULT_PATH may be stale)
+cat > /root/.profile << 'EOF'
+export PATH="/usr/sbin:/usr/bin:/sbin:/bin:/progs/rec/00/ipc_drv"
+EOF
+
 # --- 5. Set up dropbear host keys ---
 mkdir -p /etc/dropbear
 cp $CONFDIR/dropbear/dropbear_*_host_key /etc/dropbear/ 2>/dev/null
 
 # --- 6. Start dropbear SSH daemon ---
+# dropbear v2026.91 multi-binary: dropbearmulti is the master, hard copies
+# named 'dropbear', 'scp', 'dropbearkey' on FAT32 SD (no symlinks on vfat).
+# SCP works via 'scp' copy in $DRVDIR which is in dropbear's DEFAULT_PATH.
+# Note: Windows scp.exe defaults to SFTP mode; use 'scp -O' for legacy SCP protocol.
 if [ -x $DRVDIR/dropbear ]; then
     $DRVDIR/dropbear -p 22
 fi

@@ -14,30 +14,44 @@ then daemon conversion. See `ROADMAP.md` for the full plan.
 |------|-------|
 | Camera IP | `192.168.1.153` |
 | SSH | `ssh root@192.168.1.153` (key auth, no prompt) |
+| SCP file transfer | `scp -O file root@192.168.1.153:/path` (use `-O` flag!) |
 | Shell (legacy) | `tools/cam_cmd.py` (tcpsvd on port 9999, no auth) |
-| Fast file transfer | `recv` on port 8888 + `tools/send_file.py` |
+| Fast file transfer (legacy) | `recv` on port 8888 + `tools/send_file.py` |
 | Slow file fallback | `tools/deploy_file.py` (base64 over shell) |
-| RTSP stream | `rtsp://192.168.1.153:554/live0` |
+| RTSP stream (custom) | `rtsp://192.168.1.153:554/live0` |
+| RTSP stream (stock) | `rtsp://192.168.1.153:554/live1` |
+| Stream switcher | `python tools/stream_switch.py` |
 | Build environment | WSL Ubuntu + ARM cross toolchain |
 
 ## Talking to the camera
 
 ### SSH (port 22 -- primary)
 
-Dropbear SSH with Ed25519 key-based auth. No password prompt:
+Dropbear v2026.91 (custom-compiled multi-binary) with Ed25519 key-based
+auth. No password prompt:
 
 ```bash
 ssh root@192.168.1.153
 ssh root@192.168.1.153 "ps | grep superb"
 ```
 
-File transfer over SSH (no SCP/SFTP -- not compiled into dropbear):
+### SCP file transfer (primary)
+
+SCP is built into our custom dropbear. **Windows gotcha:** OpenSSH 8.6+
+defaults to SFTP protocol, which fails because we have no sftp-server.
+Always use `-O` to force legacy SCP mode:
+
 ```bash
-# Upload
-cat local_file | ssh root@192.168.1.153 "cat > /path/on/camera"
-# Download
-ssh root@192.168.1.153 "cat /path/on/camera" > local_file
+# Upload to camera
+scp -O driver/build/pipeline_test root@192.168.1.153:/progs/rec/00/ipc_drv/
+scp -O tools/rtsp_run.sh root@192.168.1.153:/progs/rec/00/ipc_drv/
+
+# Download from camera
+scp -O root@192.168.1.153:/tmp/superb.log .
+scp -O root@192.168.1.153:/progs/rec/00/ipc_drv/capture.h265 .
 ```
+
+Without `-O` you'll get: `sh: /progs/rec/00/ipc_drv/sftp-server: not found`
 
 ### Shell access (port 9999 -- legacy fallback)
 
@@ -50,54 +64,62 @@ python tools/cam_cmd.py "ls /progs/rec/00/ipc_drv/"
 python tools/cam_cmd.py "cat /proc/umap/isp"
 ```
 
-### Uploading files (port 8888 -- fast binary transfer)
+### Legacy file transfer (recv/send_file.py on port 8888)
 
-For fast binary transfer, we use `recv` (a tiny TCP file receiver
-compiled for ARM) running on the camera, paired with `send_file.py`
-on the PC. `recv` starts automatically at boot via `debug.sh`.
+The `recv` daemon (port 8888) + `send_file.py` predates SCP and is
+still available as fallback. Useful if SSH is broken or for bulk
+transfers where you don't want to type paths.
+The `recv` daemon is auto-started by `debug.sh` on boot
+(if the binary exists on the SD card).
+
 
 ```bash
-# Send files from PC (recv is already running)
+# Send files from PC
 python tools/send_file.py 192.168.1.153 8888 driver/build/libsns_sc635hai.so driver/build/pipeline_test
-
-# Set permissions
-ssh root@192.168.1.153 "chmod +x /progs/rec/00/ipc_drv/pipeline_test"
 ```
 
-The `recv` source is at `tools/recv.c`. In daemon mode (`-d`), it
-listens indefinitely and accepts multiple connections. Each connection
-sends `<filename>\n<raw bytes>`, and recv writes the file to the
-target directory.
+Other legacy tools:
+`deploy_file.py` (base64 over shell, very slow -- used only for bootstrapping recv itself),
+`pull_file.py` (reverse-connect download from camera).
 
-### Uploading files (base64 fallback)
+### Deployment scripts
 
-If recv isn't running yet (first deployment after a factory reset),
-use the slow base64-over-shell method:
+Three scripts handle deployment, from cold start to routine updates:
 
-```bash
-python tools/deploy_file.py driver/build/recv /progs/rec/00/ipc_drv/recv
-python tools/cam_cmd.py "chmod +x /progs/rec/00/ipc_drv/recv"
-# Now start recv daemon and switch to fast method above
-```
-
-### Downloading files from camera
-
-```bash
-python tools/pull_file.py /progs/rec/00/ipc_drv/capture.h265
-python tools/pull_file.py /tmp/pipeline.log pipeline_output.log
-```
-
-Uses a reverse-connect approach: PC listens, camera connects back
-and sends the file.
-
-### Batch redeployment
-
-After a reboot wipes the SD card overlay:
+| Script | When to use |
+|--------|-------------|
+| `tools/bootstrap_deploy.ps1` | **Cold start.** No recv, no SSH -- just tcpsvd. Deploys recv via base64, starts it, deploys debug.sh, then runs full redeploy. |
+| `tools/redeploy_all.ps1` | **Routine deploy.** Requires recv or SSH already running. Sends all 26 files + creates dropbear hard copies. |
+| `tools/stream_switch.py` | **Switch streams.** Toggle between custom pipeline (live0) and stock superb (live1). |
 
 ```powershell
-# Redeploys all binaries + SDK libs to camera (uses send_file.py)
+# Cold start (after SD card wipe or fresh camera):
+.\tools\bootstrap_deploy.ps1
+
+# Routine redeploy (recv or SSH already running):
 .\tools\redeploy_all.ps1
+
+# Redeploy with explicit transfer method:
+.\tools\redeploy_all.ps1 -recv    # Force recv daemon
+.\tools\redeploy_all.ps1 -scp     # Force SCP (requires SSH)
+
+# Switch between custom and stock streams:
+python tools/stream_switch.py          # Interactive menu
+python tools/stream_switch.py custom   # Custom pipeline (live0)
+python tools/stream_switch.py stock    # Stock superb (live1)
+python tools/stream_switch.py status   # Show current state
 ```
+
+### SD card protection (.format marker)
+
+superb reformats the entire SD card if a `.format` marker file is
+missing when it starts. Two places maintain this marker:
+
+- `debug.sh` writes `.format` at boot (before superb starts)
+- `rtsp_run.sh` writes `.format` after killing superb (before
+  mySystem can respawn it)
+
+If the SD card is ever wiped, use `bootstrap_deploy.ps1` to recover.
 
 ## Building
 
@@ -110,11 +132,12 @@ make all
 ```
 
 Outputs in `driver/build/`:
-- `libsns_sc635hai.so` -- sensor driver shared library
 - `pipeline_test` -- full video pipeline binary (future daemon)
-- `reg_dump` -- I2C register dump tool
+- `libsns_sc635hai.so` -- sensor driver shared library
+- `recv` -- camera-side TCP file receiver
 - `sensor_test` -- standalone sensor test
 - `awb_dump` -- ISP AWB calibration reader
+- `libbin.so` -- PQ extension library (copied from SDK)
 
 Toolchain: `research/hi3516cv610_toolchain/gcc-20250305-arm-v01c02-linux-musleabi/`
 
@@ -126,9 +149,8 @@ Toolchain: `research/hi3516cv610_toolchain/gcc-20250305-arm-v01c02-linux-musleab
 # Option A: Launch via cam_cmd (script handles mySystem/superb)
 python tools/cam_cmd.py "setsid /progs/rec/00/ipc_drv/rtsp_run.sh </dev/null &>/dev/null &"
 
-# Option B: Manual launch
-python tools/cam_cmd.py "killall -STOP mySystem; killall -9 superb; sleep 1"
-python tools/cam_cmd.py "cd /progs/rec/00/ipc_drv && LD_PRELOAD='libbnr.so libdrc.so libacs.so libcalcflicker.so libir_auto.so libldci.so libdehaze.so libextend_stats.so' LD_LIBRARY_PATH=/progs/rec/00/ipc_drv ./pipeline_test --rtsp"
+# Option B: Use stream_switch.py (handles safe superb shutdown)
+python tools/stream_switch.py custom
 
 # View in VLC or ffplay:
 ffplay rtsp://192.168.1.153:554/live0
@@ -160,16 +182,20 @@ ipc_XMeye_camera/
     README.md             Driver architecture + build details
 
   tools/                  Host + camera-side utilities
+    bootstrap_deploy.ps1    Cold-start deploy (base64 recv + full redeploy)
+    redeploy_all.ps1        Batch redeploy (recv or SCP, auto-detects)
+    stream_switch.py        Switch between custom/stock RTSP streams
     cam_cmd.py              Send shell commands via tcpsvd (port 9999)
     recv.c                  Camera-side TCP file receiver (port 8888)
     send_file.py            PC-side file sender (pairs with recv)
     deploy_file.py          Slow fallback: base64 over shell
     pull_file.py            Download files from camera (reverse connect)
-    redeploy_all.ps1        Batch redeploy after reboot
-    debug.sh                Camera boot script (repo backup of /etc/conf.d/debug.sh)
-    camera_authorized_keys  SSH public keys for camera access
-    rtsp_run.sh             Production RTSP launch script (runs on camera)
-    diag_run.sh             Full diagnostic run w/ sensor probing (on camera)
+    debug.sh                Camera boot script (deployed to /etc/conf.d/)
+    rtsp_run.sh             RTSP launch script (deployed to SD card)
+    diag_run.sh             Diagnostic run script (deployed to SD card)
+    dropbearmulti           Pre-built dropbear SSH binary (ARM, static)
+    build_dropbear.sh       Cross-compile dropbear v2026.91 (WSL)
+    dropbear_localoptions.h Compile-time options for dropbear build
     fix_timezone.py         Change camera timezone from UTC+8
     ghidra/                 Ghidra RE scripts + decompilation output
       scripts/                Analysis scripts (Java + Python)
@@ -224,10 +250,11 @@ ipc_XMeye_camera/
   wholesale).
 - **musl libc.** The toolchain uses musl, not glibc. Some POSIX
   features behave differently.
-- **SSH via dropbear.** Dropbear v2025.89 (statically linked, 302 KB)
-  deployed to SD card. Ed25519 key auth + password fallback. Starts
-  automatically at boot via `debug.sh`. No SCP/SFTP (not compiled in);
-  use cat-over-SSH or recv/send_file.py for file transfer.
+- **SSH + SCP via dropbear.** Custom-compiled dropbear v2026.91
+  (static multi-binary, 226 KB) deployed to SD card. Ed25519 key auth
+  + password fallback. Starts at boot via `debug.sh`. SCP enabled;
+  use `scp -O` from Windows (OpenSSH defaults to SFTP which we don't
+  have). Build script: `tools/build_dropbear.sh`.
 
 ## SD card jailbreak
 
@@ -246,14 +273,15 @@ is unauthenticated (legacy fallback).
 | Location | Mount | Persists? | Contents |
 |----------|-------|-----------|----------|
 | configfs (`/etc/conf.d/`) | jffs2 on flash | Reboots + factory reset | `debug.sh`, SSH keys, password hash, device config |
-| SD card (`/progs/rec/00/`) | FAT32 on mmcblk0p1 | Reboots + factory reset | Our binaries (dropbear, recv, pipeline_test, driver), recordings |
+| SD card (`/progs/rec/00/`) | FAT32 on mmcblk0p1 | Reboots + factory reset | Our binaries (dropbearmulti+copies, recv, pipeline_test, driver), recordings |
 | rootfs (`/`) | squashfs on flash | Read-only | BusyBox, base OS (1.25 MB) |
 | appfs (`/progs/`) | squashfs on flash | Read-only | superb, SDK libs (5 MB) |
 | `/etc/` | tmpfs (RAM) | **Lost on reboot** | Runtime config (shadow, shells, dropbear keys -- restored by debug.sh) |
 | `/root/` | tmpfs (RAM) | **Lost on reboot** | SSH authorized_keys -- restored by debug.sh |
 
 Repo backups: `tools/debug.sh` (boot script), `tools/camera_authorized_keys`
-(SSH public key). Host keys and password hash are on camera configfs only --
+(SSH public key), `tools/build_dropbear.sh` + `tools/dropbear_localoptions.h`
+(rebuild dropbear). Host keys and password hash are on camera configfs only --
 regenerate if lost.
 
 ## Note for AI coding assistants

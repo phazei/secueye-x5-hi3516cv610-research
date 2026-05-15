@@ -297,9 +297,9 @@ All partitions dumped and verified: `firmware/mtd[0-6]_*.bin` + `full_flash.bin`
 ```
 PID 1  init (BusyBox)
   |- mySystem        (watchdog, UDP 8899 localhost)
-  |- dropbear :22    (SSH daemon, key + password auth)
+  |- dropbear :22    (SSH + SCP, dropbearmulti v2026.91)
   |- tcpsvd 9999     (our backdoor, legacy fallback)
-  |- recv :8888      (fast file transfer daemon)
+  |- recv :8888      (fast file transfer daemon, legacy)
   |- superb          (TCP 80/554/34567, UDP 3702/30012/30014/34569)
   |   |- 7x /dev/isp_dev FDs
   |   `- /dev/motor (PTZ)
@@ -315,8 +315,8 @@ udhcpc, udhcpd, and ~350 more.
 
 **Stripped:** telnet, telnetd, nc/netcat, tftp, ftpd, httpd, wget, curl, scp.
 All remote access and file transfer tools intentionally removed. We added
-dropbear (SSH) and recv (fast file transfer) via SD card; see
-[debug.sh Boot Hook](#debugsh-boot-hook).
+dropbear v2026.91 (SSH + SCP) via SD card; see
+[debug.sh Boot Hook](#debugsh-boot-hook). recv kept as legacy fallback.
 
 ### Shared Libraries (appfs)
 
@@ -800,7 +800,7 @@ Chinese SMTP: `smtp.163.com`, user `ipcmail`, password `ipcam71a`
 
 | Service | Auth Status |
 |---------|-------------|
-| SSH (22) | **Ed25519 key + password** (dropbear, our addition) |
+| SSH (22) | **Ed25519 key + password** (dropbear v2026.91, SCP enabled) |
 | RTSP (554) | None |
 | ONVIF (80) | None (adding WS-Security breaks it) |
 | DVRIP (34567) | None (all credentials accepted) |
@@ -946,9 +946,9 @@ runs it instead of launching superb directly. Our debug.sh handles:
 4. Create `/etc/shells` (stock rootfs has none)
 5. Mount tmpfs on `/root`, install SSH authorized_keys from configfs
 6. Copy dropbear host keys from configfs to `/etc/dropbear/`
-7. Start dropbear SSH daemon (port 22)
+7. Start dropbear SSH daemon (port 22, v2026.91 multi-binary with SCP)
 8. Start tcpsvd backdoor (port 9999, legacy fallback)
-9. Start recv file transfer daemon (port 8888)
+9. Start recv file transfer daemon (port 8888, legacy fallback)
 10. Start superb with logging to `/tmp/superb.log`
 11. PQTools calibration after 15s delay
 12. Background log sync to SD card every 30s
