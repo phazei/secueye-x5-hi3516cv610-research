@@ -157,10 +157,7 @@ ipc_XMeye_camera/
     pull_file.py            Download files from camera (reverse connect)
     redeploy_all.ps1        Batch redeploy after reboot
     rtsp_run.sh             Production RTSP launch script (runs on camera)
-    start_pipeline_bg.sh    Detached pipeline launcher (runs on camera)
-    run_pipeline_bg.sh      Pipeline + diagnostic capture (runs on camera)
     diag_run.sh             Full diagnostic run w/ sensor probing (on camera)
-    probe_after_test.sh     Post-test sensor state probe (on camera)
     fix_timezone.py         Change camera timezone from UTC+8
     ghidra/                 Ghidra RE scripts + decompilation output
       scripts/                Analysis scripts (Java + Python)
