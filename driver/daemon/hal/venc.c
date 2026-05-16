@@ -2,7 +2,8 @@
  * venc.c -- VENC H.265 channel setup and streaming loop
  *
  * Creates a VBR H.265 encode channel matching superb's config:
- * 3200x1800 @ 15fps (from 20fps sensor), 4Mbps max, QP 35-44.
+ * 3840x2160 @ 15fps (from 20fps sensor, upscaled via VPSS ext chn 3),
+ * 4Mbps max, QP 35-44.
  * Handles both file capture and RTSP streaming with audio mux.
  */
 
@@ -30,11 +31,12 @@ hi_s32 venc_init(void)
     memset(&chn_attr, 0, sizeof(chn_attr));
 
     chn_attr.venc_attr.type           = OT_PT_H265;
-    chn_attr.venc_attr.max_pic_width  = SENSOR_WIDTH;
-    chn_attr.venc_attr.max_pic_height = SENSOR_HEIGHT;
-    chn_attr.venc_attr.pic_width      = SENSOR_WIDTH;
-    chn_attr.venc_attr.pic_height     = SENSOR_HEIGHT;
-    chn_attr.venc_attr.buf_size       = (SENSOR_WIDTH * SENSOR_HEIGHT * 3 / 4 + 63) & ~63;
+    chn_attr.venc_attr.max_pic_width  = ENCODE_WIDTH;
+    chn_attr.venc_attr.max_pic_height = ENCODE_HEIGHT;
+    chn_attr.venc_attr.pic_width      = ENCODE_WIDTH;
+    chn_attr.venc_attr.pic_height     = ENCODE_HEIGHT;
+    /* H.265 buf_size: SDK uses w*h*3/4 aligned to 64 */
+    chn_attr.venc_attr.buf_size       = (ENCODE_WIDTH * ENCODE_HEIGHT * 3 / 4 + 63) & ~63;
     chn_attr.venc_attr.is_by_frame    = HI_TRUE;
     chn_attr.venc_attr.profile        = 0;  /* main profile */
 
@@ -88,16 +90,16 @@ hi_s32 venc_init(void)
     }
     printf("[ OK ] ss_mpi_venc_start_chn\n");
 
-    /* Bind VPSS -> VENC */
+    /* Bind VPSS ext channel 3 (3840x2160) -> VENC */
     src_chn.mod_id = HI_ID_VPSS;
     src_chn.dev_id = VPSS_GRP;
-    src_chn.chn_id = VPSS_CHN;
+    src_chn.chn_id = VPSS_EXT_CHN;
     dst_chn.mod_id = HI_ID_VENC;
     dst_chn.dev_id = 0;
     dst_chn.chn_id = VENC_CHN;
 
     ret = hi_mpi_sys_bind(&src_chn, &dst_chn);
-    CHECK_RET("hi_mpi_sys_bind(VPSS->VENC)", ret);
+    CHECK_RET("hi_mpi_sys_bind(VPSS_EXT3->VENC)", ret);
 
     return HI_SUCCESS;
 }

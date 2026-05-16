@@ -27,10 +27,7 @@ hi_s32 vpss_init(void)
     ret = ss_mpi_vpss_create_grp(VPSS_GRP, &grp_attr);
     CHECK_RET("ss_mpi_vpss_create_grp", ret);
 
-    ret = ss_mpi_vpss_start_grp(VPSS_GRP);
-    CHECK_RET("ss_mpi_vpss_start_grp", ret);
-
-    /* Configure channel */
+    /* Configure base channel (sensor native resolution) */
     memset(&chn_attr, 0, sizeof(chn_attr));
     chn_attr.mirror_en      = HI_FALSE;
     chn_attr.flip_en        = HI_FALSE;
@@ -51,6 +48,34 @@ hi_s32 vpss_init(void)
 
     ret = ss_mpi_vpss_enable_chn(VPSS_GRP, VPSS_CHN);
     CHECK_RET("ss_mpi_vpss_enable_chn", ret);
+
+    /* Ext channel 3: upscale to 3840x2160 for VENC (matches superb).
+     * Binds to base chn 0 (3200x1800), VPSS hardware does the upscale. */
+    {
+        ot_vpss_ext_chn_attr ext_attr;
+        memset(&ext_attr, 0, sizeof(ext_attr));
+        ext_attr.bind_chn      = VPSS_CHN;         /* Source: base channel 0 */
+        ext_attr.src_type      = OT_EXT_CHN_SRC_TYPE_TAIL;
+        ext_attr.width         = ENCODE_WIDTH;      /* 3840 */
+        ext_attr.height        = ENCODE_HEIGHT;     /* 2160 */
+        ext_attr.depth         = 0;
+        ext_attr.video_format  = OT_VIDEO_FORMAT_LINEAR;
+        ext_attr.dynamic_range = OT_DYNAMIC_RANGE_SDR8;
+        ext_attr.pixel_format  = OT_PIXEL_FORMAT_YVU_SEMIPLANAR_420;
+        ext_attr.compress_mode = OT_COMPRESS_MODE_NONE;
+        ext_attr.frame_rate.src_frame_rate = -1;
+        ext_attr.frame_rate.dst_frame_rate = -1;
+
+        ret = ss_mpi_vpss_set_ext_chn_attr(VPSS_GRP, VPSS_EXT_CHN, &ext_attr);
+        CHECK_RET("ss_mpi_vpss_set_ext_chn_attr(ext3 3840x2160)", ret);
+
+        ret = ss_mpi_vpss_enable_chn(VPSS_GRP, VPSS_EXT_CHN);
+        CHECK_RET("ss_mpi_vpss_enable_chn(ext3)", ret);
+    }
+
+    /* Start group AFTER all channels are configured and enabled */
+    ret = ss_mpi_vpss_start_grp(VPSS_GRP);
+    CHECK_RET("ss_mpi_vpss_start_grp", ret);
 
     /* Bind VI -> VPSS */
     hi_mpp_chn src_chn, dst_chn;

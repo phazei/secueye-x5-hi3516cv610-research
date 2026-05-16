@@ -77,8 +77,15 @@
 #define VI_PIPE           0
 #define VI_CHN            0
 #define VPSS_GRP          0
-#define VPSS_CHN          0
+#define VPSS_CHN          0      /* Base channel: sensor native resolution */
+#define VPSS_EXT_CHN      3      /* Ext channel: upscaled to encode resolution */
 #define VENC_CHN          0
+
+/* Encode resolution: 4K upscaled from sensor native via VPSS ext channel 3.
+ * Matches superb's output. Key: single common pool (3840x2160 YUV x3) instead
+ * of separate RAW+YUV pools. No RAW pool needed in VI_ONLINE mode. */
+#define ENCODE_WIDTH      3840
+#define ENCODE_HEIGHT     2160
 
 #define MIPI_DEV          "/dev/ot_mipi_rx"
 #define I2C_BUS           0
@@ -96,11 +103,16 @@
 #define ACODEC_FILE       "/dev/acodec"
 #define AENC_G711A_HDR_SIZE 4    /* HiSilicon private header prepended to G.711 frames */
 
-/* Buffer pool sizes */
+/* Buffer pool sizes.
+ * RAW10: 10 bits/pixel -> ceil(width*10/8) per row, stride-aligned to 16 bytes.
+ * Actual: ceil(3200*10/8 / 16)*16 = 4000 bytes/row * 1800 = 7,200,000.
+ * Use width*2 as safe upper bound (11.5 MB); the kernel may need headroom. */
 #define VB_BLK_SIZE_RAW   (SENSOR_WIDTH * SENSOR_HEIGHT * 2)
 #define VB_BLK_SIZE_YUV   (SENSOR_WIDTH * SENSOR_HEIGHT * 3/2)
+#define VB_BLK_SIZE_ENC   (ENCODE_WIDTH * ENCODE_HEIGHT * 3/2)  /* Upscaled YUV for VENC */
 #define VB_RAW_CNT        2
-#define VB_YUV_CNT        3
+#define VB_YUV_CNT        2      /* Reduced: ext channel is the VENC path now */
+#define VB_ENC_CNT        2      /* Ext channel output buffers for upscaled frames */
 
 /* PQ bin paths */
 #define PQ_BIN_PATH_DEFAULT  "/home/sensor/sc635hai/pqbin/day.bin"

@@ -62,10 +62,10 @@ static void teardown(void)
     /* Audio first */
     audio_deinit();
 
-    /* Unbind VPSS->VENC */
+    /* Unbind VPSS ext chn 3 -> VENC */
     src_chn.mod_id = HI_ID_VPSS;
     src_chn.dev_id = VPSS_GRP;
-    src_chn.chn_id = VPSS_CHN;
+    src_chn.chn_id = VPSS_EXT_CHN;
     dst_chn.mod_id = HI_ID_VENC;
     dst_chn.dev_id = 0;
     dst_chn.chn_id = VENC_CHN;
@@ -85,6 +85,7 @@ static void teardown(void)
     hi_mpi_sys_unbind(&src_chn, &dst_chn);
 
     /* Stop VPSS */
+    ss_mpi_vpss_disable_chn(VPSS_GRP, VPSS_EXT_CHN);  /* No-op if not enabled */
     hi_mpi_vpss_disable_chn(VPSS_GRP, VPSS_CHN);
     hi_mpi_vpss_stop_grp(VPSS_GRP);
     hi_mpi_vpss_destroy_grp(VPSS_GRP);
@@ -221,7 +222,7 @@ int main(int argc, char *argv[])
 
     printf("============================================\n");
     printf("  IPC Daemon (ipc_daemon)\n");
-    printf("  Hi3516CV610 + SC635HAI (3200x1800 @ 20fps sensor, 15fps encode)\n");
+    printf("  Hi3516CV610 + SC635HAI (3200x1800 sensor -> 3840x2160 encode @ 15fps)\n");
     if (g_rtsp_mode) {
         printf("  Mode: RTSP streaming on port %d\n", g_rtsp_port);
     } else {

@@ -93,15 +93,24 @@ hi_s32 sys_init(void)
     sleep(1);
     printf("[INFO] Cleanup done, initializing fresh...\n");
 
-    /* Configure VB pools */
+    /* Configure VB common pool.
+     * Memory budget (88 MB MMZ total, measured):
+     *   Common pool: 3840x2160 YUV420 x3 = ~36 MB
+     *   3DNR refs + ISP: ~17 MB (driver internal, allocated at pipe start)
+     *   VENC rcn buffers: ~24 MB (h265e0_rcn0 + rcn1, allocated at chn create)
+     *   Misc (vca, npu, crypto): ~1 MB
+     *   Total: ~78 MB, ~10 MB headroom
+     *
+     * No RAW pool needed: VI_ONLINE streams sensor data directly to VPSS. */
     memset(&vb_cfg, 0, sizeof(vb_cfg));
-    vb_cfg.max_pool_cnt = 2;
+    vb_cfg.max_pool_cnt = 1;
 
-    vb_cfg.common_pool[0].blk_size = VB_BLK_SIZE_RAW;
-    vb_cfg.common_pool[0].blk_cnt  = VB_RAW_CNT;
+    vb_cfg.common_pool[0].blk_size = VB_BLK_SIZE_ENC;  /* 3840x2160 YUV420 */
+    vb_cfg.common_pool[0].blk_cnt  = 3;
 
-    vb_cfg.common_pool[1].blk_size = VB_BLK_SIZE_YUV;
-    vb_cfg.common_pool[1].blk_cnt  = VB_YUV_CNT;
+    printf("[INFO] VB pool: %dx%d YUV420 x%d = %.1f MB\n",
+           ENCODE_WIDTH, ENCODE_HEIGHT, 3,
+           (float)VB_BLK_SIZE_ENC * 3 / (1024*1024));
 
     ret = hi_mpi_vb_set_cfg(&vb_cfg);
     CHECK_RET("hi_mpi_vb_set_cfg", ret);
