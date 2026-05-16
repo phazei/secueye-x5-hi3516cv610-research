@@ -435,3 +435,53 @@ Wrote `AI_RESEARCH.md` (~500 lines) covering:
 ROADMAP Phase 2 marked complete.
 
 **Next:** Phase 3 -- daemon foundation. See ROADMAP §3.
+
+---
+
+## 2026-05-16 ~00:00 [Phase 3.1] -- Restructure pipeline_test into modular ipc_daemon
+
+**Context:** pipeline_test.c had grown to 2872 lines / 27 functions.
+Adding daemon infrastructure, AIDetect, config, and logging on top
+would make it unmanageable. Need modular codebase before Phase 3.2+.
+
+**Did:** Split pipeline_test.c into `driver/daemon/` with `hal/` subdirectory:
+
+```
+daemon/
+  main.c              Entry point, arg parsing, signal/crash handlers, teardown (400 lines)
+  pipeline.h          Shared state struct, config defines, common SDK includes (140 lines)
+  hal/
+    sys.c / sys.h       SYS init, VB pools, sensor driver dlopen, MIPI (200 lines)
+    vi.c / vi.h         VI dev + pipe + channel, B040 lib + raw ioctl fallback (220 lines)
+    isp.c / isp.h       ISP init/thread, PQ bin, color config, BNR, 3DNR (820 lines)
+    vpss.c / vpss.h     VPSS group + channel, VI->VPSS bind (80 lines)
+    venc.c / venc.h     VENC H.265 channel, streaming loop (310 lines)
+    audio.c / audio.h   AI + AENC (G.711A), acodec config (180 lines)
+    watchdog.c / watchdog.h   /dev/watchdog open/feed/close (65 lines)
+```
+
+Updated Makefile: `make daemon` builds `build/ipc_daemon` (513 KB).
+Legacy `make pipeline` still builds `build/pipeline_test` from monolith.
+Default `make all` now builds `ipc_daemon` instead of `pipeline_test`.
+
+Updated deployment: `redeploy_all.ps1` sends `ipc_daemon` instead of
+`pipeline_test`. `rtsp_run.sh` and `diag_run.sh` launch `ipc_daemon`.
+
+Updated docs: `driver/README.md`, root `README.md`, `ROADMAP.md`.
+
+**Build:** Clean compile, zero errors, zero warnings. Verified in WSL
+with `make clean && make daemon`.
+
+**Decisions:**
+- Binary renamed from `pipeline_test` to `ipc_daemon`
+- `test/pipeline_test.c` kept as historical reference (not in default build)
+- Globals defined in `main.c`, declared `extern` in `pipeline.h`
+- Each HAL module includes only its own header (which includes `pipeline.h`)
+- `vi_deinit()` added to vi.c to encapsulate raw ioctl cleanup
+- `isp_fix_bayer_format()` extracted as separate function (called after PQ bin load)
+
+**Status:** Complete. Functionally identical to pipeline_test.
+Not yet tested on camera (next step: deploy + verify RTSP stream).
+
+**Next:** Phase 3.2 -- daemon infrastructure (config, logging, PID file).
+Then Phase 3.3 -- modify debug.sh to launch ipc_daemon instead of superb.

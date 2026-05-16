@@ -1,21 +1,21 @@
 #!/bin/sh
-# Launch pipeline_test in RTSP streaming mode.
+# Launch ipc_daemon in RTSP streaming mode.
 #
-# pipeline_test now feeds /dev/watchdog internally (ioctl KEEPALIVE),
+# ipc_daemon feeds /dev/watchdog internally (ioctl SETTIMEOUT),
 # so this script just needs to SIGSTOP mySystem, kill superb, and launch.
 #
 # Stream URL: rtsp://<camera_ip>:554/live0
 #
 # NOTE: SIGSTOP of mySystem kills the shell (tcpsvd is a child of mySystem).
 # This script must be launched via setsid from a remote session. The shell
-# will reconnect after pipeline_test exits and mySystem resumes.
+# will reconnect after ipc_daemon exits and mySystem resumes.
 #
 # Usage (from remote shell):
 #   setsid /progs/rec/00/ipc_drv/rtsp_run.sh </dev/null &>/dev/null &
 #
 # To stop:
 #   # Reconnect shell (after mySystem resumes) or use another method:
-#   kill $(cat /tmp/pipeline_test.pid)
+#   kill $(cat /tmp/ipc_daemon.pid)
 
 RTSP_PORT="${1:-554}"
 DIR=/progs/rec/00/ipc_drv
@@ -29,6 +29,7 @@ trap '' HUP
 MYS_PID=$(pidof mySystem)
 
 # Kill old instances
+killall ipc_daemon 2>/dev/null
 killall pipeline_test 2>/dev/null
 sleep 1
 
@@ -53,10 +54,10 @@ export LD_LIBRARY_PATH="$DIR"
 
 echo "=== rtsp_run start $(date) ===" > "$LOG"
 
-# Run pipeline_test (feeds watchdog internally via WDIOC_KEEPALIVE)
-./pipeline_test --rtsp --rtsp-port "$RTSP_PORT" "$PQ_BIN" >> "$LOG" 2>&1 &
+# Run ipc_daemon (feeds watchdog internally via WDIOC_SETTIMEOUT)
+./ipc_daemon --rtsp --rtsp-port "$RTSP_PORT" "$PQ_BIN" >> "$LOG" 2>&1 &
 PT_PID=$!
-echo "$PT_PID" > /tmp/pipeline_test.pid
+echo "$PT_PID" > /tmp/ipc_daemon.pid
 echo "PID=$PT_PID" >> "$LOG"
 
 # Wait for it to exit

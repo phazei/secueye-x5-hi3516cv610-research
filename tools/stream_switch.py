@@ -106,7 +106,7 @@ def get_status():
     if not s:
         return None
 
-    pipeline_pid = get_pid(s, 'pipeline_test')
+    pipeline_pid = get_pid(s, 'ipc_daemon') or get_pid(s, 'pipeline_test')
     superb_pid = get_pid(s, 'superb')
     uptime = shell_cmd(s, 'cat /proc/uptime').split()[0]
     s.close()
@@ -140,9 +140,9 @@ def print_status(st):
     print()
 
     if st['pipeline_pid']:
-        print(f'  pipeline_test: RUNNING (PID {st["pipeline_pid"]})')
+        print(f'  ipc_daemon:    RUNNING (PID {st["pipeline_pid"]})')
     else:
-        print(f'  pipeline_test: stopped')
+        print(f'  ipc_daemon:    stopped')
 
     if st['superb_pid']:
         print(f'  superb:        RUNNING (PID {st["superb_pid"]})')
@@ -164,7 +164,7 @@ def print_status(st):
 
 
 def switch_to_custom():
-    """Kill superb, launch pipeline_test."""
+    """Kill superb, launch ipc_daemon via rtsp_run.sh."""
     print('Switching to CUSTOM stream...')
 
     st = get_status()
@@ -202,7 +202,7 @@ def switch_to_custom():
 
 
 def switch_to_stock():
-    """Kill pipeline_test and reboot to restore stock firmware cleanly."""
+    """Kill ipc_daemon and reboot to restore stock firmware cleanly."""
     print('Switching to STOCK stream...')
 
     st = get_status()
@@ -216,13 +216,13 @@ def switch_to_stock():
         return False
 
     if st and st['pipeline_pid']:
-        # Kill pipeline_test cleanly (SIGINT triggers teardown)
-        print(f'  Stopping pipeline_test (PID {st["pipeline_pid"]})...')
+        # Kill ipc_daemon cleanly (SIGINT triggers teardown)
+        print(f'  Stopping ipc_daemon (PID {st["pipeline_pid"]})...')
         shell_cmd(s, f'kill -INT {st["pipeline_pid"]}')
         time.sleep(3)
 
         # Verify it died, force kill if needed
-        if get_pid(s, 'pipeline_test'):
+        if get_pid(s, 'ipc_daemon') or get_pid(s, 'pipeline_test'):
             shell_cmd(s, f'kill -9 {st["pipeline_pid"]}')
             time.sleep(1)
 

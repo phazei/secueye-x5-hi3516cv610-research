@@ -1,7 +1,8 @@
-# Driver & Pipeline Build System
+# Driver & IPC Daemon Build System
 
 Build system for the SECUEYE X5 camera firmware: SC635HAI sensor driver,
-video pipeline binary, RTSP server, and supporting tools.
+IPC daemon (camera daemon replacing stock superb), RTSP server, and
+supporting tools.
 
 ## Directory structure
 
@@ -13,8 +14,20 @@ driver/
     sc635hai_cmos.h             Constants, gain tables, register map
     hi_compat.h                 hi_* -> ss_mpi_* API compat macros
 
-  test/                       Test programs / main binary
-    pipeline_test.c             Full video pipeline + RTSP (future daemon)
+  daemon/                     IPC daemon (modular, replaces pipeline_test)
+    main.c                      Entry point, arg parsing, signal/crash handlers
+    pipeline.h                  Shared state struct, config defines, common includes
+    hal/                        Hardware abstraction -- one file per MPP subsystem
+      sys.c / sys.h               SYS init, VB pools, sensor driver dlopen, MIPI
+      vi.c / vi.h                 VI dev + pipe + channel (B040 lib + raw ioctl fallback)
+      isp.c / isp.h               ISP init/thread, PQ bin, color config, BNR, 3DNR
+      vpss.c / vpss.h             VPSS group + channel, VI->VPSS bind
+      venc.c / venc.h             VENC H.265 channel, streaming loop
+      audio.c / audio.h           AI + AENC (G.711A), acodec config
+      watchdog.c / watchdog.h     /dev/watchdog open/feed/close
+
+  test/                       Standalone test tools (not part of daemon)
+    pipeline_test.c             Legacy monolith (historical reference, not default build)
     sensor_test.c               Standalone I2C sensor test
     reg_dump.c                  I2C register dump utility
     awb_dump.c                  ISP AWB calibration reader
@@ -57,10 +70,10 @@ has no dependency on git submodules that could disappear.
 | Directory | Source | Notes |
 |-----------|--------|-------|
 | `prebuilt/sdk_include/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/include/hisilicon/` | 140 HiSilicon MPP API headers. Build-time only. |
-| `prebuilt/sdk_mpi/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/lib/hisilicon/` | 9 shared libs linked by pipeline_test. Deployed to camera. |
+| `prebuilt/sdk_mpi/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/lib/hisilicon/` | 9 shared libs linked by ipc_daemon. Deployed to camera. |
 | `prebuilt/isp_plugins/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/lib/hisilicon/` | 8 ISP algorithm plugins. Loaded via LD_PRELOAD at runtime. |
 | `prebuilt/pq/libbin.so` | `hi3516cv610_PictureQuality/.../libbin/release/` | PQ bin file loader. Deployed to camera. |
-| `rtsp/lib/libxoprtsp.a` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/lib/3rdparty/` | xop RTSP server, static archive. Modified to add G.711A audio support (Phase 1 prep). Linked into pipeline_test at build time. |
+| `rtsp/lib/libxoprtsp.a` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/lib/3rdparty/` | xop RTSP server, static archive. Modified to add G.711A audio support (Phase 1). Linked into ipc_daemon at build time. |
 | `rtsp/include/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/include/3rdparty/` | RTSP API header. Modified to add audio function declarations. |
 | `rtsp/src/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/src/rtspserver/hisi_sample/` | HiSilicon API wrapper. Modified to add audio session/push support. |
 | `rtsp/objs/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/src/rtspserver/objs/` | Pre-compiled ARM .o files for the xop core. Can re-archive with modified wrapper .o files without recompiling the full stack. |
@@ -84,7 +97,7 @@ Build outputs in `build/`:
 
 | File | Description |
 |------|-------------|
-| `pipeline_test` | Full video pipeline binary with RTSP server (~430 KB) |
+| `ipc_daemon` | Camera daemon with RTSP server (~510 KB) |
 | `libsns_sc635hai.so` | SC635HAI sensor driver shared library (~14 KB) |
 | `recv` | TCP file receiver for deployment (~17 KB, static) |
 | `reg_dump` | I2C register dump tool (~22 KB, static) |

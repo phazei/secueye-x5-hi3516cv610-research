@@ -461,73 +461,99 @@ YOLOv8 deferred to v2/v3 as optional upgrade. Full findings in
 
 ## Phase 3 -- Daemon foundation (1 week)
 
-Cut over from superb to our own binary.
+Convert pipeline_test into a modular daemon (`ipc_daemon`) and boot
+it instead of superb via debug.sh.
 
-### 3.1 mySystem investigation
+### 3.1 Restructure pipeline_test into modular codebase
 
-- Locate mySystem config file (likely `/etc/mySystem.conf` or
-  similar; check `/etc/init.d/` and process tree).
-- Document how mySystem decides what to launch.
-- Identify the modification point: edit config to launch our daemon
-  instead of superb.
-- Investigate `mySystem`'s own watchdog feeding -- does it ping the
-  HW watchdog, or rely on its child? If child, our daemon needs to
-  ping; if mySystem itself does it, we just need to not block
-  mySystem.
+Split the 2872-line monolith (`pipeline_test.c`) into separate
+compilation units under `driver/daemon/`. Single binary output.
 
-### 3.2 Convert pipeline_test to daemon
+```
+driver/daemon/
+  main.c              Entry point, arg parsing, signal/crash handlers, teardown
+  pipeline.h          Shared state struct, common includes, config defines
+  hal/                Hardware abstraction -- one file per MPP subsystem
+    sys.c / sys.h       SYS init, VB pools, sensor driver dlopen, MIPI
+    vi.c / vi.h         VI dev + pipe + channel (B040 library + raw ioctl fallback)
+    isp.c / isp.h       ISP init/thread, PQ bin, color config, BNR, 3DNR
+    vpss.c / vpss.h     VPSS group + channel, VI->VPSS bind
+    venc.c / venc.h     VENC H.265 channel, streaming loop
+    audio.c / audio.h   AI + AENC (G.711A), acodec config
+    watchdog.c / watchdog.h   /dev/watchdog open/feed/close
+```
+
+- Update Makefile: compile `daemon/*.c` + `daemon/hal/*.c`, link to
+  `build/ipc_daemon`.
+- Update `redeploy_all.ps1`, `rtsp_run.sh`, `diag_run.sh` for rename.
+- Keep `test/pipeline_test.c` as historical reference (not built).
+
+### 3.2 Add daemon infrastructure
 
 - Add JSON config file support (use existing cJSON or similar).
-- Add proper signal handling: SIGTERM = graceful shutdown, SIGHUP =
+- Upgrade signal handling: SIGTERM = graceful shutdown, SIGHUP =
   config reload, SIGINT for development.
-- Add structured logging to a rotating log file (or syslog).
-- Detach from controlling terminal correctly.
-- PID file for mySystem to track.
-- Crash dump to log on SIGSEGV/SIGBUS (we already have a basic
-  handler; upgrade it).
+- Structured logging to rotating log file (or syslog).
+- PID file for process tracking.
+- Upgrade crash handler (SIGSEGV/SIGBUS) with stack dump to log.
 
-### 3.3 Retire tcpsvd + recv.c
+### 3.3 Replace superb in debug.sh
 
-If Phase 0 confirmed dropbear works:
+The boot chain is already understood (no investigation needed):
 
-- Remove `debug.sh` from `recycle_ali.sh` startup chain.
-- Enable dropbear at boot via the proper init mechanism.
-- Remove tcpsvd from process list.
-- Use scp/rsync via dropbear for development from now on.
-- Update CAMERA.md to reflect the new access model.
+```
+bashrc.sh:290  ->  mySystem &  (watchdog, stays running)
+bashrc.sh:292  ->  startup.sh &
+startup.sh:43  ->  if /etc/conf.d/debug.sh exists -> run it
+debug.sh:97    ->  currently launches superb
+```
 
-### 3.4 Replace superb in mySystem
+**Change:** Modify `debug.sh` line 97 to launch `ipc_daemon` instead
+of superb. Adjustments needed:
+- SD card mount: superb currently mounts it; debug.sh already does
+  early mount/unmount dance. Daemon must handle SD access gracefully.
+- Ensure `LD_LIBRARY_PATH` includes `/progs/rec/00/ipc_drv/`.
+- Log output to `/tmp/ipc_daemon.log` (sync to SD periodically).
 
-- Modify mySystem config to launch our daemon instead of superb.
-- Boot test: power-cycle camera, verify daemon comes up.
-- Crash recovery test: kill -9 the daemon, verify mySystem respawns.
-- Watchdog test: insert artificial deadlock, verify hardware
-  watchdog resets the SoC.
+**mySystem stays untouched.** It runs alongside our daemon. Our
+daemon already feeds `/dev/watchdog` independently.
 
-### 3.5 Strip superb from filesystem
+**tcpsvd + recv stay** as safety net (SD card wipe recovery path).
 
-Once daemon is stable and proven:
+### 3.4 Boot + recovery testing
 
-- Remove `superb` binary from `/progs/`.
-- Remove `superb.log` rotation.
-- Remove any Alibaba IoT cert files, scripts, helpers from rootfs.
-- Document what was removed.
+- Boot test: power-cycle camera, verify daemon comes up via RTSP.
+- Crash test: `kill -9 ipc_daemon`, verify debug.sh or mySystem
+  restarts it (may need a simple respawn wrapper in debug.sh).
+- Watchdog test: insert artificial deadlock, verify SoC hard-resets.
+- SD card wipe test: verify tcpsvd/recv still work, redeploy works.
 
 ### Deliverables
 
-- Camera boots into our daemon by default.
-- Survives crashes via mySystem restart.
+- Camera boots into `ipc_daemon` by default (via debug.sh).
+- Modular codebase: each MPP subsystem in its own file.
+- Survives crashes via respawn wrapper in debug.sh.
 - Survives deadlocks via hardware watchdog.
-- No more superb, no more Chinese cloud.
-- dropbear-only access.
+- superb not launched, but not deleted (squashfs is read-only).
+- tcpsvd/recv/dropbear all still available.
 
 ### Open risks
 
-- mySystem may have hardcoded paths or expectations about superb.
-- Some hw-init step we depend on may be in superb's startup and need
-  porting to our daemon.
-- Recovery from a bad config (daemon won't start) requires SD-card
-  jailbreak as fallback -- ensure that path is documented and tested.
+- Some hw-init step we depend on may be inside superb's startup
+  sequence and need porting to our daemon.
+- SD card mount timing: superb creates `/progs/rec/00/` and mounts
+  the SD card. Our daemon needs to handle this (debug.sh already
+  has early mount logic, but unmounts before superb -- without
+  superb, we keep it mounted).
+- Recovery from a bad config (daemon won't start) requires tcpsvd
+  shell + `redeploy_all.ps1` as fallback.
+
+### Not in this phase
+
+- **Stripping superb from filesystem**: requires reflashing squashfs.
+  Deferred to custom firmware phase (Phase 10+).
+- **Custom firmware image**: separate phase after all features proven.
+- **Retiring tcpsvd/recv**: kept as safety net indefinitely.
 
 ---
 

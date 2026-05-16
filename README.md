@@ -43,7 +43,7 @@ Always use `-O` to force legacy SCP mode:
 
 ```bash
 # Upload to camera
-scp -O driver/build/pipeline_test root@192.168.1.153:/progs/rec/00/ipc_drv/
+scp -O driver/build/ipc_daemon root@192.168.1.153:/progs/rec/00/ipc_drv/
 scp -O tools/rtsp_run.sh root@192.168.1.153:/progs/rec/00/ipc_drv/
 
 # Download from camera
@@ -75,7 +75,7 @@ The `recv` daemon is auto-started by `debug.sh` on boot
 
 ```bash
 # Send files from PC
-python tools/send_file.py 192.168.1.153 8888 driver/build/libsns_sc635hai.so driver/build/pipeline_test
+python tools/send_file.py 192.168.1.153 8888 driver/build/libsns_sc635hai.so driver/build/ipc_daemon
 ```
 
 Other legacy tools:
@@ -132,7 +132,7 @@ make all
 ```
 
 Outputs in `driver/build/`:
-- `pipeline_test` -- full video pipeline binary (future daemon)
+- `ipc_daemon` -- camera daemon (H.265 + G.711A RTSP, replaces superb)
 - `libsns_sc635hai.so` -- sensor driver shared library
 - `recv` -- camera-side TCP file receiver
 - `sensor_test` -- standalone sensor test
@@ -156,7 +156,7 @@ python tools/stream_switch.py custom
 ffplay rtsp://192.168.1.153:554/live0
 ```
 
-`pipeline_test` feeds `/dev/watchdog` internally. When it exits,
+`ipc_daemon` feeds `/dev/watchdog` internally. When it exits,
 `rtsp_run.sh` resumes mySystem, which restarts superb.
 
 ## Repository structure
@@ -166,15 +166,18 @@ ipc_XMeye_camera/
   ROADMAP.md              Project plan (Phases 0-8+)
   README.md               This file
 
-  driver/                 Sensor driver + pipeline code
-    src/                  Production driver source
+  driver/                 Sensor driver + daemon code
+    src/                  Sensor driver source
       sc635hai_cmos.c       ISP/AE/AWB callbacks
       sc635hai_sensor_ctl.c I2C init + register control
       sc635hai_cmos.h       Constants, gain tables, register map
       hi_compat.h           hi_* -> ss_mpi_* API compat macros
-    rtsp/                 RTSP server for pipeline_test
-    test/                 Test programs
-      pipeline_test.c       Full pipeline (basis for future daemon)
+    daemon/               IPC daemon (modular, replaces superb)
+      main.c                Entry point, signals, teardown
+      pipeline.h            Shared state + config
+      hal/                  One file per MPP subsystem (sys, vi, isp, vpss, venc, audio, watchdog)
+    rtsp/                 RTSP server library
+    test/                 Standalone test tools
       reg_dump.c            I2C register dump utility
       sensor_test.c         Standalone I2C sensor test
       awb_dump.c            ISP AWB calibration reader
@@ -273,7 +276,7 @@ is unauthenticated (legacy fallback).
 | Location | Mount | Persists? | Contents |
 |----------|-------|-----------|----------|
 | configfs (`/etc/conf.d/`) | jffs2 on flash | Reboots + factory reset | `debug.sh`, SSH keys, password hash, device config |
-| SD card (`/progs/rec/00/`) | FAT32 on mmcblk0p1 | Reboots + factory reset | Our binaries (dropbearmulti+copies, recv, pipeline_test, driver), recordings |
+| SD card (`/progs/rec/00/`) | FAT32 on mmcblk0p1 | Reboots + factory reset | Our binaries (dropbearmulti+copies, recv, ipc_daemon, driver), recordings |
 | rootfs (`/`) | squashfs on flash | Read-only | BusyBox, base OS (1.25 MB) |
 | appfs (`/progs/`) | squashfs on flash | Read-only | superb, SDK libs (5 MB) |
 | `/etc/` | tmpfs (RAM) | **Lost on reboot** | Runtime config (shadow, shells, dropbear keys -- restored by debug.sh) |

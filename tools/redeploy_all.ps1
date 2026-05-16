@@ -12,9 +12,9 @@
 #   3. For SCP mode: dropbear SSH running on camera + key auth configured
 #
 # What this deploys (to /progs/rec/00/ipc_drv/):
-#   - Our binaries:    pipeline_test, libsns_sc635hai.so, recv, reg_dump, sensor_test
+#   - Our binaries:    ipc_daemon, pipeline_test (legacy), libsns_sc635hai.so, recv, reg_dump, sensor_test
 #   - Dropbear SSH:    dropbearmulti -> hard copies: dropbear, scp, dropbearkey
-#   - SDK libs:        libss_mpi.so, libot_mpi_isp.so, etc. (linked by pipeline_test)
+#   - SDK libs:        libss_mpi.so, libot_mpi_isp.so, etc. (linked by ipc_daemon)
 #   - ISP plugins:     libbnr.so, libdrc.so, etc. (LD_PRELOAD'd at runtime)
 #   - PQ lib:          libbin.so (PQ bin file loader)
 #   - Shell scripts:   rtsp_run.sh, diag_run.sh (on-camera launch/diagnostic scripts)
@@ -36,14 +36,14 @@ $pqToolSrc = "tools/pq_tune"
 
 # --- Our build artifacts ---
 $buildFiles = @(
-    "driver/build/pipeline_test",
+    "driver/build/ipc_daemon",
     "driver/build/libsns_sc635hai.so",
     "driver/build/recv",
     "driver/build/reg_dump",
     "driver/build/sensor_test"
 )
 
-# --- SDK MPI libs (linked by pipeline_test at load time via LD_LIBRARY_PATH) ---
+# --- SDK MPI libs (linked by ipc_daemon at load time via LD_LIBRARY_PATH) ---
 $sdkFiles = @(
     "$prebuilt/sdk_mpi/libss_mpi.so",
     "$prebuilt/sdk_mpi/libot_mpi_isp.so",
@@ -179,7 +179,7 @@ if ($useSSH) {
 
 # --- Set permissions ---
 Write-Host "Setting permissions..."
-python tools/cam_cmd.py "cd $targetDir && chmod +x pipeline_test recv reg_dump sensor_test rtsp_run.sh diag_run.sh dropbearmulti"
+python tools/cam_cmd.py "cd $targetDir && chmod +x ipc_daemon recv reg_dump sensor_test rtsp_run.sh diag_run.sh dropbearmulti"
 
 # --- Create dropbear hard copies (FAT32 has no symlinks) ---
 Write-Host "Creating dropbear hard copies..."
