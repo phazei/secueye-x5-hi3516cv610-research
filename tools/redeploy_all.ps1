@@ -27,8 +27,7 @@ param(
 $ErrorActionPreference = "Stop"
 $cam = "192.168.1.153"
 $recvPort = 8888
-$sdkLib = "research/Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/lib/hisilicon"
-$pqLib = "research/hi3516cv610_PictureQuality/Hi3516CV610_PQ_ext_api_V1.0.2.1/libbin/release"
+$prebuilt = "driver/prebuilt"
 $targetDir = "/progs/rec/00/ipc_drv"
 
 # --- Our build artifacts ---
@@ -40,32 +39,31 @@ $buildFiles = @(
     "driver/build/sensor_test"
 )
 
-# --- SDK libs (all from the same SDK dir, split only for readability) ---
-# Linked by pipeline_test at load time (via LD_LIBRARY_PATH)
+# --- SDK MPI libs (linked by pipeline_test at load time via LD_LIBRARY_PATH) ---
 $sdkFiles = @(
-    "$sdkLib/libss_mpi.so",
-    "$sdkLib/libot_mpi_isp.so",
-    "$sdkLib/libss_mpi_isp.so",
-    "$sdkLib/libss_mpi_ae.so",
-    "$sdkLib/libss_mpi_awb.so",
-    "$sdkLib/libss_mpi_sysbind.so",
-    "$sdkLib/libss_mpi_sysmem.so",
-    "$sdkLib/libsecurec.so",
-    "$sdkLib/libot_osal.so",
+    "$prebuilt/sdk_mpi/libss_mpi.so",
+    "$prebuilt/sdk_mpi/libot_mpi_isp.so",
+    "$prebuilt/sdk_mpi/libss_mpi_isp.so",
+    "$prebuilt/sdk_mpi/libss_mpi_ae.so",
+    "$prebuilt/sdk_mpi/libss_mpi_awb.so",
+    "$prebuilt/sdk_mpi/libss_mpi_sysbind.so",
+    "$prebuilt/sdk_mpi/libss_mpi_sysmem.so",
+    "$prebuilt/sdk_mpi/libsecurec.so",
+    "$prebuilt/sdk_mpi/libot_osal.so",
     # ISP algorithm plugins (loaded via LD_PRELOAD in rtsp_run.sh)
-    "$sdkLib/libbnr.so",
-    "$sdkLib/libdrc.so",
-    "$sdkLib/libacs.so",
-    "$sdkLib/libcalcflicker.so",
-    "$sdkLib/libir_auto.so",
-    "$sdkLib/libldci.so",
-    "$sdkLib/libdehaze.so",
-    "$sdkLib/libextend_stats.so"
+    "$prebuilt/isp_plugins/libbnr.so",
+    "$prebuilt/isp_plugins/libdrc.so",
+    "$prebuilt/isp_plugins/libacs.so",
+    "$prebuilt/isp_plugins/libcalcflicker.so",
+    "$prebuilt/isp_plugins/libir_auto.so",
+    "$prebuilt/isp_plugins/libldci.so",
+    "$prebuilt/isp_plugins/libdehaze.so",
+    "$prebuilt/isp_plugins/libextend_stats.so"
 )
 
 # --- PQ bin loader lib ---
 $pqFiles = @(
-    "$pqLib/libbin.so"
+    "$prebuilt/pq/libbin.so"
 )
 
 # --- Dropbear SSH multi-binary ---

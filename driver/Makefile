@@ -12,13 +12,9 @@ CC      = $(TC_BASE)/bin/arm-linux-musleabi-gcc
 STRIP   = $(TC_BASE)/bin/arm-linux-musleabi-strip
 SYSROOT = $(TC_BASE)/target
 
-# ── SDK paths ──────────────────────────────────────────────────────
-# V1.0.2.1 B020 SDK (compatible with camera's B051 kernel, ISP ioctl type 0x70)
-SDK_INC = ../research/Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/include/hisilicon
-SDK_LIB = ../research/Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/lib/hisilicon
-# Legacy B040 SDK (incompatible ISP ioctl type 0x49)
-# SDK_INC_B040 = ../research/HIVIEW/mod/mpp/3516c/inc/hisisdk
-# SDK_LIB_B040 = ../research/HIVIEW/mod/mpp/3516c/lib/hisisdk
+# ── SDK paths (all vendored locally, no submodule dependencies) ────
+SDK_INC = prebuilt/sdk_include
+SDK_LIB = prebuilt/sdk_mpi
 
 # ── Compiler flags ─────────────────────────────────────────────────
 ARCH_FLAGS = -mcpu=cortex-a7 -mfloat-abi=softfp -mfpu=neon-vfpv4 -mthumb
@@ -97,9 +93,9 @@ PIPELINE_LIBS = -lss_mpi -lot_mpi_isp -lss_mpi_isp -lss_mpi_ae -lss_mpi_awb \
                 -lss_mpi_sysbind -lss_mpi_sysmem -lsecurec -lot_osal \
                 -lpthread -ldl -lm
 
-# RTSP library and its C++ runtime dependency
-RTSP_LIB_DIR  = ../research/Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/lib/3rdparty
-RTSP_INC_DIR  = ../research/Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/include/3rdparty
+# RTSP library (vendored locally from SDK, with audio support added)
+RTSP_LIB_DIR  = rtsp/lib
+RTSP_INC_DIR  = rtsp/include
 # libxoprtsp.a is C++ so needs libstdc++.  The toolchain's .so is a broken
 # linker script, so use the static .a for linking.  At runtime the camera's
 # /lib/libstdc++.so.6 provides the symbols (already present on device).
@@ -157,13 +153,12 @@ $(BUILD)/awb_dump: test/awb_dump.c
 		-Wl,--allow-shlib-undefined
 	$(STRIP) $@
 
-# ── PQ bin library (copy from SDK PQ ext API) ─────────────────────
-PQ_EXT_DIR = ../research/hi3516cv610_PictureQuality/Hi3516CV610_PQ_ext_api_V1.0.2.1
+# ── PQ bin library (vendored locally from PQ SDK) ─────────────────
 pqbin: $(BUILD)/libbin.so
 	@echo "Copied: $(BUILD)/libbin.so"
 	@ls -la $(BUILD)/libbin.so
 
-$(BUILD)/libbin.so: $(PQ_EXT_DIR)/libbin/release/libbin.so
+$(BUILD)/libbin.so: prebuilt/pq/libbin.so
 	cp $< $@
 
 # ── Clean ──────────────────────────────────────────────────────────

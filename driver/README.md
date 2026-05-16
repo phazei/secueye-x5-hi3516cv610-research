@@ -1,98 +1,114 @@
-# SC635HAI Sensor Driver for Hi3516CV610
+# Driver & Pipeline Build System
 
-Open-source sensor driver for the SmartSens SC635HAI 6MP image sensor,
-targeting the Hi3516CV610 SoC (SECUEYE X5 camera).
+Build system for the SECUEYE X5 camera firmware: SC635HAI sensor driver,
+video pipeline binary, RTSP server, and supporting tools.
 
-**No open-source SC635HAI sensor driver existed for HiSilicon platforms
-before this one.** Built from:
-
-- **V1.0.2.1 SDK headers** (`research/Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/`)
-  for the `ot_isp_sns_obj` callback structure
-- **Rockchip V4L2 SC635HAI driver** (`research/sc635hai_rockchip_v4l2.c`) for
-  the 7-range analog gain model (max 83.79x) and 4-stage digital gain
-- **Ghidra decompilation of `superb`** for the 374-register linear 6M @ 30fps
-  init sequence and I2C addressing
-- **HIVIEW SC500AI / SC450AI sensor drivers** as a template for the two-file
-  ISP/AE/AWB callback architecture
-
-## Files
+## Directory structure
 
 ```
 driver/
-  src/
-    sc635hai_cmos.h          Constants, gain tables, register addresses
-    sc635hai_sensor_ctl.c    I2C read/write, init sequence
-    sc635hai_cmos.c          ISP/AE/AWB callbacks, ot_isp_sns_obj export
-    hi_compat.h              hi_* -> ss_mpi_* compatibility macros
-  test/
-    sensor_test.c            Standalone test binary (phases 1-4)
-    pipeline_test.c          Full pipeline test (SYS/VB/MIPI/VI/ISP/VPSS/VENC)
-    check_offsets.c          Struct layout verification
-  Makefile                   Cross-compilation build system
+  src/                        Our sensor driver source
+    sc635hai_cmos.c             ISP/AE/AWB callbacks
+    sc635hai_sensor_ctl.c       I2C init + register control
+    sc635hai_cmos.h             Constants, gain tables, register map
+    hi_compat.h                 hi_* -> ss_mpi_* API compat macros
+
+  test/                       Test programs / main binary
+    pipeline_test.c             Full video pipeline + RTSP (future daemon)
+    sensor_test.c               Standalone I2C sensor test
+    reg_dump.c                  I2C register dump utility
+    awb_dump.c                  ISP AWB calibration reader
+
+  rtsp/                       RTSP server integration
+    rtsp_push.c                 Our wrapper around the xop RTSP library
+    rtsp_push.h                 Wrapper header
+    include/
+      rtsp_server_api.h         Vendored xop RTSP API header
+    lib/
+      libxoprtsp.a              Vendored xop RTSP static archive (ARM, C++)
+    src/                        Vendored xop RTSP source (for rebuilding)
+      rtsp_manager.cpp
+      rtsp_manager.h
+      rtsp_server_api.cpp
+      rtsp_server_api.h
+
+  prebuilt/                   Vendored HiSilicon SDK binaries
+    sdk_include/                SDK headers (140 files, build-time only)
+    sdk_mpi/                    SDK shared libs (9 .so, deployed to camera)
+    isp_plugins/                ISP algorithm plugins (8 .so, LD_PRELOAD'd)
+    pq/
+      libbin.so                 PQ bin file loader (deployed to camera)
+
+  build/                      Build output (gitignored except final binaries)
+  Makefile                    Cross-compilation build system
 ```
+
+## Origins of vendored files
+
+All files under `prebuilt/` and `rtsp/{include,lib,src}/` are vendored
+copies from external sources. They are checked into this repo so the build
+has no dependency on git submodules that could disappear.
+
+| Directory | Source | Notes |
+|-----------|--------|-------|
+| `prebuilt/sdk_include/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/include/hisilicon/` | 140 HiSilicon MPP API headers. Build-time only. |
+| `prebuilt/sdk_mpi/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/lib/hisilicon/` | 9 shared libs linked by pipeline_test. Deployed to camera. |
+| `prebuilt/isp_plugins/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/lib/hisilicon/` | 8 ISP algorithm plugins. Loaded via LD_PRELOAD at runtime. |
+| `prebuilt/pq/libbin.so` | `hi3516cv610_PictureQuality/.../libbin/release/` | PQ bin file loader. Deployed to camera. |
+| `rtsp/lib/libxoprtsp.a` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/lib/3rdparty/` | xop RTSP server, static archive. Modified to add G.711A audio support (Phase 1 prep). Linked into pipeline_test at build time. |
+| `rtsp/include/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/include/3rdparty/` | RTSP API header. Modified to add audio function declarations. |
+| `rtsp/src/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/src/rtspserver/hisi_sample/` | RTSP source code. Modified to add audio session/push support. Kept for reference and rebuilding. |
+
+The only external dependency not vendored is the **ARM cross-compilation
+toolchain** at `research/hi3516cv610_toolchain/`. It is too large to vendor
+(~1 GB). If the submodule is lost, the same toolchain can be obtained from
+HiSilicon SDK distributions for Hi3516CV610.
 
 ## Building
 
-Requires WSL (toolchain is Linux x86_64 ELF):
+Requires WSL (the ARM cross-toolchain is Linux x86_64 ELF binaries):
 
 ```bash
-# From WSL:
 cd /mnt/e/Projects/ipc_XMeye_camera/driver
 make all
 ```
 
-Outputs:
-- `build/libsns_sc635hai.so` -- sensor driver shared library (~14KB)
-- `build/pipeline_test` -- full pipeline test binary (~18KB)
-- `build/sensor_test` -- standalone sensor test binary
-- `build/ioctl_hook.so` -- LD_PRELOAD ioctl logger (debugging)
+Build outputs in `build/`:
 
-## Deploying to Camera
+| File | Description |
+|------|-------------|
+| `pipeline_test` | Full video pipeline binary with RTSP server (~430 KB) |
+| `libsns_sc635hai.so` | SC635HAI sensor driver shared library (~14 KB) |
+| `recv` | TCP file receiver for deployment (~17 KB, static) |
+| `reg_dump` | I2C register dump tool (~22 KB, static) |
+| `sensor_test` | Standalone sensor I2C test (~22 KB, static) |
+| `libbin.so` | PQ bin loader (copied from prebuilt) |
 
-Use the TCP file transfer tools:
+## Deploying to camera
 
-```bash
-# Start recv daemon on camera (one-time per boot)
-python tools/cam_cmd.py "pidof recv || (nohup /progs/rec/00/recv 8888 /progs/rec/00 -d > /dev/null 2>&1 &)"
+Use the redeploy script from the project root:
 
-# Send build artifacts
-python tools/send_file.py 192.168.1.153 8888 driver/build/libsns_sc635hai.so driver/build/pipeline_test
+```powershell
+.\tools\redeploy_all.ps1
 ```
 
-## Testing
+This sends all build artifacts, prebuilt SDK libs, ISP plugins, and
+on-camera scripts to `/progs/rec/00/ipc_drv/` on the camera. See the
+script header for prerequisites and options (SCP vs recv transport).
 
-For the pipeline test (current focus -- see `research/PHASE3_CONTINUE.md`):
+For cold-start (no recv or SSH on camera):
 
-```bash
-python tools/cam_cmd.py "killall superb; sleep 2; cd /progs/rec/00 && \
-    LD_PRELOAD='/progs/rec/00/libbnr.so /progs/rec/00/libdrc.so /progs/rec/00/libacs.so /progs/rec/00/libcalcflicker.so /progs/rec/00/libir_auto.so /progs/rec/00/libldci.so /progs/rec/00/libdehaze.so /progs/rec/00/libextend_stats.so' \
-    LD_LIBRARY_PATH=/progs/rec/00 \
-    ./pipeline_test"
+```powershell
+.\tools\bootstrap_deploy.ps1
 ```
 
-For the standalone sensor test:
-
-```bash
-python tools/cam_cmd.py "killall mySystem; killall superb; sleep 1; \
-    /progs/rec/00/sensor_test 1"
-```
-
-### Test Phases (sensor_test)
-
-| Phase | What it does | Risk |
-|-------|--------------|------|
-| 1 | Read chip ID via I2C | None -- read only |
-| 2 | Verify register state | Low -- reads + optional writes |
-| 3 | MIPI + ISP pipeline | Medium -- configures hardware |
-| 4 | Full video (VPSS+VENC) | Medium -- full pipeline test |
-
-## Architecture
+## Sensor driver architecture
 
 The driver follows the standard HiSilicon 2-file pattern:
 
 **`sc635hai_sensor_ctl.c`** -- hardware layer:
 - I2C communication via the SDK's sensor I2C abstraction
-- 374-register init sequence for 3200x1800 @ 30fps linear mode (BGGR)
+- 374-register init sequence for 3200x1800 @ 20fps linear mode (BGGR)
 - Group hold around per-frame updates (reg 0x3812)
 
 **`sc635hai_cmos.c`** -- ISP integration:
@@ -106,28 +122,10 @@ The driver follows the standard HiSilicon 2-file pattern:
 - 7-range analog gain model (max 83.79x analog, 1330x with digital)
 - Register addresses for exposure, gain, timing, group hold
 - Sensor ID, resolution, timing constants
-- VTS_MAX = 0x1FFFF (17-bit), EXP_MIN = 2
 
-## Known Limitations
+## See also
 
-1. **Linear mode only** -- WDR (vc_wdr_2t1) not implemented
-2. **PQ bins loaded externally** -- ISP loads from `/home/sensor/sc635hai/pqbin/`
-   on resfs. Without them, ISP runs with default tuning (functional but
-   suboptimal image quality). Three ISP warnings appear at init when PQ data
-   isn't loaded -- non-fatal.
-3. **Black level assumed** -- 64 (10-bit typical), not confirmed against
-   actual sensor calibration
-4. **Frame flow** -- pipeline init succeeds end-to-end, but `vpss_get_chn_frame`
-   times out. Likely needs VPSS->VENC binding to drive frame consumption.
-   See `research/PHASE3_CONTINUE.md`.
-
-## References
-
-- `research/PHASE3_CONTINUE.md` -- Current pipeline bringup status
-- `research/SC635HAI_SENSOR_ANALYSIS.md` -- Complete sensor analysis
-- `research/RESEARCH.md` -- SDK, toolchain, platform documentation
-- `research/sc635hai_rockchip_v4l2.c` -- Rockchip kernel driver (gain model source)
-- `research/Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/include/hisilicon/ot_common_sns.h`
-  -- V1.0.2.1 sensor callback structure definitions
-- `research/Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/src/common/sample_comm_*.c`
-  -- Reference patterns for VI/ISP/VPSS/VENC init
+- `DRIVER.md` -- canonical sensor driver reference
+- `DRIVER_INTERNALS.md` -- kernel decompilation forensics
+- `ROADMAP.md` -- project plan
+- `README.md` (root) -- project overview, quick start
