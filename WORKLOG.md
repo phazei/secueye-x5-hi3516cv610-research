@@ -373,3 +373,65 @@ confirm client-side audio decode and lip sync.
 
 **Next:** Playback verification (VLC), then Phase 1.4 audio quality
 validation per ROADMAP. See ROADMAP Phase 1.
+
+---
+
+## 2026-05-15 ~18:00 [Phase 2] -- NPU + AI research complete
+
+**Context:** Need to determine which AI detection path to use for
+replacing superb's person/vehicle detection, tracking boxes, motion
+alarms, region intrusion, and line crossing features.
+
+**Did:** Comprehensive audit of all AI-related assets across:
+- SDK headers: `ss_mpi_aidetect.h`, `ot_common_aidetect.h`,
+  `ss_mpi_ive.h`, `ot_ivs_md.h`, `svp_acl*.h` (6 headers)
+- SDK samples: `sample_aidetect.c` (standalone), `sample_aidetect_vie.c`
+  (live camera), `sample_ive_md.c` (motion detection), `sample_svp_npu/`
+  (YOLOv8 end-to-end)
+- shumjj reference: `dev_aidetect.cpp` (477 lines, production aidetect),
+  `dev_svp_yolov8.cpp` (971 lines, YOLOv8 with NMS), `main.cpp`
+  (mutual exclusion: aidetect checked first, yolov8 skipped if enabled)
+- HIVIEW reference: IVE MD samples across 5 platforms, NPU YOLO for
+  3519D/3403, KCF tracker
+- Firmware: `det_hv_hor.bin` (893 KB) in resfs, `variable` file
+  confirming `IVP=1, NPU=0` (stock uses AIDetect, not YOLOv8)
+- Firmware Building repo: `libss_mpi_aidetect.so` (608 KB),
+  `det_hvf_hor.bin` (1.97 MB full model), `det_hvf_hor_ll_lite.bin`
+  (894 KB lite)
+
+Wrote `AI_RESEARCH.md` (~500 lines) covering:
+- Three-tier AI architecture (AIDetect / SVP ACL / IVE)
+- Full AIDetect API (10 functions, 12 object classes, tracking system)
+- Full comparison: AIDetect vs YOLOv8 (speed, complexity, classes,
+  tracking, memory, retrainability)
+- Integration pattern with code snippets
+- Library and model inventory with exact file paths
+- Rule engine design (region intrusion, line crossing, motion)
+- Motion-triggered recording design (pre-roll buffer, state machine)
+- Open questions for runtime verification
+
+**Found:**
+- Stock firmware uses AIDetect (not YOLOv8). Confirmed by `variable`
+  file: `IVP=1, NPU=0, AIISP=0`.
+- AIDetect runs at ~17 fps on NPU. YOLOv8 runs at ~2 fps (53-90ms
+  per inference). AIDetect is 8x faster.
+- AIDetect has built-in object tracking (track_id, track_status:
+  NEW/UPDATE/DIE). YOLOv8 requires implementing a custom tracker.
+- AIDetect integration is ~300 lines C. YOLOv8 is ~1000 lines C++
+  including NMS post-processing.
+- Model is already on camera (`/tmp/resfs/ivp/det_hv_hor.bin`).
+  Library needs vendoring from SDK (`libss_mpi_aidetect.a`, 572 KB).
+- AIDetect and YOLOv8 are mutually exclusive on the NPU.
+- IVE motion detection is separate hardware (zero CPU cost), useful
+  as cheap pre-filter for motion-triggered recording.
+- `libss_mpi_aidetect.so` is NOT a separate file on camera -- it's
+  statically linked into the 7.8 MB superb binary. We link the `.a`
+  from the SDK.
+- superb remains on read-only appfs squashfs throughout development.
+  Our code runs from SD card. One reboot returns to stock. No risk
+  of losing investigation access.
+
+**Status:** Complete. `AI_RESEARCH.md` is the canonical AI reference.
+ROADMAP Phase 2 marked complete.
+
+**Next:** Phase 3 -- daemon foundation. See ROADMAP §3.

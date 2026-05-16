@@ -394,8 +394,15 @@ cut over.
 
 ## Phase 2 -- NPU + AI research (can run parallel with Phase 1)
 
+**STATUS: complete 2026-05-15 ~18:00**
+
 Background work -- code reading + binary extraction, no camera
 interaction needed. Output is a recommendation, not running code.
+
+**Outcome:** AIDetect (`ss_mpi_aidetect_*`) recommended as primary
+detection engine for v1, supplemented by IVE for motion detection.
+YOLOv8 deferred to v2/v3 as optional upgrade. Full findings in
+`AI_RESEARCH.md`.
 
 ### 2.1 Extract aidetect from camera firmware
 
