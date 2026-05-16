@@ -14,4 +14,4 @@ __pycache__/
 *.pyo
 
 # Build artifacts (recompilable from source)
-driver/build/
+driver/build/*.o

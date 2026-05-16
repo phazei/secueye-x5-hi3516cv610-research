@@ -34,9 +34,9 @@ BUILD = build
 $(shell mkdir -p $(BUILD))
 
 # ── Targets ────────────────────────────────────────────────────────
-.PHONY: all clean driver test pipeline recv hook shim check_toolchain awb_dump
+.PHONY: all clean driver test pipeline recv reg_dump check_toolchain awb_dump
 
-all: driver test pipeline recv hook shim pqbin awb_dump
+all: driver test pipeline recv reg_dump pqbin awb_dump
 
 check_toolchain:
 	@if [ ! -x "$(CC)" ]; then \
@@ -121,19 +121,6 @@ $(BUILD)/pipeline_test: test/pipeline_test.c $(BUILD)/rtsp_push.o rtsp/rtsp_push
 		-Wl,--allow-shlib-undefined
 	$(STRIP) $@
 
-# ── VPSS test binary ──────────────────────────────────────────────
-vpss_test: check_toolchain $(BUILD)/vpss_test
-	@echo "Built: $(BUILD)/vpss_test"
-	@ls -la $(BUILD)/vpss_test
-
-$(BUILD)/vpss_test: test/vpss_test.c
-	$(CC) $(CFLAGS) -o $@ $< \
-		-L$(SDK_LIB) $(PIPELINE_LIBS) \
-		-Wl,-rpath,/usr/lib -Wl,-rpath,/progs/rec/00 \
-		-Wl,--gc-sections -fno-use-linker-plugin \
-		-Wl,--allow-shlib-undefined
-	$(STRIP) $@
-
 # ── recv: Tiny TCP file receiver ───────────────────────────────────
 # Static binary, no dependencies. Deploy once via base64, then use
 # for fast raw TCP file transfers over WiFi.
@@ -145,37 +132,14 @@ $(BUILD)/recv: ../tools/recv.c
 	$(CC) $(CFLAGS) -static -Wl,--gc-sections -o $@ $<
 	$(STRIP) $@
 
-# ── ioctl hook shared library ──────────────────────────────────
-# LD_PRELOAD .so that intercepts ioctl() to capture VI struct payloads.
-# Must be a shared library (not static).
-hook: check_toolchain $(BUILD)/ioctl_hook.so
-	@echo "Built: $(BUILD)/ioctl_hook.so"
-	@ls -la $(BUILD)/ioctl_hook.so
+# ── reg_dump: I2C register dump utility ────────────────────────────
+# Static binary, no SDK dependencies. Reads sensor registers via /dev/i2c-0.
+reg_dump: check_toolchain $(BUILD)/reg_dump
+	@echo "Built: $(BUILD)/reg_dump"
+	@ls -la $(BUILD)/reg_dump
 
-$(BUILD)/ioctl_hook.so: ../tools/ioctl_hook.c
-	$(CC) $(ARCH_FLAGS) --sysroot=$(SYSROOT) $(WARN_FLAGS) -Os -fPIC -shared \
-		-fno-lto -fno-use-linker-plugin \
-		-o $@ $< -ldl
-	$(STRIP) $@
-
-# ── Offset checker ─────────────────────────────────────────────
-offsets: check_toolchain $(BUILD)/check_offsets
-	@echo "Built: $(BUILD)/check_offsets"
-
-$(BUILD)/check_offsets: test/check_offsets.c
-	$(CC) $(CFLAGS) -static -o $@ $< -Wl,--gc-sections -fno-use-linker-plugin
-	$(STRIP) $@
-
-# ── VI B040->B051 ioctl shim ──────────────────────────────────
-# LD_PRELOAD .so that translates B040 VI struct layouts to B051.
-shim: check_toolchain $(BUILD)/vi_shim.so
-	@echo "Built: $(BUILD)/vi_shim.so"
-	@ls -la $(BUILD)/vi_shim.so
-
-$(BUILD)/vi_shim.so: ../tools/vi_shim.c
-	$(CC) $(ARCH_FLAGS) --sysroot=$(SYSROOT) $(WARN_FLAGS) -Os -fPIC -shared \
-		-fno-lto -fno-use-linker-plugin \
-		-o $@ $< -ldl
+$(BUILD)/reg_dump: test/reg_dump.c
+	$(CC) $(CFLAGS) -static -Wl,--gc-sections -o $@ $<
 	$(STRIP) $@
 
 # ── AWB dump tool ──────────────────────────────────────────────────

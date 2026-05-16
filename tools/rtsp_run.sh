@@ -40,6 +40,10 @@ fi
 # Kill superb (frees ISP/VENC resources and /dev/watchdog fd)
 killall -9 superb 2>/dev/null
 sleep 1
+sync
+# Re-create .format marker -- superb deletes it on shutdown and reformats
+# the entire SD card if it's missing when it next starts.
+echo "FAT32=Y" > "$SDMOUNT/.format"
 
 cd "$DIR"
 
