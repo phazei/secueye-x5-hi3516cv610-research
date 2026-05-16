@@ -299,3 +299,77 @@ integrity (MD5 match). recv/send_file.py kept as legacy fallback.
 - `dropbearkey` -- hard copy, host key generator
 
 **Next:** Phase 1 (audio capture) or Phase 2 (NPU research).
+
+## 2026-05-15 21:30 [Phase 1] -- Audio capture: research, implementation, and on-camera verification
+
+**Context:** Our custom pipeline_test streams H.265 video over RTSP but
+has no audio. The stock superb daemon includes G.711A audio in its RTSP
+streams. We need audio working before we can replace superb (Phase 3).
+
+**Did:**
+
+1. **Research (1.1-1.3).** Studied audio init sequences across SDK
+   `sample_audio.c`, shumjj `dev_aenc.cpp`, and HIVIEW
+   `main_3516cv610.c`. Mapped the full audio pipeline architecture
+   and identified the internal codec init sequence via `/dev/acodec`.
+
+2. **RTSP audio support.** The xop C++ library already had
+   `G711ASource` and `AACSource` classes, but the HiSilicon C API
+   wrapper (`rtsp_server_api.h`) was video-only. Extended it with
+   `rtsp_session_create_with_audio()` and `rtsp_session_push_audio()`.
+   Rebuilt `libxoprtsp.a`. These changes live in `driver/rtsp/` (our
+   local vendored copy -- the upstream submodule is read-only).
+
+3. **pipeline_test.c audio integration.** Added `audio_init()`:
+   `ss_mpi_audio_init()` -> AI pub_attr (8kHz/16bit/mono) -> AI enable
+   -> acodec ioctls (reset, 8kHz, IN_D mixer, 30dB) -> AENC create
+   (G.711A, 320 samples/frame) -> sys_bind(AI->AENC). Modified the
+   capture loop to `select()` on both VENC and AENC fds. Added
+   `audio_deinit()` to teardown. Audio is non-fatal; video-only
+   streaming continues if init fails.
+
+4. **Static linking for audio libs.** `libss_mpi_audio.so` has
+   transitive dependencies on `libupvqe.so`, `libdnvqe.so`, and
+   `libvoice_engine.so` (VQE pipeline). The musl dynamic linker on the
+   camera doesn't reliably resolve transitive `.so` deps from
+   `LD_LIBRARY_PATH`. Solved by linking all four as static `.a` libs.
+   `--gc-sections` strips the unused VQE code; net cost ~88 KB in the
+   binary (426 KB -> 514 KB). Alternative for flash deployment: switch
+   to `.so` and deploy the three VQE libs to save binary size.
+
+5. **On-camera verification.** Deployed via SCP, launched via
+   `rtsp_run.sh`. All audio init steps pass. AENC fd active in
+   select loop. Audio frames flowing (~25 audio frames per 20 video
+   frames, consistent with 8kHz/40ms audio vs 15fps video).
+   RTSP stream advertises video+audio.
+
+**Found:**
+- AENC prepends a 4-byte private header to each G.711 frame. Must be
+  stripped before RTP packetization (shumjj does `buf += 4, len -= 4`).
+- `ot_aenc_chn_attr.value` must point to a valid `ot_aenc_attr_g711`
+  struct, even though it only has a `reserved` field. Passing NULL
+  causes `0xA0178007` (ILLEGAL_PARAM). Not documented in SDK; found
+  by reading the header and testing.
+- Audio kernel modules are loaded by `loadhi3516cv610` `insert_audio()`
+  at boot, well before superb. No insmod needed from our daemon.
+- Internal codec uses pseudo-differential input (`OT_ACODEC_MIXER_IN_D`)
+  for the built-in mic. shumjj uses 30dB gain for mic mode.
+
+**Files changed:**
+- `driver/prebuilt/sdk_mpi/libss_mpi_audio.a` -- new (static audio MPI)
+- `driver/prebuilt/sdk_mpi/libupvqe.a` -- new (static VQE dependency)
+- `driver/prebuilt/sdk_mpi/libdnvqe.a` -- new (static VQE dependency)
+- `driver/prebuilt/sdk_mpi/libvoice_engine.a` -- new (static VQE dep)
+- `driver/rtsp/rtsp_push.h` -- added audio start/push functions
+- `driver/rtsp/rtsp_push.c` -- audio implementation
+- `driver/test/pipeline_test.c` -- audio_init/deinit, capture loop, main
+- `driver/Makefile` -- AUDIO_LIBS static link variable
+- `CAMERA.md` -- audio architecture, acodec init, quirks, linking notes
+- `WORKLOG.md` -- this entry
+
+**Status:** Complete. Audio capture verified on camera. RTSP stream
+serves H.265 video + G.711A audio. Needs VLC/ffplay playback test to
+confirm client-side audio decode and lip sync.
+
+**Next:** Playback verification (VLC), then Phase 1.4 audio quality
+validation per ROADMAP. See ROADMAP Phase 1.

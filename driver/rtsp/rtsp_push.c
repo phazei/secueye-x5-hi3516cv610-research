@@ -1,12 +1,13 @@
 /*
- * rtsp_push.c -- VENC-to-RTSP bridge using SDK's xop library
+ * rtsp_push.c -- VENC/AENC-to-RTSP bridge using SDK's xop library
  *
- * Wraps the 4-function rtsp_server_api.h into a convenient interface
- * for pipeline_test.c.  Each VENC pack (NALU) is pushed individually
+ * Wraps the rtsp_server_api.h C API into a convenient interface
+ * for pipeline_test.c.  Video NALUs and audio frames are pushed
  * to the xop library, which handles RTP packetization, SDP generation,
  * and client session management internally.
  *
- * Reference: Hi3516CV610 SDK sample_comm_venc.c:sample_comm_push_frame_to_rtsp()
+ * Audio: G.711A (PCMA), 8kHz, mono -- matching the camera's internal
+ * audio codec and superb's RTSP audio format.
  */
 
 #include "rtsp_push.h"
@@ -22,8 +23,9 @@
 #define RTSP_SESSION_IDX  0
 
 static int g_rtsp_running = 0;
+static int g_rtsp_has_audio = 0;
 
-int rtsp_start(const char *bind_ip, int port)
+static int rtsp_start_internal(const char *bind_ip, int port, int with_audio)
 {
     int ret;
 
@@ -39,7 +41,8 @@ int rtsp_start(const char *bind_ip, int port)
         port = 554;
     }
 
-    printf("[RTSP] Starting server on %s:%d ...\n", bind_ip, port);
+    printf("[RTSP] Starting server on %s:%d (audio=%s)...\n",
+           bind_ip, port, with_audio ? "yes" : "no");
 
     ret = rtsp_server_start(bind_ip, port);
     if (!ret) {
@@ -47,8 +50,12 @@ int rtsp_start(const char *bind_ip, int port)
         return -1;
     }
 
-    /* Create H.265 session at index 0 -> URL: rtsp://ip:port/live0 */
-    ret = rtsp_session_create(RTSP_SESSION_IDX, /*is_h265=*/1);
+    /* Create session: video-only or video+audio */
+    if (with_audio) {
+        ret = rtsp_session_create_with_audio(RTSP_SESSION_IDX, /*is_h265=*/1);
+    } else {
+        ret = rtsp_session_create(RTSP_SESSION_IDX, /*is_h265=*/1);
+    }
     if (!ret) {
         printf("[FAIL] rtsp_session_create returned %d\n", ret);
         rtsp_server_stop();
@@ -56,8 +63,20 @@ int rtsp_start(const char *bind_ip, int port)
     }
 
     g_rtsp_running = 1;
-    printf("[ OK ] RTSP server ready: rtsp://%s:%d/live0\n", bind_ip, port);
+    g_rtsp_has_audio = with_audio;
+    printf("[ OK ] RTSP server ready: rtsp://%s:%d/live0%s\n",
+           bind_ip, port, with_audio ? " (video+audio)" : " (video only)");
     return 0;
+}
+
+int rtsp_start(const char *bind_ip, int port)
+{
+    return rtsp_start_internal(bind_ip, port, 0);
+}
+
+int rtsp_start_with_audio(const char *bind_ip, int port)
+{
+    return rtsp_start_internal(bind_ip, port, 1);
 }
 
 int rtsp_push_venc_stream(const ot_venc_stream *stream)
@@ -96,6 +115,16 @@ int rtsp_push_venc_stream(const ot_venc_stream *stream)
     return pushed;
 }
 
+int rtsp_push_audio_stream(const unsigned char *data, unsigned int len)
+{
+    if (!g_rtsp_running || !g_rtsp_has_audio || data == NULL || len == 0) {
+        return -1;
+    }
+
+    rtsp_session_push_audio(RTSP_SESSION_IDX, (uint8_t *)data, len);
+    return 0;
+}
+
 void rtsp_stop(void)
 {
     if (!g_rtsp_running) {
@@ -105,6 +134,7 @@ void rtsp_stop(void)
     printf("[RTSP] Stopping server...\n");
     rtsp_server_stop();
     g_rtsp_running = 0;
+    g_rtsp_has_audio = 0;
     printf("[ OK ] RTSP server stopped\n");
 }
 

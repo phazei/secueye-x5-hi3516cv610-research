@@ -93,6 +93,15 @@ PIPELINE_LIBS = -lss_mpi -lot_mpi_isp -lss_mpi_isp -lss_mpi_ae -lss_mpi_awb \
                 -lss_mpi_sysbind -lss_mpi_sysmem -lsecurec -lot_osal \
                 -lpthread -ldl -lm
 
+# Audio libraries (Phase 1): linked statically to avoid runtime dependency
+# on VQE shared libs that may not be present on the camera's SD card.
+# The static audio lib needs VQE + voice_engine stubs even though we don't
+# use VQE features. --gc-sections will strip unused code.
+AUDIO_LIBS    = $(SDK_LIB)/libss_mpi_audio.a \
+                $(SDK_LIB)/libupvqe.a \
+                $(SDK_LIB)/libdnvqe.a \
+                $(SDK_LIB)/libvoice_engine.a
+
 # RTSP library (vendored locally from SDK, with audio support added)
 RTSP_LIB_DIR  = rtsp/lib
 RTSP_INC_DIR  = rtsp/include
@@ -111,7 +120,7 @@ $(BUILD)/rtsp_push.o: rtsp/rtsp_push.c rtsp/rtsp_push.h
 
 $(BUILD)/pipeline_test: test/pipeline_test.c $(BUILD)/rtsp_push.o rtsp/rtsp_push.h
 	$(CC) $(CFLAGS) -Irtsp -I$(RTSP_INC_DIR) -o $@ $< $(BUILD)/rtsp_push.o \
-		-L$(SDK_LIB) $(PIPELINE_LIBS) $(RTSP_LIBS) \
+		-L$(SDK_LIB) $(PIPELINE_LIBS) $(AUDIO_LIBS) $(RTSP_LIBS) \
 		-Wl,-rpath,/usr/lib -Wl,-rpath,/progs/rec/00 \
 		-Wl,--gc-sections -fno-use-linker-plugin \
 		-Wl,--allow-shlib-undefined

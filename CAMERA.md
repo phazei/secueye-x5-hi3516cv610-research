@@ -121,11 +121,68 @@ Confirmed via `/sys/class/net/wlan0/device/uevent` and `lsusb`.
 ### Audio
 
 - Built-in microphone (always active) + speaker
-- G.711 codec, embedded in both RTSP streams
+- Internal audio codec: `/dev/acodec` (on-chip ADC/DAC, no external chip)
+- G.711A (PCMA), 8kHz mono, embedded in both RTSP streams by superb
 - Two-way talk via cloud app only (P2P/RTMP path)
 - VQE pipeline: AEC (77 KB), AGC (61 KB), ANR (57 KB), HPF (10 KB),
   EQ (46 KB), TalkV2 (301 KB), Record (201 KB)
 - Custom voice prompts: `.711` files on SD card in `seculinkVoice/`
+
+**Audio MPP pipeline (our implementation, Phase 1):**
+
+```
+Mic -> /dev/acodec (ADC, pseudo-differential IN_D, 30dB gain)
+  -> AI dev 0, chn 0  [ss_mpi_ai_set_pub_attr: 8kHz/16bit/mono]
+  -> [ss_mpi_sys_bind AI->AENC]
+  -> AENC chn 0        [G.711A, 320 samples/frame = 40ms]
+  -> [select() on aenc_fd, strip 4-byte HiSilicon private header]
+  -> RTSP (xop G711ASource, RTP payload type 8, channel_1)
+```
+
+**Acodec init sequence** (must happen after `ss_mpi_ai_enable()`):
+1. `open("/dev/acodec", O_RDWR)`
+2. `ioctl(fd, OT_ACODEC_SOFT_RESET_CTRL)` -- reset codec to defaults
+3. `ioctl(fd, OT_ACODEC_SET_I2S1_FS, &OT_ACODEC_FS_8000)` -- 8kHz
+4. `ioctl(fd, OT_ACODEC_SET_MIXER_MIC, &OT_ACODEC_MIXER_IN_D)` --
+   pseudo-differential input (built-in mic)
+5. `ioctl(fd, OT_ACODEC_SET_INPUT_VOLUME, &30)` -- mic gain 30dB
+   (range [-78, 80], recommended [20, 50])
+
+**Kernel modules** (loaded by `loadhi3516cv610` `insert_audio()`, lines
+47-55, in this order):
+`ot_aio.ko` -> `ot_ai.ko` -> `ot_ao.ko` -> `ot_aenc.ko` -> `ot_adec.ko`
+-> `ot_acodec.ko`
+
+All loaded before superb/our daemon starts. No insmod needed from userspace.
+
+**G.711 frame quirk:** The HiSilicon AENC prepends a 4-byte private header
+to each G.711 encoded frame. This header must be stripped before RTP
+packetization. The shumjj reference app does this in
+`venc::process_audio_stream()` (`buf += 4, len -= 4`).
+
+**AENC channel creation quirk:** `ot_aenc_chn_attr.value` must point to a
+valid `ot_aenc_attr_g711` struct (even though it only contains a `reserved`
+field). Passing NULL causes `0xA0178007` (ILLEGAL_PARAM).
+
+**Linking strategy:** Audio libs are linked **statically** (`.a`) into
+`pipeline_test` to avoid runtime dependency on VQE shared libraries
+(`libupvqe.so`, `libdnvqe.so`, `libvoice_engine.so`) which
+`libss_mpi_audio.so` pulls in transitively. The musl dynamic linker on
+the camera doesn't reliably resolve transitive `.so` dependencies from
+`LD_LIBRARY_PATH`. Static linking adds ~88 KB to the binary but
+`--gc-sections` strips unused VQE code. If binary size becomes critical
+for flash deployment (16 MB SPI NOR, squashfs), switching to `.so` and
+deploying the three VQE libs alongside is the alternative -- it would
+save ~88 KB on the compressed partition and allow sharing with other
+processes.
+
+**SDK audio libraries:**
+- `libss_mpi_audio.{a,so}` -- core audio MPI (AI/AO/AENC/ADEC API)
+- `libss_mpi_audio_adp.{a,so}` -- codec adapter (only for AAC/MP3/Opus)
+- `libupvqe.{a,so}` -- uplink VQE (record-side noise reduction, AGC)
+- `libdnvqe.{a,so}` -- downlink VQE (playback-side processing)
+- `libvoice_engine.{a,so}` -- voice codec engine (G.711 encode/decode)
+- `libvqe_*.so` -- individual VQE algorithm modules
 
 ### IR / Night Vision Hardware
 

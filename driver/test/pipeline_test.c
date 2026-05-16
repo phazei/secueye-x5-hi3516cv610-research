@@ -61,6 +61,12 @@
 #include "ss_mpi_sys_bind.h"
 #include "ss_mpi_sys_mem.h"
 
+/* Audio SDK APIs (Phase 1) */
+#include "ss_mpi_audio.h"    /* AI, AO, AENC, ADEC MPI functions */
+#include "ot_common_aio.h"   /* ot_aio_attr, audio enums */
+#include "ot_common_aenc.h"  /* ot_aenc_chn_attr */
+#include "ot_acodec.h"       /* Inner audio codec ioctls (/dev/acodec) */
+
 /* 3DNR position API (for setting NR at VI or VPSS level) */
 /* ss_mpi_sys_set_3dnr_pos / ss_mpi_sys_get_3dnr_pos are in ss_mpi_sys.h */
 
@@ -94,6 +100,18 @@
 #define SENSOR_LIB        "/progs/rec/00/ipc_drv/libsns_sc635hai.so"
 #define SENSOR_OBJ_NAME   "g_sns_sc635hai_obj"
 
+/* ── Audio configuration (Phase 1) ──────────────────────────── */
+/* G.711A (PCMA): 8kHz, mono, 16-bit -- matches superb's RTSP audio format.
+ * 320 samples per frame = 40ms audio per frame at 8kHz.
+ * The HiSilicon AENC prepends a 4-byte private header to each G.711 frame. */
+#define AI_DEV            0      /* Inner codec AI device */
+#define AI_CHN            0
+#define AENC_CHN          0
+#define AUDIO_SAMPLE_RATE OT_AUDIO_SAMPLE_RATE_8000
+#define AUDIO_PTNUMPERFRM 320    /* 40ms per frame at 8kHz */
+#define ACODEC_FILE       "/dev/acodec"
+#define AENC_G711A_HDR_SIZE 4    /* HiSilicon private header prepended to G.711 frames */
+
 /* Buffer pool sizes
  * RAW10: 10 bits/pixel, stride-aligned = width * 2 (conservative)
  * YUV420 NV21: width * height * 1.5
@@ -115,6 +133,10 @@ static int             g_rtsp_mode = 0;          /* 1 = stream via RTSP, 0 = fil
 static const char     *g_rtsp_ip   = "0.0.0.0";  /* Bind all interfaces */
 static int             g_rtsp_port = 554;
 static volatile int    g_stop      = 0;           /* Signal flag for clean RTSP shutdown */
+
+/* Audio state (Phase 1) */
+static int             g_audio_enabled = 0;  /* Set to 1 after successful audio_init() */
+static int             g_mic_gain = 45;      /* Acodec input volume in dB (range [-78, 80]) */
 
 /* Hardware watchdog -- superb normally feeds /dev/watchdog. When we kill
  * superb, we must take over watchdog duties or the SoC hard-resets after
@@ -1988,6 +2010,208 @@ static hi_s32 venc_init(void)
 }
 
 /* ═══════════════════════════════════════════════════════════════
+ *  Audio Init / Deinit (Phase 1)
+ *
+ *  Initializes the internal audio codec (/dev/acodec), configures
+ *  the AI (audio input) device and channel, creates an AENC
+ *  (audio encoder) channel for G.711A, and binds AI -> AENC.
+ *
+ *  The audio modules (ot_aio, ot_ai, ot_ao, ot_aenc, ot_adec,
+ *  ot_acodec) are already loaded by loadhi3516cv610 at boot.
+ *
+ *  Reference: shumjj dev_aenc.cpp, SDK sample_comm_audio.c
+ * ═══════════════════════════════════════════════════════════════ */
+
+static hi_s32 audio_init(void)
+{
+    hi_s32 ret;
+    int fd_acodec;
+    ot_aio_attr aio_attr;
+    ot_aenc_chn_attr aenc_attr;
+    hi_mpp_chn src_chn, dst_chn;
+
+    printf("\n=== Audio Init (G.711A, 8kHz, mono) ===\n");
+
+    /* Step 1: Initialize audio subsystem */
+    ss_mpi_audio_exit();   /* Clean any prior state */
+    ret = ss_mpi_audio_init();
+    if (ret != HI_SUCCESS) {
+        printf("[WARN] ss_mpi_audio_init: 0x%08X (non-fatal, may already be init)\n",
+               (unsigned)ret);
+        /* Continue -- some SDK versions return error if already initialized */
+    } else {
+        printf("[ OK ] ss_mpi_audio_init\n");
+    }
+
+    /* Step 2: Configure AI device attributes
+     * G.711A: 8kHz, 16-bit, mono, 320 samples/frame (40ms) */
+    memset(&aio_attr, 0, sizeof(aio_attr));
+    aio_attr.sample_rate      = AUDIO_SAMPLE_RATE;
+    aio_attr.bit_width        = OT_AUDIO_BIT_WIDTH_16;
+    aio_attr.work_mode        = OT_AIO_MODE_I2S_MASTER;
+    aio_attr.snd_mode         = OT_AUDIO_SOUND_MODE_MONO;
+    aio_attr.expand_flag      = 0;
+    aio_attr.frame_num        = 5;
+    aio_attr.point_num_per_frame = AUDIO_PTNUMPERFRM;
+    aio_attr.chn_cnt          = 1;
+    aio_attr.clk_share        = 1;  /* AI and AO share clock */
+    aio_attr.i2s_type         = OT_AIO_I2STYPE_INNERCODEC;
+
+    ret = ss_mpi_ai_set_pub_attr(AI_DEV, &aio_attr);
+    if (ret != HI_SUCCESS) {
+        printf("[FAIL] ss_mpi_ai_set_pub_attr: 0x%08X\n", (unsigned)ret);
+        return ret;
+    }
+    printf("[ OK ] ss_mpi_ai_set_pub_attr (8kHz/16bit/mono)\n");
+
+    /* Step 3: Enable AI device and channel */
+    ret = ss_mpi_ai_enable(AI_DEV);
+    if (ret != HI_SUCCESS) {
+        printf("[FAIL] ss_mpi_ai_enable: 0x%08X\n", (unsigned)ret);
+        return ret;
+    }
+    printf("[ OK ] ss_mpi_ai_enable\n");
+
+    ret = ss_mpi_ai_enable_chn(AI_DEV, AI_CHN);
+    if (ret != HI_SUCCESS) {
+        printf("[FAIL] ss_mpi_ai_enable_chn: 0x%08X\n", (unsigned)ret);
+        ss_mpi_ai_disable(AI_DEV);
+        return ret;
+    }
+    printf("[ OK ] ss_mpi_ai_enable_chn\n");
+
+    /* Step 4: Configure the internal audio codec (/dev/acodec)
+     * Must be done AFTER AI is enabled, per SDK sample and shumjj reference.
+     * Sequence: soft reset -> set sample rate -> set input mode -> set volume */
+    fd_acodec = open(ACODEC_FILE, O_RDWR);
+    if (fd_acodec < 0) {
+        printf("[FAIL] open(%s): %s\n", ACODEC_FILE, strerror(errno));
+        printf("[WARN] Audio codec not available -- audio will not work\n");
+        ss_mpi_ai_disable_chn(AI_DEV, AI_CHN);
+        ss_mpi_ai_disable(AI_DEV);
+        return HI_FAILURE;
+    }
+
+    /* 4a: Soft reset */
+    ret = ioctl(fd_acodec, OT_ACODEC_SOFT_RESET_CTRL);
+    if (ret != 0) {
+        printf("[WARN] OT_ACODEC_SOFT_RESET_CTRL failed: %s\n", strerror(errno));
+    } else {
+        printf("[ OK ] acodec soft reset\n");
+    }
+
+    /* 4b: Set I2S sample rate to 8kHz */
+    {
+        unsigned int i2s_fs = OT_ACODEC_FS_8000;
+        ret = ioctl(fd_acodec, OT_ACODEC_SET_I2S1_FS, &i2s_fs);
+        if (ret != 0) {
+            printf("[WARN] OT_ACODEC_SET_I2S1_FS failed: %s\n", strerror(errno));
+        } else {
+            printf("[ OK ] acodec I2S1 FS = 8000Hz\n");
+        }
+    }
+
+    /* 4c: Set input to pseudo-differential (built-in microphone) */
+    {
+        unsigned int input_mode = OT_ACODEC_MIXER_IN_D;
+        ret = ioctl(fd_acodec, OT_ACODEC_SET_MIXER_MIC, &input_mode);
+        if (ret != 0) {
+            printf("[WARN] OT_ACODEC_SET_MIXER_MIC failed: %s\n", strerror(errno));
+        } else {
+            printf("[ OK ] acodec mixer = pseudo-differential (IN_D)\n");
+        }
+    }
+
+    /* 4d: Set input volume (mic gain). Range [-78, 80] dB.
+     * shumjj uses 30. SDK recommends 20-50. 30 is quiet in practice;
+     * 45 is a good default for built-in mic in typical indoor use.
+     * Configurable via --mic-gain CLI flag. */
+    {
+        unsigned int input_vol = (unsigned int)g_mic_gain;
+        ret = ioctl(fd_acodec, OT_ACODEC_SET_INPUT_VOLUME, &input_vol);
+        if (ret != 0) {
+            printf("[WARN] OT_ACODEC_SET_INPUT_VOLUME failed: %s\n", strerror(errno));
+        } else {
+            printf("[ OK ] acodec input volume = %u dB\n", input_vol);
+        }
+    }
+
+    close(fd_acodec);
+
+    /* Step 5: Create AENC channel for G.711A */
+    ot_aenc_attr_g711 g711_attr;
+    memset(&g711_attr, 0, sizeof(g711_attr));
+
+    memset(&aenc_attr, 0, sizeof(aenc_attr));
+    aenc_attr.type = OT_PT_G711A;
+    aenc_attr.buf_size = 30;
+    aenc_attr.point_num_per_frame = AUDIO_PTNUMPERFRM;
+    aenc_attr.value = &g711_attr;  /* Must point to codec-specific attr, even for G.711 */
+
+    ret = ss_mpi_aenc_create_chn(AENC_CHN, &aenc_attr);
+    if (ret != HI_SUCCESS) {
+        printf("[FAIL] ss_mpi_aenc_create_chn: 0x%08X\n", (unsigned)ret);
+        ss_mpi_ai_disable_chn(AI_DEV, AI_CHN);
+        ss_mpi_ai_disable(AI_DEV);
+        return ret;
+    }
+    printf("[ OK ] ss_mpi_aenc_create_chn (G.711A)\n");
+
+    /* Step 6: Bind AI -> AENC (hardware auto-push, no manual thread needed) */
+    src_chn.mod_id = OT_ID_AI;
+    src_chn.dev_id = AI_DEV;
+    src_chn.chn_id = AI_CHN;
+    dst_chn.mod_id = OT_ID_AENC;
+    dst_chn.dev_id = 0;
+    dst_chn.chn_id = AENC_CHN;
+
+    ret = ss_mpi_sys_bind(&src_chn, &dst_chn);
+    if (ret != HI_SUCCESS) {
+        printf("[FAIL] ss_mpi_sys_bind(AI->AENC): 0x%08X\n", (unsigned)ret);
+        ss_mpi_aenc_destroy_chn(AENC_CHN);
+        ss_mpi_ai_disable_chn(AI_DEV, AI_CHN);
+        ss_mpi_ai_disable(AI_DEV);
+        return ret;
+    }
+    printf("[ OK ] ss_mpi_sys_bind(AI->AENC)\n");
+
+    g_audio_enabled = 1;
+    printf("[ OK ] Audio pipeline ready: mic -> AI -> AENC(G.711A) -> RTSP\n");
+    return HI_SUCCESS;
+}
+
+static void audio_deinit(void)
+{
+    hi_mpp_chn src_chn, dst_chn;
+
+    if (!g_audio_enabled) return;
+
+    printf("[INFO] Audio deinit...\n");
+
+    /* Unbind AI -> AENC */
+    src_chn.mod_id = OT_ID_AI;
+    src_chn.dev_id = AI_DEV;
+    src_chn.chn_id = AI_CHN;
+    dst_chn.mod_id = OT_ID_AENC;
+    dst_chn.dev_id = 0;
+    dst_chn.chn_id = AENC_CHN;
+    ss_mpi_sys_unbind(&src_chn, &dst_chn);
+
+    /* Destroy AENC channel */
+    ss_mpi_aenc_destroy_chn(AENC_CHN);
+
+    /* Disable AI channel and device */
+    ss_mpi_ai_disable_chn(AI_DEV, AI_CHN);
+    ss_mpi_ai_disable(AI_DEV);
+
+    /* Exit audio subsystem */
+    ss_mpi_audio_exit();
+
+    g_audio_enabled = 0;
+    printf("[ OK ] Audio deinit complete\n");
+}
+
+/* ═══════════════════════════════════════════════════════════════
  *  STEP 7: Capture H.265 bitstream
  *
  *  Grab ~3 seconds of H.265 frames after ISP/AE stabilization.
@@ -2089,9 +2313,27 @@ static hi_s32 capture_h265(void)
     }
     printf("[ OK ] VENC fd = %d\n", venc_fd);
 
+    /* Get AENC fd for select() if audio is enabled */
+    hi_s32 aenc_fd = -1;
+    if (g_audio_enabled) {
+        aenc_fd = ss_mpi_aenc_get_fd(AENC_CHN);
+        if (aenc_fd < 0) {
+            printf("[WARN] ss_mpi_aenc_get_fd failed: %d -- audio disabled\n", aenc_fd);
+            g_audio_enabled = 0;
+        } else {
+            printf("[ OK ] AENC fd = %d\n", aenc_fd);
+        }
+    }
+
     /* Start RTSP server if in streaming mode */
     if (g_rtsp_mode) {
-        if (rtsp_start(g_rtsp_ip, g_rtsp_port) != 0) {
+        int rtsp_ret;
+        if (g_audio_enabled) {
+            rtsp_ret = rtsp_start_with_audio(g_rtsp_ip, g_rtsp_port);
+        } else {
+            rtsp_ret = rtsp_start(g_rtsp_ip, g_rtsp_port);
+        }
+        if (rtsp_ret != 0) {
             printf("[FAIL] RTSP server failed to start\n");
             return HI_FAILURE;
         }
@@ -2111,6 +2353,8 @@ static hi_s32 capture_h265(void)
      *   - File mode: run for CAPTURE_FRAMES then exit
      *   - RTSP mode: run indefinitely until SIGINT/SIGTERM
      */
+    int audio_frames_pushed = 0;
+
     while (!g_stop) {
         /* In file mode, stop after enough frames */
         if (!g_rtsp_mode && frames_saved >= CAPTURE_FRAMES)
@@ -2118,16 +2362,47 @@ static hi_s32 capture_h265(void)
 
         FD_ZERO(&read_fds);
         FD_SET(venc_fd, &read_fds);
+        int max_fd = venc_fd;
+
+        /* Also watch AENC fd for audio data */
+        if (g_audio_enabled && aenc_fd >= 0) {
+            FD_SET(aenc_fd, &read_fds);
+            if (aenc_fd > max_fd) max_fd = aenc_fd;
+        }
+
         timeout_val.tv_sec  = 5;
         timeout_val.tv_usec = 0;
 
-        ret = select(venc_fd + 1, &read_fds, NULL, NULL, &timeout_val);
+        ret = select(max_fd + 1, &read_fds, NULL, NULL, &timeout_val);
         if (ret <= 0) {
             watchdog_feed();  /* Feed during select timeout too */
             if (g_rtsp_mode) continue;  /* Timeout is OK in streaming mode */
             printf("[WARN] select returned %d after %d frames\n", ret, frames_saved);
             break;
         }
+
+        /* ── Handle audio data (AENC) ─────────────────────────── */
+        if (g_audio_enabled && aenc_fd >= 0 && FD_ISSET(aenc_fd, &read_fds)) {
+            ot_audio_stream aenc_stream;
+            memset(&aenc_stream, 0, sizeof(aenc_stream));
+
+            hi_s32 aret = ss_mpi_aenc_get_stream(AENC_CHN, &aenc_stream, 0);
+            if (aret == HI_SUCCESS) {
+                if (g_rtsp_mode && aenc_stream.len > AENC_G711A_HDR_SIZE) {
+                    /* HiSilicon prepends a 4-byte private header to G.711 data.
+                     * Strip it before pushing to RTSP (shumjj does this too). */
+                    unsigned char *audio_data = (unsigned char *)aenc_stream.stream + AENC_G711A_HDR_SIZE;
+                    unsigned int audio_len = aenc_stream.len - AENC_G711A_HDR_SIZE;
+                    rtsp_push_audio_stream(audio_data, audio_len);
+                    audio_frames_pushed++;
+                }
+                ss_mpi_aenc_release_stream(AENC_CHN, &aenc_stream);
+            }
+        }
+
+        /* ── Handle video data (VENC) ─────────────────────────── */
+        if (!FD_ISSET(venc_fd, &read_fds))
+            continue;
 
         ret = ss_mpi_venc_query_status(VENC_CHN, &stat);
         if (ret != HI_SUCCESS || stat.cur_packs == 0) {
@@ -2173,7 +2448,8 @@ static hi_s32 capture_h265(void)
 
         /* Log every 20th frame for debugging in RTSP mode */
         if (g_rtsp_mode && (frames_saved % 20 == 0)) {
-            fprintf(stderr, "[VENC] frame=%d\n", frames_saved);
+            fprintf(stderr, "[VENC] frame=%d, audio_frames=%d\n",
+                    frames_saved, audio_frames_pushed);
         }
 
         /* Periodic AE/AWB status (every 50 frames in file mode, every 300 in RTSP) */
@@ -2214,7 +2490,8 @@ static hi_s32 capture_h265(void)
     }
 
     if (g_rtsp_mode) {
-        printf("[ OK ] RTSP streaming ended after %d frames\n", frames_saved);
+        printf("[ OK ] RTSP streaming ended after %d video frames, %d audio frames\n",
+               frames_saved, audio_frames_pushed);
         return HI_SUCCESS;
     } else if (frames_saved > 0) {
         printf("[ OK ] Saved H.265: %s (%u bytes, %d frames)\n",
@@ -2235,6 +2512,9 @@ static void teardown(void)
     hi_isp_3a_alg_lib ae_lib, awb_lib;
 
     printf("\n=== Teardown ===\n");
+
+    /* Deinit audio first (unbind AI->AENC, destroy AENC, disable AI) */
+    audio_deinit();
 
     /* Unbind VPSS->VENC */
     src_chn.mod_id = HI_ID_VPSS;
@@ -2404,6 +2684,8 @@ int main(int argc, char *argv[])
             g_rtsp_port = atoi(argv[++i]);
         } else if (strcmp(argv[i], "--rtsp-ip") == 0 && i + 1 < argc) {
             g_rtsp_ip = argv[++i];
+        } else if (strcmp(argv[i], "--mic-gain") == 0 && i + 1 < argc) {
+            g_mic_gain = atoi(argv[++i]);
         } else if (argv[i][0] != '-') {
             /* Positional arg: PQ bin path (backward compat) */
             g_pq_bin_path = argv[i];
@@ -2413,6 +2695,7 @@ int main(int argc, char *argv[])
             printf("  --rtsp           Stream via RTSP instead of file capture\n");
             printf("  --rtsp-port N    RTSP port (default: 554)\n");
             printf("  --rtsp-ip IP     Bind IP (default: 0.0.0.0)\n");
+            printf("  --mic-gain N     Microphone gain in dB (default: 45, range: -78 to 80)\n");
             printf("  pq_bin_path      Path to PQ bin file\n");
             return 0;
         }
@@ -2543,6 +2826,18 @@ int main(int argc, char *argv[])
     /* Step 6: VENC JPEG channel */
     ret = venc_init();
     if (ret != HI_SUCCESS) goto fail;
+
+    /* Step 6a: Audio pipeline (Phase 1)
+     * Initialize audio capture + G.711A encoding. Non-fatal if it fails --
+     * we still stream video. Audio is only used in RTSP mode. */
+    if (g_rtsp_mode) {
+        hi_s32 audio_ret = audio_init();
+        if (audio_ret != HI_SUCCESS) {
+            printf("[WARN] Audio init failed (0x%08X) -- streaming video only\n",
+                   (unsigned)audio_ret);
+            /* g_audio_enabled remains 0, capture loop skips audio */
+        }
+    }
 
     /* Step 7: Capture H.265 bitstream */
     ret = capture_h265();
