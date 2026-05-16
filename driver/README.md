@@ -26,11 +26,16 @@ driver/
       rtsp_server_api.h         Vendored xop RTSP API header
     lib/
       libxoprtsp.a              Vendored xop RTSP static archive (ARM, C++)
-    src/                        Vendored xop RTSP source (for rebuilding)
+    src/                        HiSilicon API wrapper (modified for audio)
       rtsp_manager.cpp
       rtsp_manager.h
       rtsp_server_api.cpp
       rtsp_server_api.h
+    objs/                       Pre-compiled ARM .o files (for re-archiving)
+    xop/                        Full xop RTSP/RTP source (for full rebuilds)
+      net/                        Network layer (TCP, sockets, epoll)
+      xop/                        RTSP/RTP protocol + media sources
+      3rdpart/                    MD5 (digest auth)
 
   prebuilt/                   Vendored HiSilicon SDK binaries
     sdk_include/                SDK headers (140 files, build-time only)
@@ -57,7 +62,9 @@ has no dependency on git submodules that could disappear.
 | `prebuilt/pq/libbin.so` | `hi3516cv610_PictureQuality/.../libbin/release/` | PQ bin file loader. Deployed to camera. |
 | `rtsp/lib/libxoprtsp.a` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/lib/3rdparty/` | xop RTSP server, static archive. Modified to add G.711A audio support (Phase 1 prep). Linked into pipeline_test at build time. |
 | `rtsp/include/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/include/3rdparty/` | RTSP API header. Modified to add audio function declarations. |
-| `rtsp/src/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/src/rtspserver/hisi_sample/` | RTSP source code. Modified to add audio session/push support. Kept for reference and rebuilding. |
+| `rtsp/src/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/src/rtspserver/hisi_sample/` | HiSilicon API wrapper. Modified to add audio session/push support. |
+| `rtsp/objs/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/src/rtspserver/objs/` | Pre-compiled ARM .o files for the xop core. Can re-archive with modified wrapper .o files without recompiling the full stack. |
+| `rtsp/xop/` | `Hi3516CV610_SDK_V1.0.2.1_MPP_Sample/src/rtspserver/src/` | Full xop RTSP/RTP C++ source (70 files). For complete rebuilds from source if needed. |
 
 The only external dependency not vendored is the **ARM cross-compilation
 toolchain** at `research/hi3516cv610_toolchain/`. It is too large to vendor

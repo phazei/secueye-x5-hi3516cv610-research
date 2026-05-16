@@ -289,6 +289,19 @@ regenerate if lost.
 **Do not commit or stage files** in this repo without being explicitly
 asked.
 
+**Treat `research/` as read-only.** The subdirectories under `research/`
+are git submodules pointing to external repos we do not control. Never
+modify, add, or delete files inside them. If you need a file from
+`research/` for building or deployment, copy it into the appropriate
+location under `driver/` first:
+
+- SDK headers → `driver/prebuilt/sdk_include/`
+- SDK shared libs → `driver/prebuilt/sdk_mpi/` or `driver/prebuilt/isp_plugins/`
+- RTSP library → `driver/rtsp/lib/`, `driver/rtsp/include/`, `driver/rtsp/src/`
+- PQ libraries → `driver/prebuilt/pq/`
+
+See `driver/README.md` for the full vendored file inventory and origins.
+
 ## See also
 
 - `ROADMAP.md` -- full project plan with Phases 0-8+
@@ -298,7 +311,7 @@ asked.
   I2C sync path, AE/AWB calibration, NR pipeline, build/deploy)
 - `DRIVER_INTERNALS.md` -- kernel decompilation forensics, ioctl
   tables, binary comparison, investigation timeline
-- `driver/README.md` -- older driver overview (mostly superseded by
-  `DRIVER.md`)
+- `driver/README.md` -- build system, directory structure, vendored file
+  origins
 - `research/archive/` -- historical research docs, research notes,
   investigative tools
