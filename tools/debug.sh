@@ -96,7 +96,13 @@ cat /proc/meminfo | head -4 >> $TMPLOG
 
 /tmp/appfs/progs/bin/superb >> $TMPLOG 2>&1 &
 
-# --- 11. Background: sync log to SD card every 30s ---
+# --- 11. PQTools ISP tuning sidecar (optional) ---
+# Starts ittb_control on port 4321 for remote ISP tuning via PQTools.exe.
+# Uses ~2-4MB RAM. Comment out the next 3 lines to disable.
+sleep 15
+cd /progs/rec/00/PQtool && ./start_pqcontrol.sh >> $TMPLOG 2>&1
+
+# --- 12. Background: sync log to SD card every 30s ---
 (
     while ! mountpoint -q /progs/rec/00 2>/dev/null; do sleep 5; done
     [ -f $SDLOG ] && mv $SDLOG /progs/rec/00/superb_prev.log

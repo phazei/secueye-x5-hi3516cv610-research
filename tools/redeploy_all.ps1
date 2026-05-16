@@ -18,6 +18,8 @@
 #   - ISP plugins:     libbnr.so, libdrc.so, etc. (LD_PRELOAD'd at runtime)
 #   - PQ lib:          libbin.so (PQ bin file loader)
 #   - Shell scripts:   rtsp_run.sh, diag_run.sh (on-camera launch/diagnostic scripts)
+#
+# Also deploys PQtool/ (ISP tuning sidecar) to /progs/rec/00/PQtool/:
 
 param(
     [switch]$scp,
@@ -29,6 +31,8 @@ $cam = "192.168.1.153"
 $recvPort = 8888
 $prebuilt = "driver/prebuilt"
 $targetDir = "/progs/rec/00/ipc_drv"
+$pqToolDir = "/progs/rec/00/PQtool"
+$pqToolSrc = "tools/pq_tune"
 
 # --- Our build artifacts ---
 $buildFiles = @(
@@ -79,6 +83,24 @@ $scriptFiles = @(
     "tools/diag_run.sh"
 )
 
+# --- PQTool ISP tuning sidecar (deployed to /progs/rec/00/PQtool/) ---
+# Map of: local source file -> subdirectory under $pqToolDir on camera
+# Files with no subdir go to the PQtool root.
+$pqToolFiles = [ordered]@{
+    # Root files
+    "$pqToolSrc/ittb_control"                          = ""
+    "$pqToolSrc/config.cfg"                            = ""
+    "$pqToolSrc/start_pqcontrol.sh"                    = ""
+    # Sensor configs
+    "$pqToolSrc/configs/sc635hai/config_entry.ini"     = "configs/sc635hai"
+    "$pqToolSrc/configs/sc635hai/sc635hai.ini"          = "configs/sc635hai"
+    # Common configs
+    "$pqToolSrc/configs/common/config_mt.ini"          = "configs/common"
+    "$pqToolSrc/configs/common/config_stream.ini"      = "configs/common"
+}
+# Libs -- enumerate all .so files in pq_tune/libs/
+$pqToolLibs = Get-ChildItem "$pqToolSrc/libs" -Filter "*.so*" | ForEach-Object { $_.FullName }
+
 # --- Pre-flight checks ---
 Write-Host "=== Re-deploying to $targetDir ==="
 
@@ -88,6 +110,13 @@ foreach ($f in $all) {
     if (-not (Test-Path $f)) {
         $missing += $f
     }
+}
+# Also check PQtool files
+foreach ($f in $pqToolFiles.Keys) {
+    if (-not (Test-Path $f)) { $missing += $f }
+}
+if ($pqToolLibs.Count -eq 0) {
+    $missing += "$pqToolSrc/libs/*.so (no libs found)"
 }
 if ($missing.Count -gt 0) {
     Write-Host "ERROR: Missing files:" -ForegroundColor Red
@@ -156,10 +185,56 @@ python tools/cam_cmd.py "cd $targetDir && chmod +x pipeline_test recv reg_dump s
 Write-Host "Creating dropbear hard copies..."
 python tools/cam_cmd.py "cd $targetDir && cp dropbearmulti dropbear && cp dropbearmulti scp && cp dropbearmulti dropbearkey"
 
+# --- Deploy PQtool (ISP tuning sidecar) ---
+Write-Host ""
+Write-Host "=== Deploying PQtool to $pqToolDir ==="
+
+if ($useSSH) {
+    # Create directory structure
+    $pqSubdirs = @("configs/sc635hai", "configs/common", "libs")
+    $mkdirCmd = "mkdir -p " + ($pqSubdirs | ForEach-Object { "$pqToolDir/$_" } | Join-String -Separator " ")
+    python tools/cam_cmd.py $mkdirCmd
+
+    # SCP: send files grouped by target subdirectory
+    foreach ($entry in $pqToolFiles.GetEnumerator()) {
+        $src = $entry.Key
+        $sub = $entry.Value
+        $dest = if ($sub) { "$pqToolDir/$sub/" } else { "$pqToolDir/" }
+        $name = Split-Path $src -Leaf
+        Write-Host "  $name -> $dest"
+        scp -O $src "root@${cam}:${dest}"
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: SCP failed for $src" -ForegroundColor Red
+            exit 1
+        }
+    }
+    # Libs -- batch send all .so files
+    Write-Host "  libs/ ($($pqToolLibs.Count) files)"
+    foreach ($lib in $pqToolLibs) {
+        scp -O $lib "root@${cam}:${pqToolDir}/libs/"
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: SCP failed for $lib" -ForegroundColor Red
+            exit 1
+        }
+    }
+    # Set permissions
+    Write-Host "Setting PQtool permissions..."
+    python tools/cam_cmd.py "chmod +x $pqToolDir/ittb_control $pqToolDir/start_pqcontrol.sh"
+} else {
+    # recv daemon only writes to its configured directory -- it can't target
+    # subdirectories. PQtool deploy requires SCP (base64 via deploy_file.py
+    # is too slow for ~28 libs). Skip PQtool in recv mode.
+    Write-Host "WARNING: PQtool deploy requires SCP. Skipping in recv mode." -ForegroundColor Yellow
+    Write-Host "  Re-run with -scp once dropbear is available, or deploy manually."
+}
+
 # --- Verify ---
 Write-Host ""
-Write-Host "=== Deployed files ==="
+Write-Host "=== Deployed files (ipc_drv) ==="
 python tools/cam_cmd.py "ls -la $targetDir/"
+Write-Host ""
+Write-Host "=== Deployed files (PQtool) ==="
+python tools/cam_cmd.py "ls -laR $pqToolDir/"
 
 Write-Host ""
 Write-Host "=== Done. To start RTSP stream: ==="
