@@ -437,6 +437,51 @@ All ioctls use type `'m'` (0x6d).
 
 ---
 
+## Superb resolution selection (Ghidra, 2026-07-14)
+
+How the stock `superb` binary picks VI and encode resolution for the
+SC635HAI. Source: decompiled sensor-detect function (`FUN_002bec9e`)
+and the `StreamVideoQuality` property handler in
+`tools/ghidra/output/string_xref_analysis.txt` (lines ~41033 and ~8061).
+
+### Sensor detect (`/etc/conf.d/syscfg/sensor.sh`, key `SENSOR`)
+
+For `sc635hai`:
+
+```
+VI_WIDTH  = 0xC80 (3200)
+VI_HEIGHT = 0x708 (1800)
+MAX_FRAME_RATE = 0xF (15)
+capability class = 0x5061          // 6MP class
+if (hwinfo._604_4_ == 0x51)        // OEM model field
+    capability class = 0x5081      // 4K class (same as imx678)
+```
+
+The sensor never outputs more than 3200x1800; the class code only
+controls the *encode* resolution.
+
+### Encode resolution by capability class (main stream, quality=2)
+
+| Class | Encode resolution | QP min/max | Max bitrate |
+|-------|-------------------|-----------|-------------|
+| `0x5050` | 2560x1920 | 32/48 | 4096 kbps |
+| `0x5051` | 2960x1664 | 32/48 | 4096 kbps |
+| `0x5061` | 3200x1800 (native) | 32/48 | 4096 kbps |
+| `0x5080/0x5081` | **3840x2160 (upscaled)** | **35/44** | 4096 kbps |
+| `0x5042` | 2688x1520 | 32/48 | 4096 kbps |
+
+Our camera runs the `0x5081` path: the QP 35/44 values extracted from
+superb's live VENC channel are only set on that branch. So superb's
+"4K" stream is a VPSS upscale of the 3200x1800 sensor -- confirmed
+marketing upscale, and `ipc_daemon` mirrors it (VPSS ext chn 3).
+
+Implication for tuning: superb's own firmware ships *native 3200x1800*
+encoding for lower-tier OEM models of this exact sensor. Encoding
+native and letting the client scale is a legitimate quality option
+(one fewer resample generation).
+
+---
+
 ## Historical investigation timeline
 
 ### Phase 3: Pipeline bringup

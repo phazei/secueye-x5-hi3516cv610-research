@@ -64,23 +64,34 @@ hi_s32 venc_init(void)
     ret = ss_mpi_venc_create_chn(VENC_CHN, &chn_attr);
     CHECK_RET("ss_mpi_venc_create_chn(H265)", ret);
 
-    /* VBR QP limits (superb: minQP=35, maxQP=44) */
+    /* VBR QP limits (superb: minQP=35, maxQP=44).
+     * Read-modify-write: a zeroed struct would wipe SDK defaults for
+     * fields we don't explicitly set (thresholds, deltas, etc.). */
     {
         ot_venc_rc_param rc_param;
-        memset(&rc_param, 0, sizeof(rc_param));
-        rc_param.h265_vbr_param.max_qp = 44;
-        rc_param.h265_vbr_param.min_qp = 35;
-        rc_param.h265_vbr_param.max_i_qp = 44;
-        rc_param.h265_vbr_param.min_i_qp = 35;
-        rc_param.h265_vbr_param.max_reencode_times = 3;
-        rc_param.h265_vbr_param.max_i_proportion = 100;
-        rc_param.h265_vbr_param.min_i_proportion = 1;
-        rc_param.h265_vbr_param.qpmap_en = HI_FALSE;
-        hi_s32 rc_ret = ss_mpi_venc_set_rc_param(VENC_CHN, &rc_param);
-        printf("[INFO] VBR QP limits set: max_qp=44 min_qp=35 ret=0x%08X\n", (unsigned)rc_ret);
+        hi_s32 rc_ret = ss_mpi_venc_get_rc_param(VENC_CHN, &rc_param);
+        if (rc_ret == HI_SUCCESS) {
+            printf("[INFO] VBR defaults: max_qp=%d min_qp=%d max_i_qp=%d min_i_qp=%d\n",
+                   rc_param.h265_vbr_param.max_qp, rc_param.h265_vbr_param.min_qp,
+                   rc_param.h265_vbr_param.max_i_qp, rc_param.h265_vbr_param.min_i_qp);
+            rc_param.h265_vbr_param.max_qp = 44;
+            rc_param.h265_vbr_param.min_qp = 35;
+            rc_param.h265_vbr_param.max_i_qp = 44;
+            rc_param.h265_vbr_param.min_i_qp = 35;
+            rc_param.h265_vbr_param.max_reencode_times = 3;
+            rc_param.h265_vbr_param.max_i_proportion = 100;
+            rc_param.h265_vbr_param.min_i_proportion = 1;
+            rc_param.h265_vbr_param.qpmap_en = HI_FALSE;
+            rc_ret = ss_mpi_venc_set_rc_param(VENC_CHN, &rc_param);
+            printf("[INFO] VBR QP limits set: max_qp=44 min_qp=35 ret=0x%08X\n", (unsigned)rc_ret);
+        } else {
+            printf("[WARN] get_rc_param failed: 0x%08X -- keeping channel defaults\n",
+                   (unsigned)rc_ret);
+        }
     }
 
     /* Start VENC channel (continuous receive) */
+    memset(&start_param, 0, sizeof(start_param));
     start_param.recv_pic_num = -1;
     ret = ss_mpi_venc_start_chn(VENC_CHN, &start_param);
     if (ret != HI_SUCCESS) {
@@ -235,6 +246,11 @@ hi_s32 capture_h265(void)
         if (!g_rtsp_mode && frames_saved >= CAPTURE_FRAMES)
             break;
 
+        /* Feed unconditionally: the loop can iterate without ever reaching
+         * the per-frame feed below (e.g. VENC stalled while audio keeps
+         * select() waking up), which would starve the 120s watchdog. */
+        watchdog_feed();
+
         FD_ZERO(&read_fds);
         FD_SET(venc_fd, &read_fds);
         int max_fd = venc_fd;
@@ -249,7 +265,6 @@ hi_s32 capture_h265(void)
 
         ret = select(max_fd + 1, &read_fds, NULL, NULL, &timeout_val);
         if (ret <= 0) {
-            watchdog_feed();
             if (g_rtsp_mode) continue;
             printf("[WARN] select returned %d after %d frames\n", ret, frames_saved);
             break;
@@ -312,8 +327,6 @@ hi_s32 capture_h265(void)
         ss_mpi_venc_release_stream(VENC_CHN, &stream);
         free(stream.pack);
         frames_saved++;
-
-        watchdog_feed();
 
         if (g_rtsp_mode && (frames_saved % 20 == 0)) {
             fprintf(stderr, "[VENC] frame=%d, audio_frames=%d\n",

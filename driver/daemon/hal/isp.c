@@ -174,16 +174,19 @@ hi_s32 isp_init(void)
                    ae_route.route_node[i].iris_fno);
         }
 
+        /* Node int_time 2802 = VTS(2812) - EXP_OFFSET(10) = driver's
+         * max_int_time. Superb uses 2804 because it runs VTS=2814; using
+         * 2804 here exceeds our AE limit and just gets clamped. */
         ae_route.total_num = 3;
         ae_route.route_node[0].int_time     = 8;
         ae_route.route_node[0].sys_gain     = 1024;
         ae_route.route_node[0].iris_fno     = 1;
         ae_route.route_node[0].iris_fno_lin = 1;
-        ae_route.route_node[1].int_time     = 2804;
+        ae_route.route_node[1].int_time     = 2802;
         ae_route.route_node[1].sys_gain     = 1024;
         ae_route.route_node[1].iris_fno     = 1;
         ae_route.route_node[1].iris_fno_lin = 1;
-        ae_route.route_node[2].int_time     = 2804;
+        ae_route.route_node[2].int_time     = 2802;
         ae_route.route_node[2].sys_gain     = 196608;
         ae_route.route_node[2].iris_fno     = 1;
         ae_route.route_node[2].iris_fno_lin = 1;
@@ -378,7 +381,11 @@ hi_s32 configure_isp_color(void)
         }
     }
 
-    /* 2. CSC state */
+    /* 2. CSC state -- keep PQ bin values, rescue only degenerate saturation.
+     * NOTE: an earlier version of this block logged "(satu=50, BT709, full
+     * range)" but never actually modified the struct; PQ bin values were
+     * silently in effect the whole time (and look correct). Made honest
+     * 2026-07-14: log-only unless satu is degenerately low. */
     {
         ot_isp_csc_attr csc;
         memset(&csc, 0, sizeof(csc));
@@ -387,13 +394,14 @@ hi_s32 configure_isp_color(void)
             printf("[CSC ] enable=%d, gamut=%d, hue=%u, luma=%u, contr=%u, satu=%u\n",
                    csc.enable, csc.color_gamut,
                    csc.hue, csc.luma, csc.contr, csc.satu);
-            printf("[CSC ] limited_range=%d, ext_csc=%d, ct_mode=%d\n",
+            printf("[CSC ] limited_range=%d, ext_csc=%d, ct_mode=%d (keeping PQ bin)\n",
                    csc.limited_range_en, csc.ext_csc_en, csc.ct_mode_en);
             if (csc.satu < 30) {
-                printf("[CSC ] *** SATURATION IS %u (LOW!) -- setting to 50 ***\n", csc.satu);
+                printf("[CSC ] *** SATURATION IS %u (LOW!) -- rescuing to 50 ***\n", csc.satu);
+                csc.satu = 50;
+                ret = ss_mpi_isp_set_csc_attr(VI_PIPE, &csc);
+                printf("[CSC ] set satu=50: ret=0x%08X\n", (unsigned)ret);
             }
-            ret = ss_mpi_isp_set_csc_attr(VI_PIPE, &csc);
-            printf("[CSC ] set: ret=0x%08X (satu=50, BT709, full range)\n", (unsigned)ret);
         } else {
             printf("[CSC ] get_csc_attr FAILED: 0x%08X\n", (unsigned)ret);
         }

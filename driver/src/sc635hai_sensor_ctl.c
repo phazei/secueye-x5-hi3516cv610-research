@@ -91,8 +91,9 @@ int sc635hai_write_register(ot_vi_pipe vi_pipe, td_u32 addr, td_u32 data)
     buf[2] = data & 0xFF;          /* data */
 
     ret = write(g_fd[vi_pipe], buf, 3);
-    if (ret < 0) {
-        printf("sc635hai: i2c write 0x%04x=0x%02x failed\n", addr, data);
+    if (ret != 3) {
+        printf("sc635hai: i2c write 0x%04x=0x%02x failed (ret=%d)\n",
+               addr, data, ret);
         return TD_FAILURE;
     }
 
@@ -261,6 +262,17 @@ void sc635hai_default_reg_init(ot_vi_pipe vi_pipe,
 
 void sc635hai_mirror_flip(ot_vi_pipe vi_pipe, td_u32 mode)
 {
-    /* mode: 0=normal, 1=mirror, 2=flip, 3=mirror+flip */
-    sc635hai_write_register(vi_pipe, SC635HAI_REG_MIRROR_FLIP, mode & 0x03);
+    /* mode: 0=normal, 1=mirror, 2=flip, 3=mirror+flip
+     * (ot_isp_sns_mirrorflip_type ordering).
+     *
+     * Register 0x3221 encoding (confirmed from live sensor, see DRIVER.md):
+     *   0x00 normal (BGGR), 0x06 mirror (GRBG),
+     *   0x60 flip (GBRG),   0x66 mirror+flip (RGGB)
+     *
+     * NOTE: mirror/flip changes the effective Bayer order; the ISP
+     * pub_attr bayer_format must be updated to match if this is ever
+     * called with mode != 0. */
+    static const td_u8 reg_val[4] = { 0x00, 0x06, 0x60, 0x66 };
+    sc635hai_write_register(vi_pipe, SC635HAI_REG_MIRROR_FLIP,
+                            reg_val[mode & 0x03]);
 }

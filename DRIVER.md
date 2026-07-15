@@ -308,8 +308,12 @@ changes (lighting/color-temperature shifts). All are in
 2. **`ss_mpi_isp_set_ae_route_attr`** (after `isp_init`): 3 nodes
    matching superb:
    - Node 0: int_time=8, sys_gain=1024
-   - Node 1: int_time=2804, sys_gain=1024
-   - Node 2: int_time=2804, sys_gain=196608
+   - Node 1: int_time=2802, sys_gain=1024
+   - Node 2: int_time=2802, sys_gain=196608
+
+   (2802 = VTS 2812 - EXP_OFFSET 10 = our max_int_time. Superb uses
+   2804 because it runs VTS=2814; 2804 would exceed our AE limit and
+   get clamped anyway.)
 
 3. **`bin_param.stIspEvo.enable = 1`** for PQ bin import (includes
    cross-frame and AE route modules).
@@ -608,8 +612,13 @@ in `driver/rtsp/rtsp_push.{h,c}`.
 |----------|-------|
 | URL | `rtsp://<ip>:554/live0` |
 | Codec | H.265 (HEVC), RTP payload type 96 |
-| Resolution | 3200x1800 @ 15 fps (VENC output rate) |
+| Resolution | 3840x2160 @ 15 fps (upscaled from 3200x1800 via VPSS ext chn 3, matching superb) |
 | Binary size impact | ~40 KB (xop + C++ runtime, statically linked) |
+
+Note: the sensor is 3200x1800 native; the 4K output is a VPSS upscale.
+Superb does the same on this hardware class (see DRIVER_INTERNALS.md,
+"Superb resolution selection"). Historical `pipeline_test` encoded
+3200x1800 native.
 
 4-function C API: `rtsp_server_start`, `rtsp_session_create`,
 `rtsp_session_push_frame`, `rtsp_server_stop`.
@@ -634,11 +643,12 @@ Black level: 1024 (14-bit)
 PQ bin:      loaded (types 0/1/2: ISP, AE, NR)
 AWB:         AUTO ADVANCE (SC635HAI calibration)
 CCM:         AUTO (4 matrices at 6350/4950/3850/2640K)
-AE:          AUTO (3-node route: {8,1024}, {2804,1024}, {2804,196608})
+AE:          AUTO (3-node route: {8,1024}, {2802,1024}, {2802,196608})
 DRC:         enabled (PQ bin defaults, manual mode)
 Saturation:  auto (superb's AGC rolloff table)
 CSC:         BT709, satu=50, ext_csc=1, ct_mode=1
 Sensor FPS:  20 (VENC outputs 15)
+Encode:      3840x2160 H.265 VBR 4096kbps, QP 35-44 (superb-matched)
 3DNR:        V2 at VI pipe level (boosted above superb)
 ISP ctrl:    be_buf_num=4, quick_start_en=1
 ```

@@ -148,7 +148,6 @@ static void crash_handler(int sig)
         case SIGABRT: msg = "\n!!! CRASH: SIGABRT (abort) !!!\n"; break;
         case SIGBUS:  msg = "\n!!! CRASH: SIGBUS (bus error) !!!\n"; break;
         case SIGFPE:  msg = "\n!!! CRASH: SIGFPE (floating point) !!!\n"; break;
-        case SIGPIPE: msg = "\n!!! CRASH: SIGPIPE (broken pipe) !!!\n"; break;
         case SIGHUP:  msg = "\n!!! SIGNAL: SIGHUP (hangup) !!!\n"; break;
         default:      msg = "\n!!! CRASH: unknown signal !!!\n"; break;
     }
@@ -174,7 +173,14 @@ static void crash_handler(int sig)
 
 static void sig_handler(int sig)
 {
-    (void)sig;
+    /* Guard against re-entry: a second SIGINT/SIGTERM arriving while
+     * teardown() is already running must not start a second teardown. */
+    static volatile sig_atomic_t in_shutdown = 0;
+    if (in_shutdown) {
+        _exit(1);
+    }
+    in_shutdown = 1;
+
     printf("\n[INFO] Signal %d received, stopping...\n", sig);
     g_stop = 1;
     if (g_rtsp_mode) {
@@ -235,8 +241,13 @@ int main(int argc, char *argv[])
     signal(SIGABRT, crash_handler);
     signal(SIGBUS,  crash_handler);
     signal(SIGFPE,  crash_handler);
-    signal(SIGPIPE, crash_handler);
     signal(SIGHUP,  crash_handler);
+
+    /* SIGPIPE: ignore. An RTSP client disconnecting mid-write must not
+     * kill the daemon (previously treated as a crash -> daemon exited
+     * with watchdog disarmed -> camera dead until manual restart).
+     * Writes to dead sockets now return EPIPE instead. */
+    signal(SIGPIPE, SIG_IGN);
 
     signal(SIGINT, sig_handler);
     signal(SIGTERM, sig_handler);

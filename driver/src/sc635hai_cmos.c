@@ -443,7 +443,7 @@ static td_s32 cmos_get_ae_default(ot_vi_pipe vi_pipe,
     ae_sns_dft->again_accu.accuracy  = 1;
 
     /* Digital gain: linear steps within power-of-2 ranges */
-    ae_sns_dft->max_dgain = SC635HAI_DGAIN_MAX;  /* 32640 = ~31.875x */
+    ae_sns_dft->max_dgain = SC635HAI_DGAIN_MAX;  /* 32640 = ~15.875x */
     ae_sns_dft->min_dgain = SC635HAI_DGAIN_MIN;  /* 1024 = 1.0x */
     ae_sns_dft->max_dgain_target = ae_sns_dft->max_dgain;
     ae_sns_dft->min_dgain_target = ae_sns_dft->min_dgain;
@@ -598,6 +598,14 @@ static td_void cmos_gains_update(ot_vi_pipe vi_pipe,
                g_gains_dbg_cnt, again, dgain);
     }
     g_gains_dbg_cnt++;
+
+    /* Defensive clamp: 'again' is a table index from the AE library
+     * (cmos_again_calc_table caps it at 223, but never trust the caller --
+     * an out-of-range index would read past g_again_table and compute a
+     * bogus fine-gain register). */
+    if (again >= SC635HAI_AGAIN_TBL_SIZE) {
+        again = SC635HAI_AGAIN_TBL_SIZE - 1;
+    }
 
     /* ── Analog gain ────────────────────────────────────────── */
 
