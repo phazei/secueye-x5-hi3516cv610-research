@@ -23,7 +23,7 @@ driver see `DRIVER.md`; for kernel decompilation forensics see
 - [Camera Controls](#camera-controls)
 - [SystemCfg.ini](#systemcfgini)
 - [Security](#security)
-- [SD Card Jailbreak & Firmware Update](#sd-card-jailbreak--firmware-update)
+- [SD-Card Boot Hook & Firmware Update](#sd-card-boot-hook--firmware-update)
 - [Known Issues](#known-issues)
 - [Appendix: ISP Functions in superb](#appendix-isp-functions-in-superb)
 - [Appendix: HI_XUID Internal Commands](#appendix-hi_xuid-internal-commands)
@@ -274,7 +274,7 @@ Stage 5: /home/bashrc.sh (appfs, 293 lines -- the big one)
   source /etc/conf.d/fixed/hwconfig.cfg
   Mount resfs (squashfs) -> /tmp/resfs, bind-mount wifi/ble/ivp/sensor/voice
   insmod motor_advance.ko (if present)
-  /progs/updateID.sh             (SD card jailbreak point! sources recycle_ali.sh)
+  /progs/updateID.sh             (SD-card boot-hook point; sources recycle_ali.sh)
   loadhi3516cv610 -i -sensor0 sc635hai ...  (HiSilicon kernel modules)
   insmod ot_adc.ko
   Load WiFi kernel modules (atbm6x6x)
@@ -355,7 +355,7 @@ All partitions dumped and verified: `firmware/mtd[0-6]_*.bin` + `full_flash.bin`
 PID 1  init (BusyBox)
   |- mySystem        (watchdog, UDP 8899 localhost)
   |- dropbear :22    (SSH + SCP, dropbearmulti v2026.91)
-  |- tcpsvd 9999     (our backdoor, legacy fallback)
+  |- tcpsvd 9999     (our local debug shell, legacy fallback)
   |- recv :8888      (fast file transfer daemon, legacy)
   |- superb          (TCP 80/554/34567, UDP 3702/30012/30014/34569)
   |   |- 7x /dev/isp_dev FDs
@@ -404,7 +404,7 @@ superb loads 4 PQ bin files at startup (141 KB each):
 |------|----------|---------|------|
 | 80 | TCP | ONVIF SOAP (superb) | None |
 | 554 | TCP | RTSP (superb) | None |
-| 9999 | TCP | Root shell (tcpsvd, our backdoor) | None |
+| 9999 | TCP | Root shell (tcpsvd, our local debug shell) | None |
 | 34567 | TCP | DVRIP binary dialect (superb) | None (all logins accepted) |
 | 3702 | UDP | WS-Discovery | None |
 | 30012 | UDP | Internal (superb) | Unknown |
@@ -863,7 +863,7 @@ Chinese SMTP: `smtp.163.com`, user `ipcmail`, password `ipcam71a`
 | DVRIP (34567) | None (all credentials accepted) |
 | HTTP snapshots | None |
 | BLE provisioning | None (no pairing/bonding) |
-| Root shell (9999) | None (our backdoor, legacy fallback) |
+| Root shell (9999) | None (our local debug shell, legacy fallback) |
 
 **Anyone on the same LAN can view, snapshot, and send commands.** SSH is the
 only authenticated service. All stock services remain unauthenticated.
@@ -873,7 +873,7 @@ only authenticated service. All stock services remain unauthenticated.
 | Source | Username | Password | Notes |
 |--------|----------|----------|-------|
 | rootfs `/etc/shadow` | root | *(empty)* | SHA-512 hash; verified with `cryptpw` on camera |
-| appfs `/home/passwd` | root | (uncracked) | DES salt=`GI`, exhausted 1-6 chars |
+| appfs `/home/passwd` | root | (not recovered) | DES salt=`GI`, exhausted 1-6 chars |
 | ONVIF | admin | admin | Level 0 (admin) |
 | ONVIF | user | 123456 | Level 2 (viewer) |
 | Danale | admin | ZKAcmKhE | Secondary cloud platform |
@@ -897,17 +897,17 @@ iptables -I FORWARD -s 192.168.1.153 -o $(nvram get wan_iface) -j DROP
 Also disable UPnP on router. Assign static DHCP lease for
 `38:77:07:75:97:39`.
 
-### Xiongmai Backdoor Ports
+### Vendor (Xiongmai) Remote-Access Ports
 
 All disabled in this firmware: 9527 (debug), 9530 (macGuarder), 23
-(telnet). Known passwords (`I0TO5Wv9`, `xmhdipc`, etc.) irrelevant since
+(telnet). Any well-known default passwords are irrelevant here since
 DVRIP accepts everything anyway.
 
 ---
 
-## SD Card Jailbreak & Firmware Update
+## SD-Card Boot Hook & Firmware Update
 
-### SD Card Jailbreak (recycle_ali.sh)
+### SD-Card Boot Hook (recycle_ali.sh)
 
 `/progs/updateID.sh` runs every boot as root (before superb starts) and
 **sources** an arbitrary script from SD card:
@@ -919,9 +919,9 @@ if [ -f /var/udisk/seculinkIdRecycle/recycle_ali.sh ]; then
 fi
 ```
 
-**To jailbreak without UART:** Format SD as FAT32, create
+**To get a root shell without UART:** Format SD as FAT32, create
 `seculinkIdRecycle/recycle_ali.sh` with desired commands, insert and power
-cycle. Script executes as root.
+cycle. Script executes as root via the vendor's SD-card boot hook.
 
 ### SD Card Provisioning Paths
 
@@ -977,7 +977,7 @@ Also calls `awss_report_reset(0)` to unbind from Alibaba cloud, and
 
 | Path | Contents | Survives? |
 |------|----------|:-:|
-| `/etc/conf.d/debug.sh` | Our backdoor | YES |
+| `/etc/conf.d/debug.sh` | Our boot hook | YES |
 | `/etc/conf.d/fixed/hwconfig.cfg` | Hardware config | YES |
 | `/etc/conf.d/fixed/base.cfg` | OTA URLs | YES |
 | `/etc/conf.d/lic.bin` | Device identity | YES (but cloud unbind sent) |
@@ -1004,7 +1004,7 @@ runs it instead of launching superb directly. Our debug.sh handles:
 5. Mount tmpfs on `/root`, install SSH authorized_keys from configfs
 6. Copy dropbear host keys from configfs to `/etc/dropbear/`
 7. Start dropbear SSH daemon (port 22, v2026.91 multi-binary with SCP)
-8. Start tcpsvd backdoor (port 9999, legacy fallback)
+8. Start tcpsvd local debug shell (port 9999, legacy fallback)
 9. Start recv file transfer daemon (port 8888, legacy fallback)
 10. Start superb with logging to `/tmp/superb.log`
 11. PQTools calibration after 15s delay

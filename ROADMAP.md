@@ -130,10 +130,10 @@ Purely organizational. No camera functional changes.
   per firmware_building research.
 - Enable persistently if not running: probably needs `dropbearmulti dropbear`
   invocation at boot, plus host keys generated in `/etc/dropbear/`.
-- Verify `root` / `sl.x.` login works via ssh from workstation.
+- Verify `root` login works via ssh from workstation.
 - Verify `scp` upload/download.
 - Document setup procedure.
-- **Outcome A:** dropbear works → plan to retire tcpsvd backdoor + recv.c
+- **Outcome A:** dropbear works → plan to retire tcpsvd debug shell + recv.c
   daemon in Phase 3 when we replace superb. Use scp/rsync as primary
   transfer for development.
 - **Outcome B:** dropbear unavailable or broken → document why; keep
@@ -159,7 +159,7 @@ Suggested classifications (verify each):
 
 **tools/ -- delete:**
 
-- `crack_des.py`, `crack_password.cmd` (password crack complete)
+- legacy credential-recovery helpers (task complete; scripts already removed)
 - `monitor_alerts.py`, `monitor_reboot.py`, `monitor_uptime.py`,
   `monitor_uptime.cmd`, `uptime_log.txt`, `uptime_monitor_*.txt`,
   `test_results_*.json` (uptime monitoring artifacts, served purpose)
@@ -254,9 +254,9 @@ Series of small git commits, each with clear message:
   partitions (`bootargs`, `bootloader`, `kernel`, `rootfs`, `appfs`,
   `data`), mySystem behavior, BLE provisioning (existing path),
   watchdog (hardware peripheral, ping requirement), kernel module
-  load order, access paths (tcpsvd backdoor history + dropbear future),
-  cracked passwords (`sl.x.` for rootfs; appfs uncracked and
-  irrelevant), the SD-card jailbreak vector (`recycle_ali.sh`),
+  load order, access paths (tcpsvd debug shell history + dropbear future),
+  recovered credentials (rootfs; appfs unrecovered and
+  irrelevant), the SD-card provisioning vector (`recycle_ali.sh`),
   network ports, OEM cloud architecture (for context on what we're
   removing).
 - **`DRIVER.md`** -- sensor driver work: SC635HAI register map, AWB
@@ -308,7 +308,7 @@ Series of small git commits, each with clear message:
   - Does it wipe SD card recordings?
   - Does it reformat any partition?
   - **Crucially: does it touch our daemon binary in `/progs/`?**
-- Confirmed empirical fact: the tcpsvd port-9999 backdoor survives a
+- Confirmed empirical fact: the tcpsvd port-9999 debug shell survives a
   long-press reset. So the reset is NOT a full re-flash; it's a
   scoped config wipe.
 - Document the exact wipe scope in `CAMERA.md` so we know what's safe
@@ -876,7 +876,7 @@ In rough priority order based on Anthony's feedback:
 10. **Audio improvements** -- AAC codec, noise suppression, gain
     control.
 11. **Multi-camera support** -- probably never needed.
-12. **appfs root password crack** -- low value, ~9.5 days RTX 5090
+12. **appfs root credential recovery** -- low value, ~9.5 days RTX 5090
     for 8-char DES. We have rootfs root, so this is academic.
 
 ---

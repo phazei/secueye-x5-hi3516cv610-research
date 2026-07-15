@@ -56,7 +56,7 @@ Without `-O` you'll get: `sh: /progs/rec/00/ipc_drv/sftp-server: not found`
 ### Shell access (port 9999 -- legacy fallback)
 
 The camera runs a `tcpsvd` root shell on port 9999 (unauthenticated,
-installed by us via SD-card jailbreak). Use `cam_cmd.py` to send
+installed by us via the SD-card boot hook). Use `cam_cmd.py` to send
 commands. Kept as fallback in case SSH breaks:
 
 ```bash
@@ -205,10 +205,10 @@ ipc_XMeye_camera/
       output/                 Decompilation results, including
                               sensor_i2c_kernel.md (kernel sync forensics)
 
-  sd_root/                Ready-to-use SD card jailbreak files
+  sd_root/                Ready-to-use SD-card boot-hook files
     seculinkIdRecycle/
       recycle_ali.sh        Starts root shell on port 9999 at boot
-    README.md               Step-by-step jailbreak + persistence guide
+    README.md               Step-by-step boot-hook + persistence guide
 
   firmware/               Dumped flash partitions + extracted filesystems
     mtd[0-6]_*.bin          Raw partition images (boot, kernel, rootfs, etc)
@@ -264,21 +264,21 @@ ipc_XMeye_camera/
   use `scp -O` from Windows (OpenSSH defaults to SFTP which we don't
   have). Build script: `tools/build_dropbear.sh`.
 
-## SD card jailbreak
+## SD-card boot hook
 
-Root access is obtained via the `recycle_ali.sh` SD card vector: the
-stock firmware (`/progs/updateID.sh`) sources an arbitrary script from
-the SD card on every boot. Our script starts `tcpsvd` listening on
-port 9999 for an unauthenticated root shell.
+Root access is obtained via the vendor's own SD-card boot hook: the
+stock firmware (`/progs/updateID.sh`) sources a script from the SD card
+on every boot. Our `recycle_ali.sh` uses that hook to start `tcpsvd`
+listening on port 9999 for a local (LAN-only) root shell.
 
 **To get started:** See `sd_root/README.md` for step-by-step
 instructions. Copy the `sd_root/seculinkIdRecycle/` folder to a FAT32
 SD card, insert it, power cycle, and connect with `nc <camera-ip> 9999`.
 
-The stock rootfs `/etc/shadow` has an empty root password (previously
-believed to be `sl.x.` -- incorrect). Our `debug.sh` sets a real
-password at boot from a hash stored on configfs. The port-9999 shell
-is unauthenticated (legacy fallback).
+The stock rootfs `/etc/shadow` has an empty root password (an earlier
+note recording a different value was incorrect). Our `debug.sh` sets a
+real password at boot from a hash stored on configfs. The port-9999
+shell is unauthenticated (legacy fallback).
 
 ## What lives where on the camera
 

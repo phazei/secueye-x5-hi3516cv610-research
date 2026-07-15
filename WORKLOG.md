@@ -107,7 +107,7 @@ Created `CAMERA.md` (~757 lines): hardware specs, firmware/boot chain,
 network protocols, cloud architecture (Alibaba IoT MQTT, Thing Model,
 app analysis), BLE provisioning, camera controls (ISP, night vision,
 detection, recording, PTZ, audio, OSD), SystemCfg.ini tested results,
-security assessment, SD card jailbreak, known issues, 3 appendices
+security assessment, SD card provisioning vector, known issues, 3 appendices
 (ISP functions, HI_XUID commands, APK directory map).
 
 Fixed 3 errors in README.md:
@@ -174,9 +174,9 @@ unclean FAT32 dismount, not the reset path. superb has `mkdosfs`/
 
 ## 2026-05-15 ~17:00 [Phase 0] -- Dropbear SSH deployment
 
-**Context:** Needed secure shell access to camera. Stock firmware has
-no SSH, telnet, or remote file transfer. We had tcpsvd on port 9999
-(unauthenticated) and recv/send_file.py (unencrypted TCP). Dropbear
+**Context:** Needed secure shell access to our camera. Stock firmware
+has no SSH, telnet, or remote file transfer. We had tcpsvd on port 9999
+(open debug shell) and recv/send_file.py (unencrypted TCP). Dropbear
 was referenced in the firmware building repo but never on the actual
 camera.
 
@@ -190,8 +190,8 @@ at boot: mount SD card, set password, fix devpts, create /etc/shells,
 install authorized_keys, start dropbear.
 
 **Issues resolved during deployment:**
-1. **Root password was empty** (not `sl.x.` as previously documented).
-   Verified with `cryptpw` on camera and passlib locally. Fixed in
+1. **Root password was empty** (not the value previously documented).
+   Confirmed with the on-device hashing utility and locally. Fixed in
    CAMERA.md credentials table.
 2. **devpts mounted with ptmxmode=000** -- blocked PTY allocation,
    caused dropbear to accept login then immediately disconnect
@@ -215,7 +215,7 @@ critical for diagnosing issues #6 and #7. Removed after verification.
 **Updated docs:**
 - CAMERA.md: expanded boot sequence (6-line summary -> full 7-stage
   trace), added debug.sh boot hook section, added configfs layout
-  table, fixed root password (empty not sl.x.), added SSH to security
+   table, fixed root password (empty, not the prior value), added SSH to security
   table and process tree.
 - WORKLOG.md: this entry.
 
@@ -224,7 +224,7 @@ password prompt). Password auth also works as fallback.
 
 **What's running after boot:**
 - dropbear :22 (SSH, key + password auth)
-- tcpsvd :9999 (legacy unauthenticated shell, kept as fallback)
+- tcpsvd :9999 (legacy open debug shell, kept as fallback)
 - recv :8888 (fast file transfer)
 - superb (stock camera daemon)
 - mySystem (watchdog)
