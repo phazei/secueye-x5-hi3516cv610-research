@@ -427,12 +427,28 @@ hi_s32 configure_isp_color(void)
             printf("[SAT ] PQ bin defaults: sat[12..15]=%u,%u,%u,%u\n",
                    sat.auto_attr.sat[12], sat.auto_attr.sat[13],
                    sat.auto_attr.sat[14], sat.auto_attr.sat[15]);
+            /* Boost low/mid-ISO saturation ~30% over PQ bin (2026-07-15).
+             * x1.15 reached stock level; ground-truth canvas is far more
+             * vivid, so pushed to x1.30. Runtime indoor light sits around
+             * index 6-7 (AWB reported saturation=108 from 110/105). */
+            for (int i = 0; i < 9; i++) {
+                td_u32 s = sat.auto_attr.sat[i];
+                s = s * 130 / 100;
+                if (s > 170) s = 170;
+                sat.auto_attr.sat[i] = (td_u8)s;
+            }
             for (int i = 12; i < 16; i++) {
                 if (sat.auto_attr.sat[i] > 95)
                     sat.auto_attr.sat[i] = 90;
             }
+            printf("[SAT ] auto_sat boosted x1.30 [0..8]: [%u,%u,%u,%u,%u,%u,%u,%u,%u]\n",
+                   sat.auto_attr.sat[0], sat.auto_attr.sat[1],
+                   sat.auto_attr.sat[2], sat.auto_attr.sat[3],
+                   sat.auto_attr.sat[4], sat.auto_attr.sat[5],
+                   sat.auto_attr.sat[6], sat.auto_attr.sat[7],
+                   sat.auto_attr.sat[8]);
             ret = ss_mpi_isp_set_saturation_attr(VI_PIPE, &sat);
-            printf("[SAT ] high-ISO sat[12..15] capped to 90: ret=0x%08X\n", (unsigned)ret);
+            printf("[SAT ] set (boost 0-8, high-ISO cap 90): ret=0x%08X\n", (unsigned)ret);
         } else {
             printf("[SAT ] get_saturation_attr FAILED: 0x%08X\n", (unsigned)ret);
         }
@@ -482,14 +498,57 @@ hi_s32 configure_isp_color(void)
         }
     }
 
-    /* 7. Sharpen state (log only) */
+    /* 7. Sharpen: boost texture/edge strength over conservative PQ bin
+     * defaults (~58-69 texture, ~357 edge). Empirically validated on the
+     * stash@{0} "FIXES" test build: x2 texture / x1.5 edge visibly closes
+     * the detail gap to stock superb without haloing as hard as stock.
+     * Applied to ISO indices 0-8 only so high-gain frames don't sharpen
+     * noise. */
     {
         ot_isp_sharpen_attr shp;
         memset(&shp, 0, sizeof(shp));
         ret = ss_mpi_isp_get_sharpen_attr(VI_PIPE, &shp);
         if (ret == HI_SUCCESS) {
-            printf("[SHP ] enable=%d, op_type=%d (keeping PQ bin)\n",
-                   shp.enable, shp.op_type);
+            printf("[SHP ] enable=%d, op_type=%d\n", shp.enable, shp.op_type);
+            if (shp.op_type == OT_OP_MODE_AUTO) {
+                printf("[SHP ] tex_str[0] (before): ");
+                for (int g = 0; g < 2; g++)
+                    printf("%u ", shp.auto_attr.texture_strength[g][0]);
+                printf("| edge_str[0]: ");
+                for (int g = 0; g < 2; g++)
+                    printf("%u ", shp.auto_attr.edge_strength[g][0]);
+                printf("\n");
+
+                /* x2/x1.5 (stash build) was still softer than stock once
+                 * 3DNR temporal luma came on; x2.5/x2 confirmed close to
+                 * stock 2026-07-15. Raised to x3/x2.5 per owner preference
+                 * for maximum detail. */
+                for (int iso = 0; iso < 9; iso++) {
+                    for (int g = 0; g < OT_ISP_SHARPEN_GAIN_NUM; g++) {
+                        td_u32 ts = shp.auto_attr.texture_strength[g][iso];
+                        ts = ts * 3;
+                        if (ts > 1000) ts = 1000;
+                        shp.auto_attr.texture_strength[g][iso] = (td_u16)ts;
+
+                        td_u32 es = shp.auto_attr.edge_strength[g][iso];
+                        es = es * 5 / 2;
+                        if (es > 2000) es = 2000;
+                        shp.auto_attr.edge_strength[g][iso] = (td_u16)es;
+                    }
+                }
+
+                printf("[SHP ] tex_str[0] (boosted): ");
+                for (int g = 0; g < 2; g++)
+                    printf("%u ", shp.auto_attr.texture_strength[g][0]);
+                printf("| edge_str[0]: ");
+                for (int g = 0; g < 2; g++)
+                    printf("%u ", shp.auto_attr.edge_strength[g][0]);
+                printf("\n");
+
+                hi_s32 shp_ret = ss_mpi_isp_set_sharpen_attr(VI_PIPE, &shp);
+                printf("[SHP ] set_sharpen_attr (tex x3, edge x2.5, iso 0-8): ret=0x%08X\n",
+                       (unsigned)shp_ret);
+            }
         } else {
             printf("[SHP ] get_sharpen_attr FAILED: 0x%08X\n", (unsigned)ret);
         }
@@ -696,9 +755,16 @@ hi_s32 configure_lowlight_nr(void)
 
             drc.bcnr_attr.enable = 1;
             drc.bcnr_attr.strength = 6;
+
+            /* Halve DRC strength (PQ bin: 160). Ground-truth comparison
+             * 2026-07-15 showed shadows lifted to mid-gray vs near-black
+             * canvas; DRC shadow lift is the main washout source. */
+            drc.manual_attr.strength = 80;
+
             ret = ss_mpi_isp_set_drc_attr(VI_PIPE, &drc);
-            printf("[DRC ] BCNR: enable=1 strength=%u (was 3): ret=0x%08X\n",
-                   (unsigned)drc.bcnr_attr.strength, (unsigned)ret);
+            printf("[DRC ] BCNR en=1 str=%u; DRC strength=%u (was 160): ret=0x%08X\n",
+                   (unsigned)drc.bcnr_attr.strength,
+                   (unsigned)drc.manual_attr.strength, (unsigned)ret);
         } else {
             printf("[DRC ] get_drc_attr FAILED: 0x%08X\n", (unsigned)ret);
         }
@@ -795,19 +861,26 @@ hi_s32 configure_3dnr(void)
                    v2->mdy0.tfs, v2->mdy0.math, v2->mdy0.mathd,
                    v2->mdy0.mabw, v2->mdy0.tdz);
 
-            /* Chroma NR channel 0 (nrc0) -- temporal chroma */
-            v2->nrc0.trc = 128;
-            v2->nrc0.sfc = 128;
-            v2->nrc0.tfc = 32;
+            /* Chroma NR channel 0 (nrc0) -- temporal chroma.
+             * Superb runs trc=128 sfc=128 tfc=32, which visibly washes out
+             * color (averages chroma of fine detail). Halved 2026-07-15 to
+             * recover saturation while keeping luma NR at superb strength.
+             * Next knob if still washed out: nrc1.sfs1 (spatial chroma, 220). */
+            v2->nrc0.trc = 64;
+            v2->nrc0.sfc = 64;
+            v2->nrc0.tfc = 16;
             v2->nrc0.tfs = 13;
             printf("[3DNR] V2 NRC0: trc=%u sfc=%u tfc=%u tfs=%u\n",
                    v2->nrc0.trc, v2->nrc0.sfc, v2->nrc0.tfc, v2->nrc0.tfs);
 
-            /* Chroma NR channel 1 (nrc1) -- spatial chroma */
-            v2->nrc1.pre_sfs = 14;
-            v2->nrc1.sfs1 = 220;
-            v2->nrc1.sfs2_coarse = 24;
-            v2->nrc1.sfs2_coarse_f = 24;
+            /* Chroma NR channel 1 (nrc1) -- spatial chroma.
+             * Superb: pre=14 sfs1=220 coarse=24. Halving nrc0 alone
+             * (2026-07-15) did not recover saturation; nrc1 spatial chroma
+             * is the dominant washout contributor, so halved as well. */
+            v2->nrc1.pre_sfs = 7;
+            v2->nrc1.sfs1 = 110;
+            v2->nrc1.sfs2_coarse = 12;
+            v2->nrc1.sfs2_coarse_f = 12;
             v2->nrc1.sfs2_fine_f = 15;
             v2->nrc1.sfs2_fine_b = 15;
             v2->nrc1.sfs2_mode = 0;
