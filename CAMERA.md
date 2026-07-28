@@ -122,10 +122,17 @@ Confirmed via `/sys/class/net/wlan0/device/uevent` and `lsusb`.
 5 GHz (5200-5825 MHz). Do not mistake the boot-log lines
 `country[CN] not support chan [...]` for a 2.4 GHz-only radio.
 
-#### Regulatory channel restriction (bit us 2026-07-21)
+#### DFS channels 100-140 are blocked (ch 116 fix)
 
-The driver carries its **own** country table, hardcoded to `CN`, and
-prunes the scan list before the radio ever transmits a probe:
+> **If your AP sits on a DFS channel (100-140), this camera is blind to
+> it.** It never scans the channel, so the SSID does not exist from its
+> point of view and it fails with "wifi connection failed" -- looking
+> exactly like a dead radio or a wrong password. This is what happened on
+> 2026-07-21 when the 5 GHz network moved to channel 116.
+
+Out of the box the driver refuses `14, 38, 42, 46, 100, 104, 108, 112,
+116, 120, 124, 128, 132, 136, 140`, pruning the scan list 41 -> 26
+*before* the radio transmits a single probe:
 
 ```
 [atbm_log]:ieee80211_check_country_limit_scan_chan : scan_n_channals = 41
@@ -133,35 +140,80 @@ prunes the scan list before the radio ever transmits a probe:
 [atbm_log]:ieee80211_check_country_limit_scan_chan : scan_n_channals = 26
 ```
 
-**Channels refused under `CN`:** `14, 38, 42, 46, 100, 104, 108, 112,
-116, 120, 124, 128, 132, 136, 140` (41 -> 26 channels).
+The limit is a software country table hardcoded to `CN`, not an RF
+limit -- 5580 MHz is well inside the chip's range, and the driver's own
+regulatory rules already permit 5490-5730 MHz without even a DFS flag.
 
-**Usable 5 GHz channels:** UNII-1 `36/40/44/48` and UNII-3
-`149/153/157/161/165`. Confirmed scanning 5200, 5220, 5765, 5785, 5825 MHz.
+**Fix (verified): one byte, switching the default country `CN` -> `US`,
+which selects a channel list containing 100-140.**
 
-> **If an AP moves to a DFS channel (100-140), this camera goes blind to
-> it.** It never scans the channel, so the SSID does not exist from its
-> point of view and it fails with "wifi connection failed" -- looking
-> exactly like a dead radio or a wrong password. This is what happened on
-> 2026-07-21 when the 5 GHz network was moved to channel 116.
+```bash
+# on a copy of /home/wifi/ATBM6x6x_wifi_usb.ko   (0x2F9EC = 195052)
+printf '\x61' | dd of=ATBM6x6x_wifi_usb.ko bs=1 seek=195052 conv=notrunc
+```
 
-The block is regulatory, not physical -- 5580 MHz is well inside the
-chip's range. But the usual knobs do not reach it:
+Measured on-device with the patched module loaded:
 
-| Knob | State |
-|------|-------|
-| `/sys/module/ATBM6x6x_wifi_usb/parameters/channel_limit` | Writable, already unlimited (`-1`). Only *narrows*, cannot widen. |
-| `/sys/module/cfg80211/parameters/ieee80211_regdom` | `00` (world), **read-only** at runtime |
-| `wpa_supplicant` `country=` line | Supported by the binary, but lives in the file superb regenerates |
+```
+[atbm_log]:default country code:US,support channel=11
+scan_n_channals = 41 -> 35        (CN gave 41 -> 26)
+refused: 12, 13, 14, 38, 42, 46   (CN refused 14,38,42,46,100-140)
+5580 -52 ssid-5G              <-- ch 116, previously invisible
+```
 
-Note `cfg80211` reports regdom `00` while the driver still enforces `CN`
-(`atbm_set_country_code_on_driver`) -- the ATBM table is private and
-independent of the standard Linux regulatory system. Overriding it was
-not attempted.
+Caveats:
 
-**Recommendation:** keep the camera on 2.4 GHz, or use a non-DFS 5 GHz
-channel. DFS is a poor fit regardless -- an AP that detects radar must
-vacate the channel within 10 s, dropping any client parked there.
+- `US` allows only 2.4 GHz **ch 1-11**; ch 12/13 become unusable. Patch
+  to `\x5b` (`"00"`) instead for 14 channels + every 5 GHz channel.
+- `/home/wifi` is squashfs (`mtdblock6`, ro), so this persists only by
+  reflashing resfs or shipping the patched `.ko` in custom firmware.
+- To swap the module at runtime you must stop `superb` first -- it holds
+  the module refcount (`rmmod` returns `EAGAIN` otherwise) *and* holds
+  `/dev/watchdog` single-open, so restart it within ~60 s or the
+  watchdog reboots the box.
+
+Without the patch, usable 5 GHz channels are UNII-1 `36/40/44/48` and
+UNII-3 `149/153/157/161/165` -- so moving the AP off DFS also works.
+
+##### Why the normal knobs do nothing
+
+`ATBM6x6x_wifi_usb.ko` ignores the Linux regulatory system, so
+`ieee80211_regdom`, `iw reg set` and `wpa_supplicant country=` all have
+no effect:
+
+- It imports `wiphy_apply_custom_regulatory` (not `regulatory_hint`), so
+  the wiphy ignores the global regdomain.
+- Its custom regdomain `atbm_request_regdom` is tagged **alpha2 `"99"`**,
+  which is *not* in its own country table -- the lookup always misses.
+- `atbm_get_cfg80211_country_code` is a **`bx lr` no-op stub**. Nothing
+  ever reads cfg80211's country back.
+- `atbm_default_driver_configuration()` therefore calls
+  `atbm_set_country_code_on_driver(priv, "CN")` with a hardcoded literal.
+- `ieee80211_check_country_limit_scan_chan()` then does
+  `memcmp(hw+0xbb8, country_t[i].alpha2, 2)` and prunes the scan list.
+
+Also useless: `channel_limit` (writable, already unlimited at `-1`, and
+only *narrows*), and there is no `country` module param.
+
+`country_t` (`.data+0x0c`, 6 x 12 bytes, `{char *alpha2; int n_2g; u8 *chan_5g;}`):
+
+| alpha2 | 2.4G | 5 GHz list |
+|--------|------|------------|
+| `CN` | 13 | `CN_5G_chan`  = 36-64, 149-165 (**no 100-140**) |
+| `JP` | 14 | `JP_5G_chan`  = 36-64, 100-144 |
+| `US` | 11 | `US_5G_chan`  = 36-64, **100-140**, 149-165 |
+| `01` | 14 | `ALL_5G_chan` = 34-64, 100-144, 149-165 |
+| `00` | 14 | `ALL_5G_chan` |
+
+The patched byte is the addend of an `R_ARM_ABS32` literal-pool word at
+`.text+0x2f97c` (file `0x70 + 0x2f97c = 0x2F9EC`) indexing a string pool
+in `.rodata.str1.1`; the same word feeds both the setter and the log
+line, so no second edit is needed:
+
+```
+0x6c52 "CN"   0x6c55 "EU"   0x6c58 "JP"
+0x6c5b "00"   0x6c5e "01"   0x6c61 "US"
+```
 
 ### WiFi Credential Storage (`wifisave.dat`)
 
@@ -1203,37 +1255,46 @@ supported variant is CV500. Flashing CV500 firmware on CV610 will brick.
 Symptom: camera announces "wifi connection failed" on boot, is not
 pingable, and does not appear in the router's client list.
 
-**Root cause seen 2026-07-27:** the stored SSID pointed at a network
-that no longer existed (the router's SSID had been renamed months
-earlier). `wlan0` came up fine and scanned continuously, but
-`wpa_state` never left `SCANNING`.
+**Root cause seen 2026-07-21:** the 5 GHz AP had been moved to channel
+116 (DFS). The camera's driver never scans 100-140, so the SSID did not
+exist from its point of view. `wlan0` came up fine and scanned
+continuously, but `wpa_state` never left `SCANNING`.
 
 Diagnose in this order:
 
-1. **Do not trust BLE `STATUS?`.** On a provisioned camera it always
+1. **Check the AP's channel first.** If it is 100-140 (or 12-14, 34, 38,
+   42, 46), the camera cannot see it at all -- this is the single most
+   likely cause and it mimics both a dead radio and a wrong password.
+   See [DFS channels 100-140 are blocked](#dfs-channels-100-140-are-blocked-ch-116-fix).
+2. **Do not trust BLE `STATUS?`.** On a provisioned camera it always
    returns `wifi_success`, even with the radio completely offline. See
    [Re-provisioning Lockout](#re-provisioning-lockout-important).
-2. **Get the real state.** If you have no shell, run `tools/wifi_diag.sh`
+3. **Get the real state.** If you have no shell, run `tools/wifi_diag.sh`
    from the SD boot hook (uncomment the launcher in
    `seculinkIdRecycle/recycle_ali.sh`); it writes `wifi_diag.log` to the
    card root. With a shell, just use `/home/wifi/wpa_cli -i wlan0 status`.
-3. **Check what the radio can actually see:**
-   `/home/wifi/wpa_cli -i wlan0 scan` then `scan_results`. If neighbouring
-   APs appear, the radio and driver are healthy and the problem is
-   configuration, not hardware.
-4. **Compare the stored SSID against reality:**
-   `strings /etc/conf.d/syscfg/network/wifisave.dat`. A stale SSID that
-   no longer broadcasts is the most likely cause.
-5. **Fix** by patching `wifisave.dat` -- see
+4. **Check what the radio can actually see:**
+   `/home/wifi/wpa_cli -i wlan0 scan` then `scan_results`. Neighbouring
+   APs appearing means the radio is healthy. **An AP you know is there
+   but is missing from `scan_results` means a pruned channel**, not a
+   credential problem -- confirm with
+   `dmesg | grep "not support chan"`.
+5. **Compare the stored SSID against reality:**
+   `strings /etc/conf.d/syscfg/network/wifisave.dat`.
+6. **Fix** by moving the AP to a non-DFS channel, patching the driver
+   (link above), or patching `wifisave.dat` to a reachable SSID -- see
    [Recovery](#recovery-changing-wifi-credentials-without-the-app-or-ble).
 
 Things that look promising but are dead ends:
 
 - Editing `wpa_supplicant.conf` (superb regenerates it from `wifisave.dat`).
 - Re-sending credentials over BLE (silently ignored once provisioned).
-- Assuming a dead radio because the boot log says
-  `country[CN] not support chan [38/42/...]` -- that is only regulatory
-  channel pruning; the radio is dual-band and sees 5 GHz fine.
+- `ieee80211_regdom`, `iw reg set`, `wpa_supplicant country=`,
+  `channel_limit` -- none of them affect channel pruning.
+- Concluding the radio is dead, or that 5 GHz is unsupported, from
+  `country[CN] not support chan [...]`. The radio is dual-band and sees
+  5 GHz fine; those lines are the pruning mechanism itself, and are the
+  thing to read carefully rather than dismiss.
 
 ### OSD Timezone -- FIXED
 
