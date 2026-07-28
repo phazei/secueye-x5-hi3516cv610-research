@@ -485,3 +485,72 @@ Not yet tested on camera (next step: deploy + verify RTSP stream).
 
 **Next:** Phase 3.2 -- daemon infrastructure (config, logging, PID file).
 Then Phase 3.3 -- modify debug.sh to launch ipc_daemon instead of superb.
+
+---
+
+## 2026-07-27 [Phase 0] -- WiFi outage: DFS channel 116 + wifisave.dat
+
+**Symptom:** Camera dropped off the LAN 2026-07-21, announced "wifi
+connection failed" on boot. `wlan0` came up with the correct MAC and
+scanned continuously, but `wpa_state` never left `SCANNING`. No lease,
+no ARP entry.
+
+**Root cause:** The AP's 5 GHz network was moved to channel 116 (5580
+MHz, DFS). The driver carries its own `country[CN]` table and strips
+channels `14, 38, 42, 46, 100-140` from the scan list before any probe
+is sent (41 -> 26 channels):
+
+```
+[atbm_log]:ieee80211_check_country_limit_scan_chan :country[CN] not support chan [116]
+```
+
+The SSID still existed; the camera was structurally unable to scan it.
+Looks identical to a dead radio or a bad password. The camera had been
+on 5 GHz all along, contrary to the assumption that it was 2.4 GHz-only.
+
+**wifisave.dat is the credential store.**
+`/etc/conf.d/syscfg/network/wifisave.dat` is authoritative;
+`wpa_supplicant.conf` is a cache superb regenerates from it ~15-20 s into
+boot. Two attempts to fix the `.conf` from the SD boot hook (before
+`networkcfg.sh`) were silently reverted; `update_config=0` does not help,
+the file is replaced wholesale. 116 bytes: SSID at `0x00` (32B), PSK at
+`0x20` (64B), undecoded trailer at `0x60`, no checksum.
+
+**BLE re-provisioning is locked out once provisioned.** `STATUS?` returns
+`wifi_success` immediately on connect -- before credentials are sent,
+with the radio offline -- and subsequent `SSID:`/`PWD:` writes are ACKed
+but ignored. Two runs with different SSIDs left `wifisave.dat`
+byte-identical while `ble_provision.py` printed SUCCESS both times.
+`get_ble_smart_status` (Ghidra `0x0032c5a8`) is 6 bytes: a
+load-global-and-return with no connectivity check.
+
+**Fix:** Patched the SSID field in `wifisave.dat` to the 2.4 GHz SSID
+(backup at `.bak`). superb regenerated `wpa_supplicant.conf` correctly;
+`wpa_state=COMPLETED` at 42 s uptime, unaided, persistent across reboots.
+
+**Diagnostic channel:** With no network and no UART, diagnostics ran via
+the vendor SD hook `/progs/updateID.sh` -> `seculinkIdRecycle/recycle_ali.sh`
+(root, every boot, before `networkcfg.sh`; SD is at `/var/udisk` there,
+superb remounts to `/progs/rec/00` later). Collector `tools/wifi_diag.sh`
+writes to tmpfs and flushes to the card each round. Reusable for any
+no-network fault. Never `grep -r` `/var` -- it recurses into the mounted
+SD and hangs.
+
+**Wrong turns:** Called the BLE `wifi_success` reply a hardcoded stub (it
+is a real cached terminal state). Claimed the radio was 2.4 GHz-only from
+the `country[CN]` log lines, then dismissed those lines as irrelevant
+after a live scan found 28 APs on 5 GHz -- the filter was the mechanism
+all along, just channel-specific rather than band-wide.
+
+**Also confirmed:** SD card never wiped. Ports 22, 9999, 554, 8888 all
+listening. BusyBox has no `iwconfig`/`iwlist`/`iw`/`wpa_cli`; vendor
+copies are in `/home/wifi/`. Block is regulatory, not physical --
+`channel_limit` only narrows, `ieee80211_regdom` is read-only and reports
+`00` while the driver still enforces `CN`. Not overridden.
+
+**Status:** Resolved, persistent. Camera on 2.4 GHz. To use 5 GHz, pick a
+non-DFS channel (36/40/44/48, 149/153/157/161/165) and repoint
+`wifisave.dat`.
+
+**Next:** None. If the SSID or channel changes again, patch
+`wifisave.dat` (CAMERA.md runbook) rather than attempting BLE.

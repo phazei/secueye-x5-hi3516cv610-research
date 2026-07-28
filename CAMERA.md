@@ -118,6 +118,118 @@ Confirmed via `/sys/class/net/wlan0/device/uevent` and `lsusb`.
 > listed "RTL8188FU". The kernel logs, USB product string, and driver all
 > confirm AltoBeam.
 
+**Dual-band is real.** A live scan saw 36 APs on 2.4 GHz *and* 28 on
+5 GHz (5200-5825 MHz). Do not mistake the boot-log lines
+`country[CN] not support chan [...]` for a 2.4 GHz-only radio.
+
+#### Regulatory channel restriction (bit us 2026-07-21)
+
+The driver carries its **own** country table, hardcoded to `CN`, and
+prunes the scan list before the radio ever transmits a probe:
+
+```
+[atbm_log]:ieee80211_check_country_limit_scan_chan : scan_n_channals = 41
+[atbm_log]:ieee80211_check_country_limit_scan_chan :country[CN] not support chan [116]
+[atbm_log]:ieee80211_check_country_limit_scan_chan : scan_n_channals = 26
+```
+
+**Channels refused under `CN`:** `14, 38, 42, 46, 100, 104, 108, 112,
+116, 120, 124, 128, 132, 136, 140` (41 -> 26 channels).
+
+**Usable 5 GHz channels:** UNII-1 `36/40/44/48` and UNII-3
+`149/153/157/161/165`. Confirmed scanning 5200, 5220, 5765, 5785, 5825 MHz.
+
+> **If an AP moves to a DFS channel (100-140), this camera goes blind to
+> it.** It never scans the channel, so the SSID does not exist from its
+> point of view and it fails with "wifi connection failed" -- looking
+> exactly like a dead radio or a wrong password. This is what happened on
+> 2026-07-21 when the 5 GHz network was moved to channel 116.
+
+The block is regulatory, not physical -- 5580 MHz is well inside the
+chip's range. But the usual knobs do not reach it:
+
+| Knob | State |
+|------|-------|
+| `/sys/module/ATBM6x6x_wifi_usb/parameters/channel_limit` | Writable, already unlimited (`-1`). Only *narrows*, cannot widen. |
+| `/sys/module/cfg80211/parameters/ieee80211_regdom` | `00` (world), **read-only** at runtime |
+| `wpa_supplicant` `country=` line | Supported by the binary, but lives in the file superb regenerates |
+
+Note `cfg80211` reports regdom `00` while the driver still enforces `CN`
+(`atbm_set_country_code_on_driver`) -- the ATBM table is private and
+independent of the standard Linux regulatory system. Overriding it was
+not attempted.
+
+**Recommendation:** keep the camera on 2.4 GHz, or use a non-DFS 5 GHz
+channel. DFS is a poor fit regardless -- an AP that detects radar must
+vacate the channel within 10 s, dropping any client parked there.
+
+### WiFi Credential Storage (`wifisave.dat`)
+
+**`/etc/conf.d/syscfg/network/wifisave.dat` is the authoritative WiFi
+credential store.** `wpa_supplicant.conf` is a *derived cache*: superb
+regenerates it from `wifisave.dat` on every boot, roughly 15-20 s in.
+
+> **Editing `wpa_supplicant.conf` does not work.** Any change -- even one
+> written by a boot hook before `networkcfg.sh` starts wpa_supplicant --
+> is silently overwritten when superb regenerates the file. Setting
+> `update_config=0` does not help; the whole file is replaced, not edited.
+
+Layout (116 bytes, fixed offsets, null-padded ASCII):
+
+| Offset | Size | Contents |
+|--------|------|----------|
+| `0x00` | 32 | SSID, null-padded |
+| `0x20` | 64 | PSK, null-padded |
+| `0x60` | 20 | Trailer: `40 00 00 00  bf 00 00 00  01 00 00 00  04 04 00 00  00 00 00 00` |
+
+The trailer is not fully decoded. `0x40`=64 matches the PSK field size;
+`01 00 00 00` is *probably* a "provisioned" flag. No checksum was
+observed -- patching the SSID in place is accepted by superb.
+
+#### Recovery: changing WiFi credentials without the app or BLE
+
+Requires a shell (SSH, or the port-9999 tcpsvd shell).
+
+```sh
+cd /etc/conf.d/syscfg/network
+cp -f wifisave.dat wifisave.dat.bak            # always back up first
+dd if=/dev/zero of=wifisave.dat bs=1 seek=0 count=32 conv=notrunc
+printf "YourSSID" | dd of=wifisave.dat bs=1 seek=0 conv=notrunc
+sync
+reboot
+```
+
+To change the PSK too, repeat at `seek=32` with `count=64`. After reboot
+superb regenerates `wpa_supplicant.conf` from the patched file and
+associates normally. Verified: `wpa_state=COMPLETED` by ~42 s uptime.
+
+Since `wifisave.dat` lives on configfs (jffs2), the change survives
+reboots and power loss, and does not depend on the SD card. A **factory
+reset erases it** (`rm -rf /etc/conf.d/syscfg/*`).
+
+#### WiFi tooling lives in `/home/wifi/`, not BusyBox
+
+This BusyBox build has **no** `iwconfig`, `iwlist`, `iw`, or `wpa_cli`.
+The vendor ships its own in `/home/wifi/` (bind-mounted from resfs):
+
+```
+wpa_supplicant  wpa_cli  iwconfig  iwlist  libiw.so.29
+cfg80211.ko  mac80211.ko  ATBM6x6x_wifi_usb.ko  atbm6x3x_wifi_usb.ko
+```
+
+Useful live commands (no reboot, non-persistent -- reverts on reboot):
+
+```sh
+/home/wifi/wpa_cli -i wlan0 status          # ssid, wpa_state, ip_address, freq
+/home/wifi/wpa_cli -i wlan0 scan            # then: scan_results
+/home/wifi/wpa_cli -i wlan0 set_network 0 ssid '"NewSSID"'
+/home/wifi/wpa_cli -i wlan0 select_network 0
+/home/wifi/wpa_cli -i wlan0 reassociate
+```
+
+`wpa_cli` talks to a **local Unix socket** (`ctrl_interface=/var/run/wpa_supplicant`).
+It is not a network service and involves no cloud.
+
 ### Audio
 
 - Built-in microphone (always active) + speaker
@@ -646,6 +758,41 @@ framing, no encryption, no JSON. Colon is the delimiter.
 | `PK&DN?` | `pk=<key>&dn=<name>` | Get Alibaba IoT identity |
 | `UNBIND?` | (acknowledged) | Unbind from cloud account |
 
+### Re-provisioning Lockout (important)
+
+**BLE provisioning only works on an unprovisioned camera.** Once the
+device has been provisioned, the sequence above silently stops working:
+
+- `STATUS?` returns `STATUS=wifi_success` **immediately on connect**,
+  before any credentials are sent -- `wifi_success` is the *terminal*
+  state of a previous provisioning run, not a live connectivity check.
+- Subsequent `SSID:` / `PWD:` writes are **accepted at the GATT layer
+  but ignored**. The write is ACKed, no error is returned, and
+  `wifisave.dat` is not modified.
+
+Observed 2026-07-27: two full provisioning runs (two different SSIDs)
+were sent to a camera that had been offline for six days. Both reported
+success. `wifisave.dat` still contained the original SSID, byte for byte.
+
+Supporting evidence: `get_ble_smart_status` (Ghidra, `0x0032c5a8`) is
+**6 bytes** -- a load-global-and-return. It reports a cached variable and
+performs no connectivity check.
+
+**Diagnostic rule:** if the first `STATUS?` after connecting returns
+anything other than `wifi_wait`, BLE provisioning will not work. Do not
+trust a `wifi_success` reply as proof of anything.
+
+**Workarounds, best first:**
+
+1. Patch `wifisave.dat` over SSH -- surgical, instant, keeps all other
+   settings. See [WiFi Credential Storage](#wifi-credential-storage-wifisavedat).
+2. Factory reset -- deletes `wifisave.dat`, so the device should return
+   to `wifi_wait` and accept BLE provisioning again. Costs all other
+   settings and requires re-pairing. Root access survives (`debug.sh`,
+   `/etc/conf.d/dropbear/`, `shadow_root`, and the SD card are all
+   outside the reset's delete list). *Not directly verified.*
+3. `UNBIND?` -- may clear provisioning state. Untested.
+
 ---
 
 ## Camera Controls
@@ -1050,6 +1197,43 @@ supported variant is CV500. Flashing CV500 firmware on CV610 will brick.
 ---
 
 ## Known Issues
+
+### WiFi Won't Connect -- Runbook
+
+Symptom: camera announces "wifi connection failed" on boot, is not
+pingable, and does not appear in the router's client list.
+
+**Root cause seen 2026-07-27:** the stored SSID pointed at a network
+that no longer existed (the router's SSID had been renamed months
+earlier). `wlan0` came up fine and scanned continuously, but
+`wpa_state` never left `SCANNING`.
+
+Diagnose in this order:
+
+1. **Do not trust BLE `STATUS?`.** On a provisioned camera it always
+   returns `wifi_success`, even with the radio completely offline. See
+   [Re-provisioning Lockout](#re-provisioning-lockout-important).
+2. **Get the real state.** If you have no shell, run `tools/wifi_diag.sh`
+   from the SD boot hook (uncomment the launcher in
+   `seculinkIdRecycle/recycle_ali.sh`); it writes `wifi_diag.log` to the
+   card root. With a shell, just use `/home/wifi/wpa_cli -i wlan0 status`.
+3. **Check what the radio can actually see:**
+   `/home/wifi/wpa_cli -i wlan0 scan` then `scan_results`. If neighbouring
+   APs appear, the radio and driver are healthy and the problem is
+   configuration, not hardware.
+4. **Compare the stored SSID against reality:**
+   `strings /etc/conf.d/syscfg/network/wifisave.dat`. A stale SSID that
+   no longer broadcasts is the most likely cause.
+5. **Fix** by patching `wifisave.dat` -- see
+   [Recovery](#recovery-changing-wifi-credentials-without-the-app-or-ble).
+
+Things that look promising but are dead ends:
+
+- Editing `wpa_supplicant.conf` (superb regenerates it from `wifisave.dat`).
+- Re-sending credentials over BLE (silently ignored once provisioned).
+- Assuming a dead radio because the boot log says
+  `country[CN] not support chan [38/42/...]` -- that is only regulatory
+  channel pruning; the radio is dual-band and sees 5 GHz fine.
 
 ### OSD Timezone -- FIXED
 

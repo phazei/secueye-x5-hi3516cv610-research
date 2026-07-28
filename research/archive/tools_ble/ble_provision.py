@@ -28,6 +28,20 @@ Protocol (reverse-engineered from Secueye APK v2.3.7):
     "PK&DN?"   — returns "pk=<key>&dn=<name>" (Alibaba IoT product key/device name)
     "UNBIND?"  — unbind device from cloud account
 
+RE-PROVISIONING LOCKOUT (verified 2026-07-27):
+  This only works on an UNPROVISIONED camera. Once provisioned, STATUS?
+  returns wifi_success immediately on connect -- before any credentials are
+  sent, and even with the radio completely offline -- and all subsequent
+  SSID:/PWD: writes are ACKed but ignored. wifisave.dat is not modified.
+
+  Two full runs with different SSIDs left the stored credentials byte-identical
+  while this tool printed SUCCESS both times. It now refuses to proceed unless
+  the initial state is wifi_wait (override with --force).
+
+  To change WiFi on a provisioned camera, patch
+  /etc/conf.d/syscfg/network/wifisave.dat directly -- see CAMERA.md
+  "WiFi Credential Storage". Factory reset should also restore wifi_wait.
+
 Requirements:
   pip install bleak
 
@@ -94,6 +108,23 @@ class CameraProvisioner:
             return self.responses[-1] if self.responses else None
         except asyncio.TimeoutError:
             return None
+
+    async def _query(self, client, command, timeout=5.0, label=None):
+        """Send a command and return its reply.
+
+        Unlike _send_command + _wait_for_response, this clears the buffer
+        BEFORE sending. The camera often replies faster than the caller can
+        start waiting, and clearing afterwards throws that reply away --
+        which silently turned the provisioned-state guard into a no-op.
+        """
+        self._response_event.clear()
+        self.responses.clear()
+        await self._send_command(client, command, label)
+        try:
+            await asyncio.wait_for(self._response_event.wait(), timeout=timeout)
+        except asyncio.TimeoutError:
+            return None
+        return self.responses[-1] if self.responses else None
 
     async def _poll_status(self, client, timeout_s=PROVISION_TIMEOUT_S):
         """Poll STATUS? until we get a terminal state or timeout."""
@@ -170,8 +201,12 @@ class CameraProvisioner:
 
             await client.stop_notify(NOTIFY_UUID)
 
-    async def provision(self, ssid, password):
-        """Send WiFi credentials and monitor until connected or failed."""
+    async def provision(self, ssid, password, force=False):
+        """Send WiFi credentials and monitor until connected or failed.
+
+        Refuses to run if the camera is already provisioned -- see the
+        re-provisioning lockout note at the top of this file.
+        """
         if not self.mac:
             print("No camera MAC specified. Scanning...")
             cameras = await self.scan()
@@ -192,10 +227,38 @@ class CameraProvisioner:
             await client.start_notify(NOTIFY_UUID, self._notification_handler)
             await asyncio.sleep(DELAY_AFTER_CONNECT_S)
 
-            # Check current status
+            # Check current status.
+            #
+            # CRITICAL: only a camera reporting wifi_wait will actually accept
+            # credentials. A provisioned camera returns wifi_success straight
+            # away -- even with its radio completely offline -- and silently
+            # ignores every SSID:/PWD: write that follows. Without this guard
+            # the tool reports a confident SUCCESS for a total no-op.
             print("\nQuerying camera status...")
-            await self._send_command(client, "STATUS?")
-            await self._wait_for_response(timeout=3)
+            initial = await self._query(client, "STATUS?", timeout=5)
+
+            if initial and "wifi_wait" not in initial:
+                print(f"\n  Initial state is {initial}, expected STATUS=wifi_wait.")
+                if not force:
+                    print("""
+REFUSING TO CONTINUE -- this camera is already provisioned.
+
+Once provisioned, the BLE handler ACKs SSID:/PWD: writes but ignores
+them; nothing is stored and the reply is always wifi_success. Sending
+credentials here would report a false success.
+
+Options (best first):
+  1. Patch /etc/conf.d/syscfg/network/wifisave.dat over SSH or the
+     port-9999 shell. See CAMERA.md "WiFi Credential Storage".
+  2. Factory reset to clear the stored credentials, which should
+     return the device to wifi_wait.
+  3. Re-run with --force to send anyway (expected to be a no-op).
+""")
+                    await client.stop_notify(NOTIFY_UUID)
+                    return False
+                print("  --force given; continuing (likely a no-op).\n")
+            elif initial is None:
+                print("  No status reply; continuing anyway.")
 
             # Send WiFi credentials
             print(f"\nSending WiFi credentials...")
@@ -209,10 +272,13 @@ class CameraProvisioner:
 
             await client.stop_notify(NOTIFY_UUID)
 
-        # Report result
+        # Report result.
+        # NOTE: wifi_success alone does NOT prove connectivity -- it is a
+        # cached terminal state. Always confirm with a ping or the router's
+        # client list before believing it.
         print()
         if result == "STATUS=wifi_success":
-            print("SUCCESS — Camera connected to WiFi.")
+            print("Camera reports SUCCESS — verify before trusting it.")
             print()
             print("Next steps:")
             print("  1. Find the camera's IP in your router's DHCP table")
@@ -250,6 +316,8 @@ examples:
     parser.add_argument("--mac", type=str, default=None, help="Camera BLE MAC address (e.g. AA:BB:CC:DD:EE:FF)")
     parser.add_argument("--timeout", type=int, default=15, help="BLE connection timeout in seconds (default: 15)")
     parser.add_argument("--scan-time", type=int, default=10, help="BLE scan duration in seconds (default: 10)")
+    parser.add_argument("--force", action="store_true",
+                        help="Send credentials even if the camera is already provisioned (expected no-op)")
 
     args = parser.parse_args()
 
@@ -262,7 +330,7 @@ examples:
             parser.error("--status requires --mac")
         asyncio.run(provisioner.get_status())
     elif args.ssid and args.password:
-        success = asyncio.run(provisioner.provision(args.ssid, args.password))
+        success = asyncio.run(provisioner.provision(args.ssid, args.password, force=args.force))
         sys.exit(0 if success else 1)
     else:
         parser.print_help()
